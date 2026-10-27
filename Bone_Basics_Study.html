@@ -1,0 +1,2524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bone Basics Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one centered column (max 720px), big tap targets, one instruction line above each question.
+   Palette: warm paper + periwinkle accent (echoes the course slides); semantic green/red for grading. */
+:root {
+  --bg: #f6f4ee;
+  --surface: #ffffff;
+  --surface-2: #efece4;
+  --ink: #1e1c19;
+  --muted: #655f56;
+  --line: #d9d3c6;
+  --accent: #5457c0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4e5f8;
+  --good: #1f7a46;
+  --good-bg: #e3f3e8;
+  --bad: #b2271d;
+  --bad-bg: #fbe7e4;
+  --warn-bg: #fff3d6;
+  --warn: #8a5a00;
+  --bone: #efe2cc;
+  --bone-edge: #8a6d4e;
+  --shadow: 0 1px 2px rgba(30,28,25,.06), 0 4px 14px rgba(30,28,25,.06);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161b; --surface: #1f2027; --surface-2: #2a2b34; --ink: #ecebf0; --muted: #a7a6b3; --line: #383944;
+    --accent: #8f92f2; --accent-ink: #101120; --accent-soft: #2b2d4d;
+    --good: #6fd198; --good-bg: #17301f; --bad: #ff9a8f; --bad-bg: #3b1f1b; --warn-bg: #3a2f14; --warn: #ffd27a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161b; --surface: #1f2027; --surface-2: #2a2b34; --ink: #ecebf0; --muted: #a7a6b3; --line: #383944;
+  --accent: #8f92f2; --accent-ink: #101120; --accent-soft: #2b2d4d;
+  --good: #6fd198; --good-bg: #17301f; --bad: #ff9a8f; --bad-bg: #3b1f1b; --warn-bg: #3a2f14; --warn: #ffd27a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+button { font: inherit; color: inherit; }
+.top {
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.brand { font-weight: 700; letter-spacing: .01em; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--ink); font-size: 17px; }
+.brand:hover { color: var(--accent); }
+.brand { white-space: nowrap; }
+.tag { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main.wrap { padding-block: 20px 48px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 6px 0 4px; text-wrap: balance; }
+h2 { font-size: 20px; margin: 20px 0 10px; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0 0 18px; }
+
+/* Home */
+.topics { display: grid; gap: 10px; margin: 0 0 18px; }
+.topic-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.topic-btn:hover { border-color: var(--accent); }
+.topic-btn .name { font-weight: 700; font-size: 18px; }
+.topic-btn .meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 14px; color: var(--muted); white-space: nowrap; }
+.topic-btn .score { font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.pill.missed { background: var(--bad-bg); color: var(--bad); }
+.pill.clear { background: var(--good-bg); color: var(--good); }
+.pill.extra { background: var(--surface-2); color: var(--muted); }
+.big-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 16px 18px; border-radius: 12px; border: 0; cursor: pointer; font-size: 18px; font-weight: 700;
+  background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow);
+}
+.big-btn.secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.big-btn:disabled { opacity: .55; cursor: default; }
+.big-btn .meta { font-size: 14px; font-weight: 500; opacity: .85; white-space: nowrap; }
+.home-actions { display: grid; gap: 10px; }
+.reset-row { margin-top: 28px; font-size: 14px; color: var(--muted); }
+.link-btn { background: none; border: 0; padding: 4px 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 14px; }
+.link-btn:hover { color: var(--bad); }
+.confirm { margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.small-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 600; font-size: 15px; }
+.small-btn.danger { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+/* Quiz */
+.qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.qhead .n { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); }
+.progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
+.progress > div { height: 100%; background: var(--accent); transition: width .25s; }
+.instruction { font-size: 14px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; }
+.prompt { font-size: 20px; font-weight: 600; line-height: 1.35; margin: 0 0 16px; text-wrap: pretty; }
+.retry-note { display: inline-block; margin-bottom: 8px; padding: 3px 10px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); font-size: 13px; font-weight: 700; }
+.diagram { background: #fffdf8; border: 1px solid var(--line); border-radius: 12px; padding: 8px; margin: 0 0 16px; }
+.diagram svg { display: block; width: 100%; height: auto; max-width: 100%; }
+
+.options { display: grid; gap: 10px; }
+.opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 13px 14px; min-height: 52px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 12px; cursor: pointer; line-height: 1.3;
+}
+.opt:hover { border-color: var(--accent); }
+.opt .box { flex: none; width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 6px; display: grid; place-items: center; font-size: 14px; font-weight: 700; }
+.opt.radio .box { border-radius: 50%; }
+.opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+.opt.selected .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.right .box { background: var(--good); border-color: var(--good); color: #fff; }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt.wrong .box { background: var(--bad); border-color: var(--bad); color: #fff; }
+.opt.missed-opt { border-color: var(--good); border-style: dashed; }
+.opt.missed-opt .box { border-color: var(--good); color: var(--good); }
+.opt[disabled] { cursor: default; }
+.opt .lbl { flex: 1; min-width: 0; }
+.opt .note { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.opt.right .note { color: var(--good); } .opt.wrong .note { color: var(--bad); } .opt.missed-opt .note { color: var(--good); }
+
+/* Matching */
+.match { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 10px; }
+.match .col { display: grid; gap: 8px; align-content: start; }
+.match .col-title { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.chip {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 10px; min-height: 48px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 15px; line-height: 1.25;
+}
+.chip .lbl { flex: 1; min-width: 0; }
+.chip .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--surface-2); color: var(--muted); }
+.chip.selected { border-color: var(--accent); background: var(--accent-soft); }
+.chip.paired .badge { background: var(--accent); color: var(--accent-ink); }
+.chip.right { border-color: var(--good); background: var(--good-bg); }
+.chip.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.chip[disabled] { cursor: default; }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.hint { font-size: 14px; color: var(--muted); }
+
+/* Sorting */
+.pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; min-height: 60px; border: 2px dashed var(--line); border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+.pool.empty::after { content: "All tiles placed. Tap a tile in a box to move it back here."; color: var(--muted); font-size: 14px; }
+.tile { padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font-size: 15px; line-height: 1.25; text-align: left; }
+.tile.selected { border-color: var(--accent); background: var(--accent-soft); }
+.tile.right { border-color: var(--good); background: var(--good-bg); }
+.tile.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.tile[disabled] { cursor: default; }
+.boxes { display: grid; gap: 10px; margin-top: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.boxes.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dropbox { border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 10px; min-height: 110px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.dropbox.target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.dropbox .box-title { font-weight: 700; font-size: 15px; color: var(--accent); }
+.dropbox .box-tiles { display: flex; flex-wrap: wrap; gap: 6px; }
+.dropbox .box-tiles .tile { font-size: 14px; padding: 7px 10px; }
+.tile .fix { display: block; font-size: 12px; color: var(--bad); font-weight: 600; }
+
+/* Buttons + feedback */
+.actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.primary { padding: 14px 24px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px; cursor: pointer; min-width: 140px; }
+.primary:disabled { opacity: .45; cursor: default; }
+.ghost { padding: 14px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 17px; cursor: pointer; }
+.feedback { margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.feedback.good { border-color: var(--good); background: var(--good-bg); }
+.feedback.bad { border-color: var(--bad); background: var(--bad-bg); }
+.feedback .verdict { font-weight: 800; font-size: 18px; margin: 0 0 6px; }
+.feedback.good .verdict { color: var(--good); } .feedback.bad .verdict { color: var(--bad); }
+.feedback p { margin: 4px 0; }
+.feedback .ans { font-weight: 600; }
+.feedback ul { margin: 6px 0 0; padding-left: 18px; }
+.feedback li { margin: 3px 0; }
+.ok { color: var(--good); font-weight: 700; } .no { color: var(--bad); font-weight: 700; }
+
+/* Results */
+.score-card { text-align: center; padding: 24px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 16px; }
+.score-card .big { font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.score-card .sub { color: var(--muted); margin-top: 6px; }
+.per-topic { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font-size: 15px; }
+.per-topic th, .per-topic td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.per-topic td:last-child, .per-topic th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.review { display: grid; gap: 12px; }
+.review-item { padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.review-item .tp { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.review-item .q { font-weight: 600; margin: 4px 0 8px; }
+.review-item p { margin: 4px 0; font-size: 15px; }
+.review-item .diagram { margin-top: 8px; }
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .progress > div { transition: none; } }
+@media (max-width: 420px) {
+  body { font-size: 16px; }
+  .prompt { font-size: 18px; }
+  .topic-btn { flex-direction: column; align-items: flex-start; }
+  .topic-btn .meta { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+  .big-btn { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <button id="homeLink" class="brand" type="button">Bone Basics Study</button>
+  <span id="modeTag" class="tag"></span>
+</div></header>
+<main class="wrap">
+  <section id="home" aria-label="Home"></section>
+  <section id="quiz" aria-label="Question" hidden></section>
+  <section id="results" aria-label="Results" hidden></section>
+</main>
+
+<script>
+// ============================================================
+// ITEM BANK — edit here. Every item: id, topic, format, prompt,
+// answer data, and a one-sentence "explain" taken from the course.
+// Formats: "mc" (options[0] is correct; options are shuffled at
+// play time), "sata" (options + answer array), "match" (pairs of
+// [term, definition]), "sort" (boxes + tiles of [tile, boxName]).
+// "img": "longbone" shows the numbered long-bone diagram.
+// Source tags in "src": SG = Study Guide KEY, BB = Bone Basics slides,
+// TB = Types of Bones slides, FR = Fracture Repair slides, SD = Speed Dating.
+// "skill": "identify" marks "name this bone" items; identifyCap limits how
+// many appear in one 10-question set and in one Practice Test.
+// ============================================================
+const BANK = {
+  "topics": [
+    {"key": "functions",    "name": "Functions of Bones"},
+    {"key": "types",        "name": "Types of Bones"},
+    {"key": "longbone",     "name": "Parts of a Long Bone"},
+    {"key": "axial",        "name": "Axial vs. Appendicular"},
+    {"key": "cells",        "name": "Bone Cells & Remodeling"},
+    {"key": "ossification", "name": "Endochondral Ossification"},
+    {"key": "fracture",     "name": "Fracture Repair"},
+    {"key": "extra",        "name": "Extra: Fracture Types", "extra": true}
+  ],
+  "testAllocation": {"functions": 4, "types": 4, "longbone": 5, "axial": 5, "cells": 4, "ossification": 4, "fracture": 4},
+  "identifyCap": {"set": 2, "test": 1},
+  "items": [
+
+  /* ───────────────── 1. FUNCTIONS OF BONES ───────────────── */
+  {"id":"FN01","topic":"functions","format":"mc","src":"SG9",
+   "prompt":"How many functions of bone tissue did we learn?",
+   "options":["7","4","5","9"],
+   "explain":"The study guide lists 7 functions: support, protection, anchorage, mineral storage, blood cell formation, fat storage, and hormone production."},
+  {"id":"FN02","topic":"functions","format":"mc","src":"BB Support",
+   "prompt":"\"Bones provide a framework for the rest of the body.\" Which function is this?",
+   "options":["Support","Protection","Anchorage","Mineral storage"],
+   "explain":"Support means bones provide a framework for the rest of the body."},
+  {"id":"FN03","topic":"functions","format":"mc","src":"BB Blood Cell Formation",
+   "prompt":"Hematopoiesis (blood cell production) occurs in the…",
+   "options":["Red marrow","Yellow marrow","Compact bone","Articular cartilage"],
+   "explain":"Hematopoiesis, blood cell production, occurs in the red marrow."},
+  {"id":"FN04","topic":"functions","format":"mc","src":"BB Fat Storage",
+   "prompt":"Where is fat stored in bone?",
+   "options":["In the yellow marrow inside long bones","In the red marrow of the epiphyses","In the compact bone of the diaphysis","In the periosteum"],
+   "explain":"Fat is stored in the yellow marrow inside long bones."},
+  {"id":"FN05","topic":"functions","format":"mc","src":"BB Hormone Production",
+   "prompt":"Which hormone do bones produce?",
+   "options":["Osteocalcin","Osteoid","Hematopoiesis","Calcium"],
+   "explain":"Bones produce osteocalcin, a hormone that helps with many body processes."},
+  {"id":"FN06","topic":"functions","format":"mc","src":"BB Mineral Storage",
+   "prompt":"Bones are reservoirs for which two minerals?",
+   "options":["Calcium and phosphate","Iron and sodium","Calcium and iron","Potassium and phosphate"],
+   "explain":"Bones are reservoirs for calcium and phosphate and release them into the bloodstream as needed."},
+  {"id":"FN07","topic":"functions","format":"mc","src":"BB Anchorage",
+   "prompt":"Skeletal muscles attach to bones by…",
+   "options":["Tendons","Ligaments","Cartilage","Periosteum"],
+   "explain":"Skeletal muscles attach to bones by tendons, using bones as levers to move the body."},
+  {"id":"FN08","topic":"functions","format":"mc","src":"BB Protection",
+   "prompt":"The skull protects the…",
+   "options":["Brain","Spinal cord","Heart and lungs","Reproductive organs"],
+   "explain":"The skull protects the brain."},
+  {"id":"FN09","topic":"functions","format":"mc","src":"BB Protection",
+   "prompt":"The vertebrae protect the…",
+   "options":["Spinal cord","Brain","Heart and lungs","Reproductive organs"],
+   "explain":"The vertebrae protect the spinal cord."},
+  {"id":"FN10","topic":"functions","format":"mc","src":"BB Protection",
+   "prompt":"The ribcage protects the…",
+   "options":["Heart and lungs","Brain","Spinal cord","Reproductive organs"],
+   "explain":"The ribcage protects the heart and lungs."},
+  {"id":"FN11","topic":"functions","format":"mc","src":"SG10",
+   "prompt":"The pelvis protects the…",
+   "options":["Reproductive organs","Heart and lungs","Spinal cord","Brain"],
+   "explain":"The study guide lists the pelvis as protecting the internal reproductive organs."},
+  {"id":"FN12","topic":"functions","format":"mc","src":"SG9",
+   "prompt":"\"Muscles attach to and pull on bones, which causes movement.\" Which function is this?",
+   "options":["Anchorage","Support","Protection","Hormone production"],
+   "explain":"Anchorage: skeletal muscles attach to bones and use them as levers to move the body."},
+  {"id":"FN13","topic":"functions","format":"mc","src":"BB Mineral Storage",
+   "prompt":"\"Bones release calcium and phosphate into the bloodstream as needed.\" Which function is this?",
+   "options":["Mineral storage","Fat storage","Blood cell formation","Support"],
+   "explain":"Mineral storage: bones are reservoirs for calcium and phosphate and share them with organs that need them."},
+  {"id":"FN14","topic":"functions","format":"mc","src":"BB Blood Cell Formation",
+   "prompt":"What does the term hematopoiesis mean?",
+   "options":["Blood cell production","Fat storage","Bone remodeling","Hormone production"],
+   "explain":"Hematopoiesis means blood cell production, which happens in the red marrow."},
+  {"id":"FN15","topic":"functions","format":"mc","src":"SG11",
+   "prompt":"Which other type of tissue do bones work with to cause movement?",
+   "options":["Skeletal muscle tissue","Cartilage","Nervous tissue","Epithelial tissue"],
+   "explain":"Bones work together with skeletal muscle tissue to cause movement."},
+  {"id":"FN16","topic":"functions","format":"mc","src":"BB Anchorage",
+   "prompt":"Muscles use bones as ______ to move the body.",
+   "options":["Levers","Springs","Shields","Pumps"],
+   "explain":"Skeletal muscles attach to bones by tendons and use bones as levers to move the body."},
+  {"id":"FN17","topic":"functions","format":"mc","src":"SG5",
+   "prompt":"How many bones are in the adult human skeleton?",
+   "options":["206","196","216","260"],
+   "explain":"There are 206 bones in the adult human skeleton."},
+  {"id":"FN18","topic":"functions","format":"mc","src":"SG1",
+   "prompt":"What two types of tissue make up your skeleton?",
+   "options":["Cartilage and bone","Bone and muscle","Bone and tendon","Cartilage and muscle"],
+   "explain":"The skeleton is made of both bones and cartilage."},
+  {"id":"FN19","topic":"functions","format":"mc","src":"SG9",
+   "prompt":"Which function of bone takes place in the red marrow?",
+   "options":["Blood cell formation","Mineral storage","Fat storage","Protection"],
+   "explain":"Blood cell formation (hematopoiesis): all 3 types of blood cells are produced in red marrow."},
+  {"id":"FN20","topic":"functions","format":"mc","src":"SG9",
+   "prompt":"Which function is explained by \"bones surround vital organs, such as our brain or heart\"?",
+   "options":["Protection","Support","Anchorage","Hormone production"],
+   "explain":"Protection: bones surround and protect vital organs such as the brain and heart."},
+
+  {"id":"FN21","topic":"functions","format":"sata","src":"SG9",
+   "prompt":"Which of these are among the 7 functions of bone?",
+   "options":["Support","Protection","Anchorage","Mineral storage","Bone remodeling","Ossification"],
+   "answer":["Support","Protection","Anchorage","Mineral storage"],
+   "explain":"The 7 functions are support, protection, anchorage, mineral storage, blood cell formation, fat storage, and hormone production; remodeling and ossification are not on the list."},
+  {"id":"FN22","topic":"functions","format":"sata","src":"SG9",
+   "prompt":"Which of these are among the 7 functions of bone?",
+   "options":["Blood cell formation","Fat storage","Hormone production","Reduction","Bone remodeling"],
+   "answer":["Blood cell formation","Fat storage","Hormone production"],
+   "explain":"Blood cell formation, fat storage, and hormone production are three of the 7 functions of bone; reduction and remodeling are not on the list."},
+  {"id":"FN23","topic":"functions","format":"sata","src":"BB Protection",
+   "prompt":"Which organs are protected by the ribcage?",
+   "options":["Heart","Lungs","Brain","Spinal cord","Reproductive organs"],
+   "answer":["Heart","Lungs"],
+   "explain":"The ribcage protects the heart and lungs."},
+  {"id":"FN24","topic":"functions","format":"sata","src":"BB Mineral Storage",
+   "prompt":"Which minerals are stored in bone?",
+   "options":["Calcium","Phosphate","Iron","Sodium"],
+   "answer":["Calcium","Phosphate"],
+   "explain":"Bones are reservoirs for calcium and phosphate."},
+  {"id":"FN25","topic":"functions","format":"sata","src":"SG Long Bone rows",
+   "prompt":"Which of these does red marrow do?",
+   "options":["Produces red blood cells","Produces most white blood cells","Produces platelets","Stores fat","Fills the medullary cavity"],
+   "answer":["Produces red blood cells","Produces most white blood cells","Produces platelets"],
+   "explain":"Red marrow is full of stem cells that produce red blood cells, most white blood cells, and platelets; yellow marrow stores fat and fills the medullary cavity."},
+  {"id":"FN26","topic":"functions","format":"sata","src":"SG3-6, SG5 vascular",
+   "prompt":"Which statements about bone are true?",
+   "options":["Bones are living","Bones are made of cells","Bone is a type of connective tissue","Bone is avascular (has no blood vessels)","Bones are made of muscle tissue"],
+   "answer":["Bones are living","Bones are made of cells","Bone is a type of connective tissue"],
+   "explain":"Bones are living organs made of cells, bone is connective tissue, and bone is vascular (it has blood vessels)."},
+
+  {"id":"FN27","topic":"functions","format":"match","src":"SG9",
+   "prompt":"Match each function to its explanation.",
+   "pairs":[["Support","Provides a framework for the rest of the body"],
+            ["Protection","Surrounds and protects vital organs"],
+            ["Anchorage","Muscles attach to and pull on bones to cause movement"],
+            ["Mineral storage","Reservoir for calcium and phosphate"],
+            ["Blood cell formation","Hematopoiesis in the red marrow"]],
+   "explain":"These are the explanations given for the functions of bone in the study guide."},
+  {"id":"FN28","topic":"functions","format":"match","src":"SG9",
+   "prompt":"Match each function to its explanation.",
+   "pairs":[["Fat storage","Yellow marrow is stored inside long bones"],
+            ["Hormone production","Bones create osteocalcin"],
+            ["Blood cell formation","All 3 types of blood cells are produced in red marrow"],
+            ["Protection","Skull surrounds the brain"]],
+   "explain":"Fat is stored in yellow marrow, bones make the hormone osteocalcin, blood cells are made in red marrow, and bones protect organs."},
+  {"id":"FN29","topic":"functions","format":"match","src":"SG10",
+   "prompt":"Match each bone to the organ it protects.",
+   "pairs":[["Skull","Brain"],["Vertebrae","Spinal cord"],["Ribcage","Heart and lungs"],["Pelvis","Internal reproductive organs"]],
+   "explain":"Brain – skull; spinal cord – vertebrae; heart/lungs – ribcage; internal reproductive organs – pelvis."},
+  {"id":"FN30","topic":"functions","format":"match","src":"BB slides",
+   "prompt":"Match each term to its meaning.",
+   "pairs":[["Hematopoiesis","Blood cell production"],
+            ["Osteocalcin","Hormone produced by bones"],
+            ["Tendon","Attaches skeletal muscle to bone"],
+            ["Yellow marrow","Stores fat"],
+            ["Red marrow","Found inside the spongy tissue at the ends of bones"]],
+   "explain":"Hematopoiesis is blood cell production, bones make osteocalcin, tendons attach muscles to bones, yellow marrow stores fat, and red marrow sits in the spongy tissue at the ends of bones."},
+
+  {"id":"FN31","topic":"functions","format":"sort","src":"SG9",
+   "prompt":"Sort each item: is it one of the 7 functions of bone?",
+   "boxes":["One of the 7 functions","Not one of the 7 functions"],
+   "tiles":[["Support","One of the 7 functions"],["Protection","One of the 7 functions"],["Anchorage","One of the 7 functions"],["Mineral storage","One of the 7 functions"],["Fat storage","One of the 7 functions"],["Hormone production","One of the 7 functions"],["Bone remodeling","Not one of the 7 functions"],["Ossification","Not one of the 7 functions"],["Reduction","Not one of the 7 functions"]],
+   "explain":"The 7 functions are support, protection, anchorage, mineral storage, blood cell formation, fat storage, and hormone production; remodeling, ossification, and reduction are not on the list."},
+  {"id":"FN32","topic":"functions","format":"sort","src":"SG Long Bone rows; BB slides",
+   "prompt":"Sort each description into the marrow it describes.",
+   "boxes":["Red marrow","Yellow marrow"],
+   "tiles":[["Makes blood cells","Red marrow"],["Hematopoiesis happens here","Red marrow"],["Found inside the spongy bone at the ends of bones","Red marrow"],["Stores fat","Yellow marrow"],["Adipose tissue","Yellow marrow"],["Fills the medullary cavity","Yellow marrow"]],
+   "explain":"Red marrow makes blood cells and sits in the spongy bone at the ends; yellow marrow is fat (adipose tissue) that fills the medullary cavity."},
+  {"id":"FN33","topic":"functions","format":"sort","src":"SG10",
+   "prompt":"Sort each description into the function it describes.",
+   "boxes":["Protection","Anchorage"],
+   "tiles":[["The skull surrounds the brain","Protection"],["The ribcage surrounds the heart and lungs","Protection"],["The vertebrae surround the spinal cord","Protection"],["Muscles attach to bones by tendons","Anchorage"],["Bones are used as levers to move the body","Anchorage"],["Muscles pull on bones to cause movement","Anchorage"]],
+   "explain":"Protection means bones surround vital organs; anchorage means muscles attach to bones by tendons and use them as levers to move the body."},
+  {"id":"FN34","topic":"functions","format":"mc","src":"BB Hormone Production; SG9",
+   "prompt":"What does osteocalcin do?",
+   "options":["Helps with many body processes","Forms the matrix of bone","Stores fat in long bones","Clots blood after a fracture"],
+   "explain":"Osteocalcin is a hormone made by bones that helps with many body processes."},
+
+  /* ───────────────── 2. TYPES OF BONES ───────────────── */
+  {"id":"TY01","topic":"types","format":"mc","src":"TB Long",
+   "prompt":"Which type of bone has a length greater than its width?",
+   "options":["Long bone","Short bone","Flat bone","Irregular bone"],
+   "explain":"Long bones: length > width, with a long diaphysis and 2 epiphyses."},
+  {"id":"TY02","topic":"types","format":"mc","src":"TB Short",
+   "prompt":"Which type of bone is roughly cube-shaped?",
+   "options":["Short bone","Long bone","Flat bone","Irregular bone"],
+   "explain":"Short bones are roughly cube-shaped and usually sit together in a group."},
+  {"id":"TY03","topic":"types","format":"mc","src":"TB Flat",
+   "prompt":"Which type of bone is thin and usually a bit curved?",
+   "options":["Flat bone","Short bone","Irregular bone","Long bone"],
+   "explain":"Flat bones are thin, flat, and usually a bit curved; they protect internal organs."},
+  {"id":"TY04","topic":"types","format":"mc","src":"TB Irregular",
+   "prompt":"Which type of bone has a complicated shape that doesn't fit any other category?",
+   "options":["Irregular bone","Flat bone","Short bone","Sesamoid bone"],
+   "explain":"Irregular bones have complicated shapes and don't fit any other category (example: vertebrae)."},
+  {"id":"TY05","topic":"types","format":"mc","src":"TB Sesamoid; SG15",
+   "prompt":"Which type of bone forms within a tendon?",
+   "options":["Sesamoid bone","Long bone","Irregular bone","Flat bone"],
+   "explain":"Sesamoid bones form within a tendon; the patella is the example."},
+  {"id":"TY06","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The femur (thigh bone) is which type of bone?",
+   "options":["Long","Short","Flat","Irregular"],
+   "explain":"The femur is a long bone."},
+  {"id":"TY07","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The carpals (wrist bones) are which type of bone?",
+   "options":["Short","Long","Flat","Sesamoid"],
+   "explain":"The carpals are short bones."},
+  {"id":"TY08","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The vertebrae (backbones) are which type of bone?",
+   "options":["Irregular","Flat","Short","Long"],
+   "explain":"The vertebrae are irregular bones."},
+  {"id":"TY09","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The patella (kneecap) is which type of bone?",
+   "options":["Sesamoid","Long","Flat","Irregular"],
+   "explain":"The patella is a sesamoid bone; it forms within a tendon."},
+  {"id":"TY10","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The sternum (breastbone) is which type of bone?",
+   "options":["Flat","Long","Irregular","Short"],
+   "explain":"The sternum is a flat bone."},
+  {"id":"TY11","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The ribs are which type of bone?",
+   "options":["Flat","Long","Irregular","Short"],
+   "explain":"The ribs are flat bones."},
+  {"id":"TY12","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The tarsals (ankle bones) are which type of bone?",
+   "options":["Short","Long","Sesamoid","Irregular"],
+   "explain":"The tarsals are short bones."},
+  {"id":"TY13","topic":"types","format":"mc","src":"SG15",
+   "prompt":"The phalanges (finger bones) are which type of bone?",
+   "options":["Long","Short","Sesamoid","Flat"],
+   "explain":"The study guide key lists the phalanges as long bones."},
+  {"id":"TY14","topic":"types","format":"mc","src":"TB Short",
+   "prompt":"What is the job of short bones?",
+   "options":["Provide stability to joints that bear weight","Protect internal organs like the brain and heart","Support weight and enable movement","Protect tendons that run over joints from stress and wear"],
+   "explain":"Short bones provide stability to joints that bear weight."},
+  {"id":"TY15","topic":"types","format":"mc","src":"TB Sesamoid",
+   "prompt":"What is the job of sesamoid bones?",
+   "options":["Protect tendons that run over joints from stress and wear","Protect internal organs like the brain and heart","Support weight and enable movement","Store fat in the yellow marrow"],
+   "explain":"Sesamoid bones protect tendons that run over joints from stress and wear."},
+  {"id":"TY16","topic":"types","format":"mc","src":"TB Long",
+   "prompt":"What is the job of long bones?",
+   "options":["Support weight and enable movement","Protect internal organs like the brain and heart","Provide stability to joints that bear weight","Protect tendons that run over joints from stress and wear"],
+   "explain":"Long bones support weight and enable movement."},
+  {"id":"TY17","topic":"types","format":"mc","src":"TB Long",
+   "prompt":"Why are long bones curved?",
+   "options":["To increase shatter resistance","To store more fat","To make muscles attach more easily","To fit inside tendons"],
+   "explain":"Long bones are curved to increase shatter resistance."},
+  {"id":"TY18","topic":"types","format":"mc","src":"TB Long",
+   "prompt":"A long bone has a long ______ and 2 ______.",
+   "options":["diaphysis; epiphyses","epiphysis; diaphyses","periosteum; endosteums","medullary cavity; tendons"],
+   "explain":"A long bone has a long diaphysis (shaft) and 2 epiphyses (ends)."},
+  {"id":"TY19","topic":"types","format":"mc","src":"TB Short",
+   "prompt":"Which type of bone usually sits together with others of its kind in a group?",
+   "options":["Short bone","Long bone","Flat bone","Irregular bone"],
+   "explain":"Short bones usually sit together with other short bones in a group, like the wrist and ankle bones."},
+  {"id":"TY20","topic":"types","format":"mc","src":"TB Flat",
+   "prompt":"Besides protecting organs, flat bones provide a great place for ______ to attach.",
+   "options":["Muscles","Nerves","Blood vessels","Cartilage"],
+   "explain":"Flat bones provide a great place for muscles to attach."},
+  {"id":"TY21","topic":"types","format":"mc","src":"SG Long Bone 1",
+   "prompt":"Which of these is NOT a long bone?",
+   "options":["Carpals","Clavicle","Humerus","Fibula"],
+   "explain":"The carpals are short bones; the clavicle, humerus, and fibula are long bones."},
+  {"id":"TY22","topic":"types","format":"mc","src":"TB Long",
+   "prompt":"Which type of bone has a hollow medullary cavity on the inside?",
+   "options":["Long bone","Short bone","Flat bone","Sesamoid bone"],
+   "explain":"Long bones have a hollow medullary cavity on the inside."},
+  {"id":"TY23","topic":"types","format":"mc","src":"SG Long Bone 1",
+   "prompt":"Which of these is a long bone?",
+   "options":["Metacarpals","Scapula","Patella","Hyoid bone"],
+   "explain":"The metacarpals are among the 10 long bones circled in the study guide key."},
+
+  {"id":"TY24","topic":"types","format":"sata","src":"SG Long Bone 1",
+   "prompt":"Which of these are long bones?",
+   "options":["Femur","Humerus","Tibia","Carpals","Patella","Sternum"],
+   "answer":["Femur","Humerus","Tibia"],
+   "explain":"Femur, humerus, and tibia are long bones; carpals are short, the patella is sesamoid, and the sternum is flat."},
+  {"id":"TY25","topic":"types","format":"sata","src":"SG Long Bone 1",
+   "prompt":"Which of these are long bones?",
+   "options":["Clavicle","Phalanges","Radius","Tarsals","Ribs"],
+   "answer":["Clavicle","Phalanges","Radius"],
+   "explain":"The key counts the clavicle, phalanges, and radius as long bones; tarsals are short and ribs are flat."},
+  {"id":"TY26","topic":"types","format":"sata","src":"SG15",
+   "prompt":"Which of these are short bones?",
+   "options":["Carpals","Tarsals","Femur","Vertebrae","Sternum"],
+   "answer":["Carpals","Tarsals"],
+   "explain":"The carpals (wrist) and tarsals (ankle) are short bones."},
+  {"id":"TY27","topic":"types","format":"sata","src":"SG15",
+   "prompt":"Which of these are flat bones?",
+   "options":["Sternum","Ribs","Vertebrae","Femur","Carpals"],
+   "answer":["Sternum","Ribs"],
+   "explain":"The sternum and ribs are flat bones."},
+  {"id":"TY28","topic":"types","format":"sata","src":"TB Long",
+   "prompt":"Which statements are true about long bones?",
+   "options":["Length is greater than width","Have a hollow medullary cavity","Curved to increase shatter resistance","Roughly cube-shaped","Form within tendons"],
+   "answer":["Length is greater than width","Have a hollow medullary cavity","Curved to increase shatter resistance"],
+   "explain":"Long bones are longer than wide, curved for shatter resistance, and hollow inside (medullary cavity)."},
+  {"id":"TY29","topic":"types","format":"sata","src":"TB Sesamoid",
+   "prompt":"Which statements are true about sesamoid bones?",
+   "options":["They are buried within tendons","They protect tendons that run over joints","The patella is one","They are thin and flat","They make up the wrist"],
+   "answer":["They are buried within tendons","They protect tendons that run over joints","The patella is one"],
+   "explain":"Sesamoid bones are short bones buried within tendons that protect tendons over joints; the patella is the example."},
+  {"id":"TY30","topic":"types","format":"sata","src":"TB Flat",
+   "prompt":"Which statements are true about flat bones?",
+   "options":["Thin, flat, and usually a bit curved","Protect internal organs","Provide a great place for muscles to attach","Have a long diaphysis","Sit in a group at the wrist"],
+   "answer":["Thin, flat, and usually a bit curved","Protect internal organs","Provide a great place for muscles to attach"],
+   "explain":"Flat bones are thin and slightly curved, protect internal organs, and give muscles a place to attach."},
+
+  {"id":"TY31","topic":"types","format":"match","src":"TB slides",
+   "prompt":"Match each bone type to its description.",
+   "pairs":[["Long","Length greater than width; long diaphysis and 2 epiphyses"],
+            ["Short","Roughly cube-shaped; sit together in a group"],
+            ["Flat","Thin and usually a bit curved"],
+            ["Irregular","Complicated shape that fits no other category"],
+            ["Sesamoid","Short bone buried within a tendon"]],
+   "explain":"These are the descriptions of the five bone types from the Types of Bones slides."},
+  {"id":"TY32","topic":"types","format":"match","src":"SG15",
+   "prompt":"Match each bone to its type.",
+   "pairs":[["Femur","Long"],["Carpals","Short"],["Sternum","Flat"],["Vertebrae","Irregular"],["Patella","Sesamoid"]],
+   "explain":"Femur – long; carpals – short; sternum – flat; vertebrae – irregular; patella – sesamoid."},
+  {"id":"TY33","topic":"types","format":"match","src":"SG15",
+   "prompt":"Match each bone to its type.",
+   "pairs":[["Tarsals","Short"],["Ribs","Flat"],["Phalanges","Long"],["Patella","Sesamoid"]],
+   "explain":"Tarsals – short; ribs – flat; phalanges – long; patella – sesamoid."},
+  {"id":"TY34","topic":"types","format":"match","src":"TB slides",
+   "prompt":"Match each bone type to its job.",
+   "pairs":[["Long","Support weight and enable movement"],
+            ["Short","Provide stability to joints that bear weight"],
+            ["Flat","Protect internal organs"],
+            ["Sesamoid","Protect tendons that run over joints from stress and wear"]],
+   "explain":"Each bone type has a job listed on its slide: long bones support weight, short bones stabilize joints, flat bones protect organs, sesamoid bones protect tendons."},
+
+  {"id":"TY35","topic":"types","format":"sort","src":"SG15, SG Long Bone 1",
+   "prompt":"Sort each bone into its type.",
+   "boxes":["Long","Short","Flat","Irregular","Sesamoid"],
+   "tiles":[["Femur","Long"],["Humerus","Long"],["Phalanges","Long"],["Clavicle","Long"],["Carpals","Short"],["Tarsals","Short"],["Sternum","Flat"],["Ribs","Flat"],["Vertebrae","Irregular"],["Patella","Sesamoid"]],
+   "explain":"Long: femur, humerus, phalanges, clavicle; short: carpals, tarsals; flat: sternum, ribs; irregular: vertebrae; sesamoid: patella."},
+  {"id":"TY36","topic":"types","format":"sort","src":"SG Long Bone 1",
+   "prompt":"Sort each bone: is it a long bone?",
+   "boxes":["Long bone","Not a long bone"],
+   "tiles":[["Clavicle","Long bone"],["Ulna","Long bone"],["Tibia","Long bone"],["Fibula","Long bone"],["Radius","Long bone"],["Metacarpals","Long bone"],["Metatarsals","Long bone"],["Scapula","Not a long bone"],["Carpals","Not a long bone"],["Hyoid bone","Not a long bone"]],
+   "explain":"The key's 10 long bones are the clavicle, ulna, tibia, femur, humerus, fibula, radius, phalanges, metacarpals, and metatarsals."},
+  {"id":"TY37","topic":"types","format":"sort","src":"SG15, SG Long Bone 1",
+   "prompt":"Sort each bone into its type.",
+   "boxes":["Long","Short","Flat"],
+   "tiles":[["Humerus","Long"],["Radius","Long"],["Carpals","Short"],["Tarsals","Short"],["Sternum","Flat"],["Ribs","Flat"]],
+   "explain":"Humerus and radius are long; carpals and tarsals are short; sternum and ribs are flat."},
+  {"id":"TY38","topic":"types","format":"sort","src":"TB slides",
+   "prompt":"Sort each description into the bone type it describes.",
+   "boxes":["Long","Short","Flat","Irregular","Sesamoid"],
+   "tiles":[["Length greater than width","Long"],["Hollow medullary cavity inside","Long"],["Roughly cube-shaped","Short"],["Sit in a group at the wrist and ankle","Short"],["Thin and usually a bit curved","Flat"],["Protect internal organs like the brain and heart","Flat"],["Complicated shape, fits no other category","Irregular"],["Buried within a tendon","Sesamoid"]],
+   "explain":"Each description comes from the slide for that bone type."},
+  {"id":"TY39","topic":"types","format":"sort","src":"SG Long Bone 1",
+   "prompt":"Sort each bone: is it a long bone?",
+   "boxes":["Long bone","Not a long bone"],
+   "tiles":[["Femur","Long bone"],["Humerus","Long bone"],["Phalanges","Long bone"],["Patella","Not a long bone"],["Frontal bone","Not a long bone"],["Mandible","Not a long bone"],["Nasal bone","Not a long bone"],["Tarsals","Not a long bone"],["Cervical vertebrae","Not a long bone"],["Ribs","Not a long bone"]],
+   "explain":"Femur, humerus, and phalanges are long bones; the patella, frontal bone, mandible, nasal bone, tarsals, cervical vertebrae, and ribs are not."},
+  {"id":"TY40","topic":"types","format":"sata","src":"TB Flat; TB Sesamoid",
+   "prompt":"According to the slides, flat bones protect which of these?",
+   "options":["Brain","Heart","Lungs","Reproductive organs","Tendons that run over joints"],
+   "answer":["Brain","Heart","Lungs","Reproductive organs"],
+   "explain":"Flat bones protect internal organs such as the brain, heart, lungs, and reproductive organs; sesamoid bones protect tendons."},
+  {"id":"TY41","topic":"types","format":"mc","src":"TB Sesamoid",
+   "prompt":"Sesamoid bones are ______ bones that are buried within tendons.",
+   "options":["Short","Long","Flat","Irregular"],
+   "explain":"The slides define sesamoid bones as short bones that are buried within tendons."},
+
+  /* ───────────────── 3. PARTS OF A LONG BONE ───────────────── */
+  {"id":"LB01","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 1?",
+   "options":["Proximal epiphysis","Distal epiphysis","Diaphysis","Epiphyseal plate"],
+   "explain":"Number 1 brackets the proximal epiphysis, the end closer to the trunk (hip)."},
+  {"id":"LB02","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 2?",
+   "options":["Diaphysis","Proximal epiphysis","Medullary cavity","Periosteum"],
+   "explain":"Number 2 brackets the diaphysis, the shaft of the bone."},
+  {"id":"LB03","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 3?",
+   "options":["Distal epiphysis","Proximal epiphysis","Diaphysis","Articular cartilage"],
+   "explain":"Number 3 brackets the distal epiphysis, the end further from the trunk (knee)."},
+  {"id":"LB04","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 4?",
+   "options":["Articular cartilage","Epiphyseal plate","Periosteum","Spongy bone"],
+   "explain":"Number 4 points to the articular cartilage, which covers the ends of the bone and protects them from friction and shock."},
+  {"id":"LB05","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 5?",
+   "options":["Spongy bone","Compact bone","Yellow marrow","Articular cartilage"],
+   "explain":"Number 5 points to the spongy bone, the type of bone found in the epiphyses."},
+  {"id":"LB06","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 6?",
+   "options":["Compact bone","Spongy bone","Periosteum","Endosteum"],
+   "explain":"Number 6 points to the compact bone, the type of bone that makes up the diaphysis."},
+  {"id":"LB07","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 7?",
+   "options":["Red marrow","Yellow marrow","Spongy bone","Epiphyseal plate"],
+   "explain":"Number 7 points to the red marrow, found inside the spongy tissue at the ends of the bone."},
+  {"id":"LB08","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 8?",
+   "options":["Medullary cavity","Diaphysis","Endosteum","Red marrow"],
+   "explain":"Number 8 points to the medullary cavity, the hollow space inside the diaphysis."},
+  {"id":"LB09","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 9?",
+   "options":["Yellow marrow","Red marrow","Compact bone","Articular cartilage"],
+   "explain":"Number 9 points to the yellow marrow, the fat (adipose tissue) that fills the medullary cavity."},
+  {"id":"LB10","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 10?",
+   "options":["Periosteum","Endosteum","Compact bone","Articular cartilage"],
+   "explain":"Number 10 points to the periosteum, the membrane that covers the outside of the bone."},
+  {"id":"LB11","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 11?",
+   "options":["Endosteum","Periosteum","Medullary cavity","Compact bone"],
+   "explain":"Number 11 points to the endosteum, the membrane that lines the medullary cavity."},
+  {"id":"LB12","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 12?",
+   "options":["Epiphyseal plate","Articular cartilage","Periosteum","Spongy bone"],
+   "explain":"Number 12 points to the epiphyseal plate (growth plate), made of hyaline cartilage."},
+  {"id":"LB13","topic":"longbone","format":"mc","img":"longbone","src":"SG diagram",
+   "prompt":"On the diagram, which part is labeled 13?",
+   "options":["Blood vessel","Periosteum","Endosteum","Epiphyseal plate"],
+   "explain":"Number 13 points to a blood vessel entering the bone; bone is vascular."},
+
+  {"id":"LB14","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"A connective tissue membrane that covers the outside of the bones.",
+   "options":["Periosteum","Endosteum","Articular cartilage","Compact bone"],
+   "explain":"The periosteum is the connective tissue membrane that covers the outside of the bone (\"outside-bone\")."},
+  {"id":"LB15","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"A connective tissue membrane that lines the medullary cavity.",
+   "options":["Endosteum","Periosteum","Yellow marrow","Spongy bone"],
+   "explain":"The endosteum is the connective tissue membrane that lines the medullary cavity (\"inside-bone\")."},
+  {"id":"LB16","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"A tiny hole that the blood vessel threads through.",
+   "options":["Nutrient foramen","Medullary cavity","Endosteum","Epiphyseal plate"],
+   "explain":"The nutrient foramen is the tiny hole that a blood vessel threads through."},
+  {"id":"LB17","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Adipose tissue found within the medullary cavity.",
+   "options":["Yellow marrow","Red marrow","Spongy bone","Endosteum"],
+   "explain":"Yellow marrow is the adipose (fat) tissue found within the medullary cavity."},
+  {"id":"LB18","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Allows newly formed blood to exit the bone and enter the bloodstream; allows the bone tissue to receive nutrients, oxygen, and hormones.",
+   "options":["Nutrient foramen","Periosteum","Red marrow","Articular cartilage"],
+   "explain":"The nutrient foramen lets new blood exit the bone and lets nutrients, oxygen, and hormones reach the bone tissue."},
+  {"id":"LB19","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Filled with yellow marrow.",
+   "options":["Medullary cavity","Epiphyses","Periosteum","Spongy bone"],
+   "explain":"The medullary cavity is filled with yellow marrow."},
+  {"id":"LB20","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Found inside the spongy tissue at the ends of our bones.",
+   "options":["Red marrow","Yellow marrow","Compact bone","Endosteum"],
+   "explain":"Red marrow is found inside the spongy tissue at the ends of our bones."},
+  {"id":"LB21","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Full of bone-growing cells (osteoblasts) that allow our bones to grow in width.",
+   "options":["Periosteum","Endosteum","Epiphyseal plates","Medullary cavity"],
+   "explain":"The periosteum is full of osteoblasts that allow bones to grow in width."},
+  {"id":"LB22","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Full of stem cells that produce red blood cells, most white blood cells, and platelets.",
+   "options":["Red marrow","Yellow marrow","Periosteum","Articular cartilage"],
+   "explain":"Red marrow is full of stem cells that produce red blood cells, most white blood cells, and platelets."},
+  {"id":"LB23","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Growth plates.",
+   "options":["Epiphyseal plates","Articular cartilage","Epiphyses","Periosteum"],
+   "explain":"Epiphyseal plates are the growth plates."},
+  {"id":"LB24","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Hollow space inside the diaphysis.",
+   "options":["Medullary cavity","Nutrient foramen","Endosteum","Epiphysis"],
+   "explain":"The medullary cavity is the hollow space inside the diaphysis."},
+  {"id":"LB25","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Knobby ends of the bone.",
+   "options":["Epiphyses","Diaphysis","Epiphyseal plates","Articular cartilage"],
+   "explain":"The epiphyses are the knobby ends of the bone."},
+  {"id":"LB26","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Made of hyaline cartilage that ossifies and regrows repeatedly as you grow in height; ossify permanently between ages 18 and 25.",
+   "options":["Epiphyseal plates","Articular cartilage","Periosteum","Spongy bone"],
+   "explain":"The epiphyseal plates are hyaline cartilage that ossifies and regrows as you grow in height, and ossify permanently between ages 18 and 25."},
+  {"id":"LB27","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Name literally means \"inside-bone.\"",
+   "options":["Endosteum","Periosteum","Osteoid","Diaphysis"],
+   "explain":"Endosteum literally means \"inside-bone\"; it lines the medullary cavity."},
+  {"id":"LB28","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Name literally means \"outside-bone.\"",
+   "options":["Periosteum","Endosteum","Epiphysis","Osteoid"],
+   "explain":"Periosteum literally means \"outside-bone\"; it covers the outside of the bone."},
+  {"id":"LB29","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Protects the ends of our bones from friction and shock as joints move and we put weight on them.",
+   "options":["Articular cartilage","Epiphyseal plates","Periosteum","Spongy bone"],
+   "explain":"Articular cartilage protects the ends of our bones from friction and shock."},
+  {"id":"LB30","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Shaft of the bone.",
+   "options":["Diaphysis","Epiphysis","Medullary cavity","Periosteum"],
+   "explain":"The diaphysis is the shaft of the bone."},
+  {"id":"LB31","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"The epiphysis that is closer to the trunk.",
+   "options":["Proximal epiphysis","Distal epiphysis","Diaphysis","Epiphyseal plate"],
+   "explain":"The proximal epiphysis is the epiphysis closer to the trunk."},
+  {"id":"LB32","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"The epiphysis that is further from the trunk.",
+   "options":["Distal epiphysis","Proximal epiphysis","Diaphysis","Articular cartilage"],
+   "explain":"The distal epiphysis is the epiphysis further from the trunk."},
+  {"id":"LB33","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Type of bone found in the epiphyses.",
+   "options":["Spongy bone","Compact bone","Articular cartilage","Yellow marrow"],
+   "explain":"Spongy bone is the type of bone found in the epiphyses."},
+  {"id":"LB34","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Type of bone that makes up the diaphysis.",
+   "options":["Compact bone","Spongy bone","Hyaline cartilage","Red marrow"],
+   "explain":"Compact bone is the type of bone that makes up the diaphysis."},
+  {"id":"LB35","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"When it is lost, arthritis develops.",
+   "options":["Articular cartilage","Epiphyseal plate","Periosteum","Red marrow"],
+   "explain":"When articular cartilage is lost, arthritis develops."},
+  {"id":"LB36","topic":"longbone","format":"mc","src":"SG LB4",
+   "prompt":"If someone loses a significant amount of blood, how does the marrow in their bones change?",
+   "options":["Yellow marrow changes to red marrow to ramp up blood production","Red marrow changes to yellow marrow to store energy","The marrow turns into compact bone","Nothing changes in the marrow"],
+   "explain":"If someone is bleeding profusely, their yellow marrow changes to red marrow to ramp up blood production."},
+  {"id":"LB37","topic":"longbone","format":"mc","src":"SG LB5; FR Essential Qs",
+   "prompt":"Is bone vascular or avascular?",
+   "options":["Vascular","Avascular","Vascular only in the epiphyses","Avascular until a fracture happens"],
+   "explain":"Bone is vascular; without blood vessels it could not receive nutrients and oxygen, and blood created in the marrow could not leave."},
+  {"id":"LB38","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"Between what ages do the epiphyseal plates ossify permanently?",
+   "options":["18 and 25","12 and 15","30 and 35","5 and 10"],
+   "explain":"The epiphyseal plates ossify permanently between ages 18 and 25."},
+  {"id":"LB39","topic":"longbone","format":"mc","src":"SG LB3 row",
+   "prompt":"The epiphyseal plates are made of what material?",
+   "options":["Hyaline cartilage","Compact bone","Spongy bone","Adipose tissue"],
+   "explain":"The epiphyseal plates are made of hyaline cartilage."},
+
+  {"id":"LB40","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements describe the periosteum?",
+   "options":["Covers the outside of the bone","Name means \"outside-bone\"","Full of osteoblasts that let bones grow in width","Lines the medullary cavity","Stores fat"],
+   "answer":["Covers the outside of the bone","Name means \"outside-bone\"","Full of osteoblasts that let bones grow in width"],
+   "explain":"The periosteum (\"outside-bone\") covers the outside of the bone and is full of osteoblasts that let bones grow in width."},
+  {"id":"LB41","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements describe red marrow?",
+   "options":["Found inside the spongy bone at the ends of bones","Produces red blood cells, most white blood cells, and platelets","Fills the medullary cavity","Is adipose tissue","Lines the medullary cavity"],
+   "answer":["Found inside the spongy bone at the ends of bones","Produces red blood cells, most white blood cells, and platelets"],
+   "explain":"Red marrow sits inside the spongy bone at the ends of bones and makes blood cells; yellow marrow is the fat in the medullary cavity."},
+  {"id":"LB42","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements describe the epiphyseal plates?",
+   "options":["They are the growth plates","Made of hyaline cartilage","Let you grow in height","Ossify permanently between ages 18 and 25","Protect the ends of bones from friction"],
+   "answer":["They are the growth plates","Made of hyaline cartilage","Let you grow in height","Ossify permanently between ages 18 and 25"],
+   "explain":"Epiphyseal plates are growth plates of hyaline cartilage that let you grow in height until they ossify permanently between 18 and 25."},
+  {"id":"LB43","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements are true about the medullary cavity?",
+   "options":["Hollow space inside the diaphysis","Filled with yellow marrow","Lined by the endosteum","Made of spongy bone","Found in the epiphyses"],
+   "answer":["Hollow space inside the diaphysis","Filled with yellow marrow","Lined by the endosteum"],
+   "explain":"The medullary cavity is the hollow space inside the diaphysis, filled with yellow marrow and lined by the endosteum."},
+  {"id":"LB44","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements describe articular cartilage?",
+   "options":["Protects the ends of bones from friction and shock","When it is lost, arthritis develops","Covers the outside of the whole bone","Produces blood cells"],
+   "answer":["Protects the ends of bones from friction and shock","When it is lost, arthritis develops"],
+   "explain":"Articular cartilage protects the ends of bones from friction and shock; when it is lost, arthritis develops."},
+  {"id":"LB45","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements describe the nutrient foramen?",
+   "options":["A tiny hole that a blood vessel threads through","Lets newly formed blood exit the bone","Lets bone tissue receive nutrients, oxygen, and hormones","It is the shaft of the bone","It is filled with yellow marrow"],
+   "answer":["A tiny hole that a blood vessel threads through","Lets newly formed blood exit the bone","Lets bone tissue receive nutrients, oxygen, and hormones"],
+   "explain":"The nutrient foramen is a tiny hole for a blood vessel; it lets new blood leave the bone and lets nutrients, oxygen, and hormones in."},
+  {"id":"LB46","topic":"longbone","format":"sata","src":"SG LB3 rows",
+   "prompt":"Which statements describe the diaphysis?",
+   "options":["The shaft of the bone","Made of compact bone","Has the medullary cavity inside it","The knobby end of the bone","Made of spongy bone"],
+   "answer":["The shaft of the bone","Made of compact bone","Has the medullary cavity inside it"],
+   "explain":"The diaphysis is the shaft, made of compact bone, with the hollow medullary cavity inside."},
+
+  {"id":"LB47","topic":"longbone","format":"match","img":"longbone","src":"SG diagram",
+   "prompt":"Match each number on the diagram to its part.",
+   "pairs":[["1","Proximal epiphysis"],["2","Diaphysis"],["3","Distal epiphysis"],["4","Articular cartilage"]],
+   "explain":"1 is the proximal epiphysis, 2 the diaphysis, 3 the distal epiphysis, and 4 the articular cartilage."},
+  {"id":"LB48","topic":"longbone","format":"match","img":"longbone","src":"SG diagram",
+   "prompt":"Match each number on the diagram to its part.",
+   "pairs":[["5","Spongy bone"],["6","Compact bone"],["9","Yellow marrow"],["10","Periosteum"]],
+   "explain":"5 is spongy bone, 6 compact bone, 9 yellow marrow, and 10 the periosteum."},
+  {"id":"LB49","topic":"longbone","format":"match","img":"longbone","src":"SG diagram",
+   "prompt":"Match each number on the diagram to its part.",
+   "pairs":[["10","Periosteum"],["11","Endosteum"],["12","Epiphyseal plate"],["13","Blood vessel"],["8","Medullary cavity"]],
+   "explain":"10 is the periosteum, 11 the endosteum, 12 the epiphyseal plate, 13 a blood vessel, and 8 the medullary cavity."},
+  {"id":"LB50","topic":"longbone","format":"match","img":"longbone","src":"SG diagram",
+   "prompt":"Match each number on the diagram to its part.",
+   "pairs":[["1","Proximal epiphysis"],["6","Compact bone"],["10","Periosteum"],["12","Epiphyseal plate"],["4","Articular cartilage"]],
+   "explain":"1 proximal epiphysis, 6 compact bone, 10 periosteum, 12 epiphyseal plate, 4 articular cartilage."},
+  {"id":"LB51","topic":"longbone","format":"match","img":"longbone","src":"SG diagram",
+   "prompt":"Match each number on the diagram to its part.",
+   "pairs":[["2","Diaphysis"],["3","Distal epiphysis"],["5","Spongy bone"],["8","Medullary cavity"],["11","Endosteum"],["13","Blood vessel"]],
+   "explain":"2 diaphysis, 3 distal epiphysis, 5 spongy bone, 8 medullary cavity, 11 endosteum, 13 blood vessel."},
+  {"id":"LB52","topic":"longbone","format":"match","src":"SG LB3 rows",
+   "prompt":"Match each description to the structure.",
+   "pairs":[["Covers the outside of the bone","Periosteum"],
+            ["Lines the medullary cavity","Endosteum"],
+            ["Hollow space inside the diaphysis","Medullary cavity"],
+            ["Adipose tissue in the medullary cavity","Yellow marrow"],
+            ["Produces red blood cells, most white blood cells, and platelets","Red marrow"]],
+   "explain":"The periosteum covers the outside, the endosteum lines the medullary cavity (the hollow space in the diaphysis), yellow marrow is adipose tissue, and red marrow makes blood cells."},
+  {"id":"LB53","topic":"longbone","format":"match","src":"SG LB3 rows",
+   "prompt":"Match each description to the structure.",
+   "pairs":[["Protects the ends of bones from friction and shock","Articular cartilage"],
+            ["Growth plates","Epiphyseal plates"],
+            ["Shaft of the bone","Diaphysis"],
+            ["Knobby ends of the bone","Epiphyses"],
+            ["Tiny hole a blood vessel threads through","Nutrient foramen"]],
+   "explain":"Articular cartilage protects the ends, epiphyseal plates are the growth plates, the diaphysis is the shaft, the epiphyses are the knobby ends, and the nutrient foramen is the hole for a blood vessel."},
+  {"id":"LB54","topic":"longbone","format":"match","src":"SG LB3 rows",
+   "prompt":"Match each description to the structure.",
+   "pairs":[["The epiphysis closer to the trunk","Proximal epiphysis"],
+            ["The epiphysis further from the trunk","Distal epiphysis"],
+            ["Type of bone found in the epiphyses","Spongy bone"],
+            ["Type of bone that makes up the diaphysis","Compact bone"]],
+   "explain":"Proximal is closer to the trunk, distal is further; epiphyses are spongy bone and the diaphysis is compact bone."},
+  {"id":"LB55","topic":"longbone","format":"match","src":"SG LB3 rows",
+   "prompt":"Match each meaning or nickname to the structure.",
+   "pairs":[["\"Inside-bone\"","Endosteum"],["\"Outside-bone\"","Periosteum"],["\"Growth plates\"","Epiphyseal plates"],["\"Shaft\"","Diaphysis"],["When lost, arthritis develops","Articular cartilage"]],
+   "explain":"Endosteum means inside-bone, periosteum means outside-bone, epiphyseal plates are growth plates, and the diaphysis is the shaft."},
+
+  {"id":"LB56","topic":"longbone","format":"sort","src":"SG LB3 rows",
+   "prompt":"Sort each structure by where it is found in a long bone.",
+   "boxes":["In the epiphyses (ends)","In the diaphysis (shaft)"],
+   "tiles":[["Spongy bone","In the epiphyses (ends)"],["Red marrow","In the epiphyses (ends)"],["Articular cartilage","In the epiphyses (ends)"],["Compact bone","In the diaphysis (shaft)"],["Medullary cavity","In the diaphysis (shaft)"],["Yellow marrow","In the diaphysis (shaft)"]],
+   "explain":"The epiphyses hold spongy bone, red marrow, and articular cartilage; the diaphysis is compact bone around the medullary cavity full of yellow marrow."},
+  {"id":"LB57","topic":"longbone","format":"sort","src":"SG LB3 rows; SG Cells 3",
+   "prompt":"Sort each description into the membrane it describes.",
+   "boxes":["Periosteum","Endosteum"],
+   "tiles":[["Covers the outside of the bone","Periosteum"],["Name means \"outside-bone\"","Periosteum"],["Full of osteoblasts that let bones grow in width","Periosteum"],["Lines the medullary cavity","Endosteum"],["Name means \"inside-bone\"","Endosteum"],["Osteoclasts here shave away bone to widen the medullary cavity","Endosteum"]],
+   "explain":"The periosteum is the outside membrane where bones grow wider; the endosteum lines the medullary cavity, where osteoclasts widen the cavity."},
+  {"id":"LB58","topic":"longbone","format":"sort","src":"SG LB3 rows",
+   "prompt":"Sort each description into the marrow it describes.",
+   "boxes":["Red marrow","Yellow marrow"],
+   "tiles":[["Produces platelets","Red marrow"],["Produces most white blood cells","Red marrow"],["Inside the spongy bone at the bone ends","Red marrow"],["Adipose tissue","Yellow marrow"],["Fills the medullary cavity","Yellow marrow"],["Stores fat","Yellow marrow"]],
+   "explain":"Red marrow makes blood cells and platelets in the spongy bone; yellow marrow is the fat that fills the medullary cavity."},
+  {"id":"LB59","topic":"longbone","format":"sort","src":"SG LB3 rows",
+   "prompt":"Sort each structure: is it bone tissue or cartilage?",
+   "boxes":["Bone tissue","Cartilage"],
+   "tiles":[["Compact bone","Bone tissue"],["Spongy bone","Bone tissue"],["Diaphysis","Bone tissue"],["Osteoid (the matrix of bone)","Bone tissue"],["Articular cartilage","Cartilage"],["Epiphyseal plates","Cartilage"]],
+   "explain":"Compact and spongy bone, the diaphysis, and osteoid are bone; articular cartilage and the epiphyseal plates are cartilage."},
+  {"id":"LB60","topic":"longbone","format":"match","img":"longbone","src":"SG diagram",
+   "prompt":"Match each number on the diagram to its part.",
+   "pairs":[["7","Red marrow"],["12","Epiphyseal plate"],["6","Compact bone"],["13","Blood vessel"],["2","Diaphysis"]],
+   "explain":"7 is red marrow, 12 the epiphyseal plate, 6 compact bone, 13 a blood vessel, and 2 the diaphysis."},
+  {"id":"LB61","topic":"longbone","format":"sata","src":"SG LB5",
+   "prompt":"Bone is vascular. Why does it need blood vessels?",
+   "options":["So bone can receive nutrients and oxygen","So blood created in the marrow can leave the bone","So bone can store fat","So bone can bend without breaking"],
+   "answer":["So bone can receive nutrients and oxygen","So blood created in the marrow can leave the bone"],
+   "explain":"Without blood vessels, bone could not receive nutrients and oxygen, and blood created in the marrow could not leave the bone."},
+
+  /* ───────────────── 4. AXIAL vs. APPENDICULAR ───────────────── */
+  {"id":"AX01","topic":"axial","format":"mc","src":"BB Divisions",
+   "prompt":"What do we call the bones on or near the midline of the body (think sagittal plane)?",
+   "options":["Axial skeleton","Appendicular skeleton","Long bones","Flat bones"],
+   "explain":"The axial skeleton is the bones on or near the midline: skull, vertebral column, and ribcage."},
+  {"id":"AX02","topic":"axial","format":"mc","src":"BB Divisions",
+   "prompt":"Limbs and the bones that attach limbs to the trunk belong to the…",
+   "options":["Appendicular skeleton","Axial skeleton","Vertebral column","Ribcage"],
+   "explain":"The appendicular skeleton is the bones away from the midline: limbs and the bones that attach limbs to the trunk."},
+  {"id":"AX03","topic":"axial","format":"mc","src":"SG14",
+   "prompt":"Which of these bones is part of the axial skeleton?",
+   "options":["Skull","Femur","Scapula","Carpals"],
+   "explain":"The skull is axial; the femur, scapula, and carpals are appendicular."},
+  {"id":"AX04","topic":"axial","format":"mc","src":"SG14",
+   "prompt":"Which of these bones is part of the appendicular skeleton?",
+   "options":["Humerus","Sternum","Ribs","Mandible"],
+   "explain":"The humerus (upper arm) is appendicular; the sternum, ribs, and mandible are axial."},
+  {"id":"AX05","topic":"axial","format":"mc","src":"SG14",
+   "prompt":"The scapula (shoulder blade) belongs to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The scapula (shoulder blade) is appendicular; shoulder bones are one of the appendicular examples on the slides."},
+  {"id":"AX06","topic":"axial","format":"mc","src":"BB Challenge",
+   "prompt":"The lumbar vertebrae belong to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The lumbar vertebrae are part of the vertebral column, which is axial."},
+  {"id":"AX07","topic":"axial","format":"mc","src":"SG14; BB Challenge",
+   "prompt":"The pelvis (hip bones) belongs to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The slides and study guide classify the pelvis (hip bones) as appendicular."},
+  {"id":"AX08","topic":"axial","format":"mc","src":"SG14",
+   "prompt":"The clavicle (collar bone) belongs to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The study guide marks the clavicle (collar bone) as appendicular."},
+  {"id":"AX09","topic":"axial","format":"mc","src":"SG14",
+   "prompt":"The mandible (lower jawbone) belongs to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The mandible is part of the skull, which is axial."},
+  {"id":"AX10","topic":"axial","format":"mc","src":"BB Divisions",
+   "prompt":"Which of these is NOT part of the axial skeleton?",
+   "options":["Hip bones","Skull","Vertebral column","Ribcage"],
+   "explain":"The axial skeleton is the skull, vertebral column, and ribcage; hip bones are appendicular."},
+  {"id":"AX11","topic":"axial","format":"mc","src":"BB Divisions",
+   "prompt":"Which of these is an example of the axial skeleton given on the slides?",
+   "options":["Vertebral column","Arms","Shoulder bones","Legs"],
+   "explain":"Axial examples on the slides: skull, vertebral column, ribcage."},
+
+  {"id":"SD01","skill":"identify","topic":"axial","format":"mc","src":"SD1",
+   "prompt":"Which bone is this? \"We are the bones that make up your wrist. There are 8 of us per wrist, 16 of us total!\"",
+   "options":["Carpals","Tarsals","Metacarpals","Phalanges"],
+   "explain":"The carpals are the 8 wrist bones per wrist (16 total); they are appendicular."},
+  {"id":"SD02","skill":"identify","topic":"axial","format":"mc","src":"SD2",
+   "prompt":"Which bone is this? \"We are the vertebrae that make up the portion of your backbone in your lower back. There are 5 of us total.\"",
+   "options":["Lumbar vertebrae","Cervical vertebrae","Thoracic vertebrae","Sacrum"],
+   "explain":"The 5 lumbar vertebrae are in the lower back; they are axial."},
+  {"id":"SD03","skill":"identify","topic":"axial","format":"mc","src":"SD3",
+   "prompt":"Which bone is this? \"I am the cranial bone that makes up your forehead. There is only 1 of me.\"",
+   "options":["Frontal bone","Parietal bone","Temporal bone","Occipital bone"],
+   "explain":"The frontal bone makes up the forehead; it is part of the skull (axial)."},
+  {"id":"SD04","skill":"identify","topic":"axial","format":"mc","src":"SD4",
+   "prompt":"Which bone is this? \"I am the shoulder blade. There are 2 of me.\"",
+   "options":["Scapula","Clavicle","Sternum","Humerus"],
+   "explain":"The scapula is the shoulder blade; it is appendicular."},
+  {"id":"SD05","skill":"identify","topic":"axial","format":"mc","src":"SD5",
+   "prompt":"Which bone is this? \"I am the portion of your vertebral column at the base which attaches to the pelvis. There is 1 of me when you are fully grown, but I was originally 5 parts!\"",
+   "options":["Sacrum","Coccyx","Lumbar vertebrae","Hip bones"],
+   "explain":"The sacrum is the base of the vertebral column attaching to the pelvis; it is axial."},
+  {"id":"SD06","skill":"identify","topic":"axial","format":"mc","src":"SD6",
+   "prompt":"Which bone is this? \"I am the breastbone. There is 1 of me, but I am broken into 3 parts. I protect your heart and lungs.\"",
+   "options":["Sternum","Ribs","Clavicle","Scapula"],
+   "explain":"The sternum is the breastbone, in 3 parts; it is axial."},
+  {"id":"SD07","skill":"identify","topic":"axial","format":"mc","src":"SD7",
+   "prompt":"Which bone is this? \"I am a bone within your forearm. There are 2 of me. I make up most of your wrist joint.\"",
+   "options":["Radius","Ulna","Humerus","Tibia"],
+   "explain":"The radius is the forearm bone that makes up most of the wrist joint; it is appendicular."},
+  {"id":"SD08","skill":"identify","topic":"axial","format":"mc","src":"SD8",
+   "prompt":"Which bone is this? \"We are the bones that make up your ankle. There are 7 of us per ankle, 14 total. We include the calcaneus bone and talus.\"",
+   "options":["Tarsals","Carpals","Metatarsals","Phalanges"],
+   "explain":"The tarsals are the 7 ankle bones per ankle, including the calcaneus and talus; they are appendicular."},
+  {"id":"SD09","skill":"identify","topic":"axial","format":"mc","src":"SD9",
+   "prompt":"Which bone is this? \"I am a cranial bone that is found on the side and top of your skull. There are 2 of me.\"",
+   "options":["Parietal bone","Frontal bone","Temporal bone","Occipital bone"],
+   "explain":"The parietal bones are on the side and top of the skull; they are axial."},
+  {"id":"SD10","skill":"identify","topic":"axial","format":"mc","src":"SD10",
+   "prompt":"Which bone is this? \"We are the bones that are found in the palm of your hand. There are 5 of us per hand, 10 total!\"",
+   "options":["Metacarpals","Carpals","Metatarsals","Phalanges"],
+   "explain":"The metacarpals are the 5 palm bones per hand; they are appendicular."},
+  {"id":"SD11","skill":"identify","topic":"axial","format":"mc","src":"SD11",
+   "prompt":"Which bone is this? \"I am a portion of your vertebral column that is also known as the tailbone. There is 1 of me when you are fully grown, but I was originally 4 parts!\"",
+   "options":["Coccyx","Sacrum","Lumbar vertebrae","Hip bones"],
+   "explain":"The coccyx is the tailbone, originally 4 parts; it is axial."},
+  {"id":"SD12","skill":"identify","topic":"axial","format":"mc","src":"SD12",
+   "prompt":"Which bone is this? \"I am the thigh bone. I am the longest and strongest bone in the human body. There are 2 of me.\"",
+   "options":["Femur","Humerus","Tibia","Fibula"],
+   "explain":"The femur is the thigh bone, the longest and strongest bone in the body; it is appendicular."},
+  {"id":"SD13","skill":"identify","topic":"axial","format":"mc","src":"SD13",
+   "prompt":"Which bone is this? \"I am a cranial bone that is found on the side and bottom of your skull. There are 2 of me. Your ear sits on top of me.\"",
+   "options":["Temporal bone","Parietal bone","Occipital bone","Zygomatic bone"],
+   "explain":"The temporal bones are on the side and bottom of the skull, under the ears; they are axial."},
+  {"id":"SD14","skill":"identify","topic":"axial","format":"mc","src":"SD14",
+   "prompt":"Which bone is this? \"We are the vertebrae that make up the portion of your backbone in your neck. There are 7 of us total.\"",
+   "options":["Cervical vertebrae","Thoracic vertebrae","Lumbar vertebrae","Coccyx"],
+   "explain":"The 7 cervical vertebrae are in the neck; they are axial."},
+  {"id":"SD15","skill":"identify","topic":"axial","format":"mc","src":"SD15",
+   "prompt":"Which bone is this? \"I am the collar bone. I am the most commonly fractured bone in the human body! There are 2 of me.\"",
+   "options":["Clavicle","Scapula","Sternum","Humerus"],
+   "explain":"The clavicle is the collar bone, the most commonly fractured bone; it is appendicular."},
+  {"id":"SD16","skill":"identify","topic":"axial","format":"mc","src":"SD16",
+   "prompt":"Which bone is this? \"I am the kneecap. I prevent tendons of the leg from getting pinched in the knee joint. There are 2 of me.\"",
+   "options":["Patella","Tarsals","Tibia","Femur"],
+   "explain":"The patella is the kneecap, a sesamoid bone; it is appendicular."},
+  {"id":"SD17","skill":"identify","topic":"axial","format":"mc","src":"SD17",
+   "prompt":"Which bone is this? \"I am the lower jaw. I am the strongest bone of all facial and cranial bones. I am the only bone in the skull that moves.\"",
+   "options":["Mandible","Maxillae","Zygomatic bone","Temporal bone"],
+   "explain":"The mandible is the lower jaw and the only bone in the skull that moves; it is axial."},
+  {"id":"SD18","skill":"identify","topic":"axial","format":"mc","src":"SD18",
+   "prompt":"Which bone is this? \"There are 24 of us. We make up the walls of your thoracic cavity. We protect your heart and lungs.\"",
+   "options":["Ribs","Sternum","Thoracic vertebrae","Clavicle"],
+   "explain":"The 24 ribs make up the walls of the thoracic cavity; they are axial."},
+  {"id":"SD19","skill":"identify","topic":"axial","format":"mc","src":"SD19",
+   "prompt":"Which bone is this? \"I am a bone in your forearm. There are 2 of me. I make up most of your elbow.\"",
+   "options":["Ulna","Radius","Humerus","Fibula"],
+   "explain":"The ulna is the forearm bone that makes up most of the elbow; it is appendicular."},
+  {"id":"SD20","skill":"identify","topic":"axial","format":"mc","src":"SD20",
+   "prompt":"Which bone is this? \"We are the bones that make up your foot. There are 5 of us per foot, 10 total!\"",
+   "options":["Metatarsals","Metacarpals","Tarsals","Phalanges"],
+   "explain":"The metatarsals are the 5 foot bones per foot; they are appendicular."},
+  {"id":"SD21","skill":"identify","topic":"axial","format":"mc","src":"SD21",
+   "prompt":"Which bone is this? \"We are the vertebrae that make up the portion of your backbone that attaches to your ribcage. There are 12 of us total.\"",
+   "options":["Thoracic vertebrae","Cervical vertebrae","Lumbar vertebrae","Ribs"],
+   "explain":"The 12 thoracic vertebrae attach to the ribcage; they are axial."},
+  {"id":"SD22","skill":"identify","topic":"axial","format":"mc","src":"SD22",
+   "prompt":"Which bone is this? \"We are your hips. We are broken down into the ilium, ischium, and pubis. There are 2 of us connected together.\"",
+   "options":["Hip (coxal) bones","Sacrum","Femur","Lumbar vertebrae"],
+   "explain":"The hip (coxal) bones are made of the ilium, ischium, and pubis; they are appendicular."},
+  {"id":"SD23","skill":"identify","topic":"axial","format":"mc","src":"SD23",
+   "prompt":"Which bone is this? \"I am the shin bone. There are 2 of me. I am a weight-bearing bone of the lower leg.\"",
+   "options":["Tibia","Fibula","Femur","Patella"],
+   "explain":"The tibia is the weight-bearing shin bone; it is appendicular."},
+  {"id":"SD24","skill":"identify","topic":"axial","format":"mc","src":"SD24",
+   "prompt":"Which bone is this? \"I am the longest and strongest bone of the upper extremity. There are 2 of me total.\"",
+   "options":["Humerus","Femur","Radius","Ulna"],
+   "explain":"The humerus is the longest and strongest bone of the upper extremity (arm); it is appendicular."},
+  {"id":"SD25","skill":"identify","topic":"axial","format":"mc","src":"SD25",
+   "prompt":"Which bone is this? \"I am the cheekbone. There are 2 of me.\"",
+   "options":["Zygomatic bone","Maxillae","Mandible","Temporal bone"],
+   "explain":"The zygomatic bones are the cheekbones; they are part of the skull (axial)."},
+  {"id":"SD26","skill":"identify","topic":"axial","format":"mc","src":"SD26",
+   "prompt":"Which bone is this? \"I am a bone of the lower leg. I am non-weight bearing but am helpful for balance! There are 2 of me.\"",
+   "options":["Fibula","Tibia","Femur","Ulna"],
+   "explain":"The fibula is the non-weight-bearing lower leg bone that helps with balance; it is appendicular."},
+  {"id":"SD27","skill":"identify","topic":"axial","format":"mc","src":"SD27",
+   "prompt":"Which bone is this? \"We are the bones that are found in your fingers and toes. There are 14 of us per hand/foot, 56 total!\"",
+   "options":["Phalanges","Metacarpals","Metatarsals","Carpals"],
+   "explain":"The phalanges are the finger and toe bones, 14 per hand or foot; they are appendicular."},
+  {"id":"SD28","skill":"identify","topic":"axial","format":"mc","src":"SD28",
+   "prompt":"Which bone is this? \"There are 2 of us. We are a facial bone that makes up your upper jaw. Teeth are embedded into sockets in us.\"",
+   "options":["Maxillae","Mandible","Zygomatic bone","Frontal bone"],
+   "explain":"The maxillae form the upper jaw and hold the upper teeth; they are part of the skull (axial)."},
+  {"id":"SD29","skill":"identify","topic":"axial","format":"mc","src":"SD29",
+   "prompt":"Which bone is this? \"I am a cranial bone that is found on the back of your skull. There is 1 of me.\"",
+   "options":["Occipital bone","Parietal bone","Temporal bone","Frontal bone"],
+   "explain":"The occipital bone is at the back of the skull; it is axial."},
+
+  {"id":"AX12","topic":"axial","format":"sata","src":"BB Divisions",
+   "prompt":"Which of these belong to the axial skeleton?",
+   "options":["Skull","Vertebral column","Ribcage","Limbs","Shoulder bones","Hip bones"],
+   "answer":["Skull","Vertebral column","Ribcage"],
+   "explain":"Axial means the skull, vertebral column, and ribcage; appendicular means the limbs, shoulder bones, and hip bones."},
+  {"id":"AX13","topic":"axial","format":"sata","src":"SG14",
+   "prompt":"Which of these belong to the appendicular skeleton?",
+   "options":["Humerus","Scapula","Pelvis","Mandible","Ribs"],
+   "answer":["Humerus","Scapula","Pelvis"],
+   "explain":"The humerus, scapula, and pelvis are appendicular; the mandible and ribs are axial."},
+  {"id":"AX14","topic":"axial","format":"sata","src":"SG14; BB Challenge",
+   "prompt":"Which of these belong to the axial skeleton?",
+   "options":["Mandible","Sternum","Lumbar vertebrae","Clavicle","Tibia"],
+   "answer":["Mandible","Sternum","Lumbar vertebrae"],
+   "explain":"The mandible, sternum, and lumbar vertebrae are axial; the clavicle and tibia are appendicular."},
+  {"id":"AX15","topic":"axial","format":"sata","src":"SG14",
+   "prompt":"Which of these belong to the appendicular skeleton?",
+   "options":["Phalanges","Tibia","Clavicle","Vertebral column","Cranium","Sacrum"],
+   "answer":["Phalanges","Tibia","Clavicle"],
+   "explain":"Phalanges, tibia, and clavicle are appendicular; the vertebral column, cranium, and sacrum are axial."},
+  {"id":"AX16","topic":"axial","format":"sata","src":"BB Divisions; SD",
+   "prompt":"Which of these belong to the axial skeleton?",
+   "options":["Cranium","Ribs","Sacrum","Coccyx","Patella","Radius"],
+   "answer":["Cranium","Ribs","Sacrum","Coccyx"],
+   "explain":"Cranium, ribs, sacrum, and coccyx are axial (skull, ribcage, vertebral column); the patella and radius are appendicular."},
+  {"id":"AX17","topic":"axial","format":"sata","src":"BB Divisions",
+   "prompt":"Which statements are true about the appendicular skeleton?",
+   "options":["Bones away from the midline","Includes the limbs","Includes bones that attach limbs to the trunk","Includes the skull","Includes the ribcage"],
+   "answer":["Bones away from the midline","Includes the limbs","Includes bones that attach limbs to the trunk"],
+   "explain":"The appendicular skeleton is bones away from the midline: limbs and the bones that attach limbs to the trunk."},
+  {"id":"AX18","skill":"identify","topic":"axial","format":"sata","src":"SD",
+   "prompt":"Which of these are cranial (skull) bones?",
+   "options":["Frontal bone","Parietal bone","Temporal bone","Occipital bone","Scapula","Clavicle"],
+   "answer":["Frontal bone","Parietal bone","Temporal bone","Occipital bone"],
+   "explain":"The Speed Dating stations call the frontal, parietal, temporal, and occipital bones cranial bones; the scapula and clavicle are not cranial bones."},
+
+  {"id":"AX19","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each bone to its Speed Dating clue.",
+   "pairs":[["Carpals","8 bones per wrist"],
+            ["Femur","Longest and strongest bone in the body"],
+            ["Clavicle","Most commonly fractured bone in the body"],
+            ["Mandible","Only bone in the skull that moves"],
+            ["Patella","Kneecap that keeps tendons from being pinched"]],
+   "explain":"These clues come from the Speed Dating stations for the carpals, femur, clavicle, mandible, and patella."},
+  {"id":"AX20","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each bone to its Speed Dating clue.",
+   "pairs":[["Sternum","Breastbone broken into 3 parts"],
+            ["Scapula","Shoulder blade"],
+            ["Sacrum","Base of the vertebral column; was originally 5 parts"],
+            ["Coccyx","Tailbone; was originally 4 parts"]],
+   "explain":"These clues come from the Speed Dating stations for the sternum, scapula, sacrum, and coccyx."},
+  {"id":"AX21","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each part of the vertebral column to its description.",
+   "pairs":[["Cervical vertebrae","7 bones in the neck"],
+            ["Thoracic vertebrae","12 bones that attach to the ribcage"],
+            ["Lumbar vertebrae","5 bones in the lower back"],
+            ["Sacrum","1 bone at the base that attaches to the pelvis"]],
+   "explain":"Cervical = 7 (neck), thoracic = 12 (ribcage), lumbar = 5 (lower back), sacrum = base attaching to the pelvis."},
+  {"id":"AX22","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each cranial bone to its location.",
+   "pairs":[["Frontal bone","Forehead"],
+            ["Parietal bone","Side and top of the skull"],
+            ["Temporal bone","Side and bottom of the skull; your ear sits on it"],
+            ["Occipital bone","Back of the skull"]],
+   "explain":"Frontal = forehead, parietal = side and top, temporal = side and bottom under the ear, occipital = back."},
+  {"id":"AX23","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each limb bone to its description.",
+   "pairs":[["Radius","Forearm bone that makes up most of the wrist joint"],
+            ["Ulna","Forearm bone that makes up most of the elbow"],
+            ["Tibia","Weight-bearing shin bone"],
+            ["Fibula","Non-weight-bearing lower leg bone that helps with balance"],
+            ["Humerus","Longest and strongest bone of the upper extremity"]],
+   "explain":"These clues come from the Speed Dating stations for the radius, ulna, tibia, fibula, and humerus."},
+  {"id":"AX24","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each bone or bone group to its description.",
+   "pairs":[["Metacarpals","Palm of the hand; 5 per hand"],
+            ["Metatarsals","Foot; 5 per foot"],
+            ["Phalanges","Fingers and toes; 14 per hand or foot"],
+            ["Tarsals","Ankle; 7 per ankle, including the calcaneus and talus"],
+            ["Zygomatic bone","Cheekbone"]],
+   "explain":"These clues come from the Speed Dating stations for the metacarpals, metatarsals, phalanges, tarsals, and zygomatic bone."},
+  {"id":"AX25","skill":"identify","topic":"axial","format":"match","src":"SD",
+   "prompt":"Match each bone to its description.",
+   "pairs":[["Maxillae","Upper jaw; teeth are embedded in sockets"],
+            ["Ribs","24 bones making the walls of the thoracic cavity"],
+            ["Hip bones","Made of the ilium, ischium, and pubis"],
+            ["Mandible","Lower jaw; strongest bone of the skull"]],
+   "explain":"These clues come from the Speed Dating stations for the maxillae, ribs, hip bones, and mandible."},
+
+  {"id":"AX26","topic":"axial","format":"sort","src":"SG14",
+   "prompt":"Sort each bone into the axial or appendicular skeleton.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Skull","Axial"],["Mandible","Axial"],["Ribs","Axial"],["Vertebral column","Axial"],["Limbs","Appendicular"],["Humerus","Appendicular"],["Scapula","Appendicular"],["Pelvis (hip bones)","Appendicular"]],
+   "explain":"Skull, mandible, ribs, and vertebral column are axial; limbs, humerus, scapula, and pelvis are appendicular (study guide #14)."},
+  {"id":"AX27","topic":"axial","format":"sort","src":"SG14; BB Challenge",
+   "prompt":"Sort each bone into the axial or appendicular skeleton.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Sternum","Axial"],["Cranium","Axial"],["Lumbar vertebrae","Axial"],["Phalanges","Appendicular"],["Tibia","Appendicular"],["Clavicle","Appendicular"],["Carpals","Appendicular"],["Femur","Appendicular"]],
+   "explain":"Sternum, cranium, and lumbar vertebrae are axial; phalanges, tibia, clavicle, carpals, and femur are appendicular."},
+  {"id":"AX28","topic":"axial","format":"sort","src":"BB Divisions; SD",
+   "prompt":"Sort each bone into the axial or appendicular skeleton.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Ribcage","Axial"],["Sacrum","Axial"],["Coccyx","Axial"],["Cervical vertebrae","Axial"],["Frontal bone","Axial"],["Tarsals","Appendicular"],["Radius","Appendicular"],["Patella","Appendicular"],["Ulna","Appendicular"],["Hip bones","Appendicular"]],
+   "explain":"Ribcage, sacrum, coccyx, cervical vertebrae, and frontal bone are axial (ribcage, vertebral column, skull); the rest are limb, shoulder, or hip bones."},
+  {"id":"AX29","topic":"axial","format":"sort","src":"BB Divisions; SD",
+   "prompt":"Sort each bone into the axial or appendicular skeleton.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Thoracic vertebrae","Axial"],["Occipital bone","Axial"],["Zygomatic bone","Axial"],["Maxillae","Axial"],["Metacarpals","Appendicular"],["Metatarsals","Appendicular"],["Fibula","Appendicular"],["Scapula","Appendicular"]],
+   "explain":"Thoracic vertebrae and the occipital, zygomatic, and maxillae bones are axial (vertebral column and skull); metacarpals, metatarsals, fibula, and scapula are appendicular."},
+  {"id":"AX30","topic":"axial","format":"sort","src":"BB Divisions; SD",
+   "prompt":"Sort each bone into the axial or appendicular skeleton.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Parietal bone","Axial"],["Temporal bone","Axial"],["Ribs","Axial"],["Mandible","Axial"],["Humerus","Appendicular"],["Femur","Appendicular"],["Patella","Appendicular"],["Clavicle","Appendicular"]],
+   "explain":"Parietal, temporal, ribs, and mandible are axial; humerus, femur, patella, and clavicle are appendicular."},
+  {"id":"AX31","topic":"axial","format":"sort","src":"BB Divisions",
+   "prompt":"Sort each description into the division it describes.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Bones on or near the midline","Axial"],["Skull","Axial"],["Vertebral column","Axial"],["Ribcage","Axial"],["Bones away from the midline","Appendicular"],["Limbs","Appendicular"],["Bones that attach limbs to the trunk","Appendicular"],["Shoulder bones and hip bones","Appendicular"]],
+   "explain":"Axial = on or near the midline (skull, vertebral column, ribcage); appendicular = away from the midline (limbs, shoulder bones, hip bones)."},
+  {"id":"AX32","topic":"axial","format":"sort","src":"SG14; BB Challenge",
+   "prompt":"Sort each bone into the axial or appendicular skeleton.",
+   "boxes":["Axial","Appendicular"],
+   "tiles":[["Sternum","Axial"],["Sacrum","Axial"],["Cranium","Axial"],["Tarsals","Appendicular"],["Carpals","Appendicular"],["Radius","Appendicular"]],
+   "explain":"Sternum, sacrum, and cranium are axial; tarsals, carpals, and radius are appendicular."},
+  {"id":"AX33","topic":"axial","format":"mc","src":"SD5; BB Divisions (vertebral column)",
+   "prompt":"The sacrum belongs to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The sacrum is part of the vertebral column, which is axial."},
+  {"id":"AX34","topic":"axial","format":"mc","src":"BB Bones you know (tarsals); BB Divisions (legs)",
+   "prompt":"The tarsals belong to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The tarsals are ankle bones, part of the legs, which are appendicular."},
+  {"id":"AX35","topic":"axial","format":"mc","src":"BB Challenge (ribs)",
+   "prompt":"The ribs belong to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The ribs are part of the ribcage, which is axial."},
+  {"id":"AX36","topic":"axial","format":"mc","src":"BB Challenge (femur)",
+   "prompt":"The femur belongs to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The femur is a leg bone, which is appendicular."},
+  {"id":"AX37","topic":"axial","format":"mc","src":"BB Challenge (carpals)",
+   "prompt":"The carpals belong to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The carpals are wrist bones, part of the arms, which are appendicular."},
+  {"id":"AX38","topic":"axial","format":"mc","src":"BB Challenge (radius)",
+   "prompt":"The radius belongs to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The radius is a forearm bone, which is appendicular."},
+  {"id":"AX39","topic":"axial","format":"mc","src":"BB Challenge (cranium)",
+   "prompt":"The cranium belongs to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The cranium is part of the skull, which is axial."},
+  {"id":"AX40","topic":"axial","format":"mc","src":"BB Challenge (sternum)",
+   "prompt":"The sternum belongs to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The slides mark the sternum (breastbone) as axial; it sits on the midline."},
+  {"id":"AX41","topic":"axial","format":"mc","src":"SG14 (tibia)",
+   "prompt":"The tibia (shin bone) belongs to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The study guide marks the tibia as appendicular; it is a leg bone."},
+  {"id":"AX42","topic":"axial","format":"mc","src":"SG14 (phalanges)",
+   "prompt":"The phalanges (fingers or toes) belong to which division of the skeleton?",
+   "options":["Appendicular","Axial","Both","Neither"],
+   "explain":"The study guide marks the phalanges as appendicular; they are part of the arms and legs."},
+  {"id":"AX43","topic":"axial","format":"mc","src":"SD11; BB Divisions (vertebral column)",
+   "prompt":"The coccyx (tailbone) belongs to which division of the skeleton?",
+   "options":["Axial","Appendicular","Both","Neither"],
+   "explain":"The coccyx is part of the vertebral column, which is axial."},
+
+  /* ───────────────── 5. BONE CELLS & REMODELING ───────────────── */
+  {"id":"CE01","topic":"cells","format":"mc","src":"FR Essential Qs",
+   "prompt":"Which type of bone cell builds new bone?",
+   "options":["Osteoblasts","Osteoclasts","Osteocytes","Osteogenic cells"],
+   "explain":"Osteoblasts build new bone by creating osteoid."},
+  {"id":"CE02","topic":"cells","format":"mc","src":"FR Essential Qs",
+   "prompt":"Which type of bone cell cleans away old bone?",
+   "options":["Osteoclasts","Osteoblasts","Osteocytes","Osteogenic cells"],
+   "explain":"Osteoclasts clean away old bone (\"bone break\")."},
+  {"id":"CE03","topic":"cells","format":"mc","src":"FR Essential Qs",
+   "prompt":"Which type of cell forms when osteoblasts become buried?",
+   "options":["Osteocytes","Osteoclasts","Osteogenic cells","Chondrocytes"],
+   "explain":"Osteoblasts get buried and become osteocytes, the mature bone cells."},
+  {"id":"CE04","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell can do mitosis?",
+   "options":["Osteogenic cells","Osteoblasts","Osteocytes","Osteoclasts"],
+   "explain":"Osteogenic cells are stem cells that can do mitosis."},
+  {"id":"CE05","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell creates osteoid (the matrix of bone)?",
+   "options":["Osteoblasts","Osteoclasts","Osteocytes","Osteogenic cells"],
+   "explain":"Osteoblasts create osteoid, the matrix of bone."},
+  {"id":"CE06","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell is considered a \"mature\" bone cell that lets bones perform their daily functions?",
+   "options":["Osteocytes","Osteoblasts","Osteoclasts","Osteogenic cells"],
+   "explain":"Osteocytes are the mature bone cells that allow bones to perform their daily functions."},
+  {"id":"CE07","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell translates into \"bone break\"?",
+   "options":["Osteoclast","Osteoblast","Osteocyte","Osteogenic cell"],
+   "explain":"Osteoclast translates into \"bone break\"; they shave away old bone."},
+  {"id":"CE08","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell translates into \"bone cell\"?",
+   "options":["Osteocyte","Osteoblast","Osteoclast","Osteogenic cell"],
+   "explain":"Osteocyte translates into \"bone cell\"; they are the mature bone cells."},
+  {"id":"CE09","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell translates into \"bone produce\"?",
+   "options":["Osteogenic cells","Osteoblasts","Osteocytes","Osteoclasts"],
+   "explain":"Osteogenic translates into \"bone produce\"; these stem cells produce osteoblasts."},
+  {"id":"CE10","topic":"cells","format":"mc","src":"FR Essential Qs (word root)",
+   "prompt":"Which word root means \"blood\"?",
+   "options":["Hema","Osteo","Chondro","Endo"],
+   "explain":"Hema means blood, as in hematoma (blood clot) and hematopoiesis (blood cell production)."},
+  {"id":"CE11","topic":"cells","format":"mc","src":"FR Essential Qs; SG7",
+   "prompt":"What is the matrix of bone called?",
+   "options":["Osteoid","Osteocalcin","Hyaline cartilage","Periosteum"],
+   "explain":"The matrix of bone is called osteoid."},
+  {"id":"CE12","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell is in the periosteum and endosteum (don't pick osteogenic cells)?",
+   "options":["Osteoclast","Osteoblast","Osteocyte","Chondrocyte"],
+   "explain":"The key places osteoclasts in the periosteum and endosteum."},
+  {"id":"CE13","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell is in the epiphyseal plates and on the periosteum?",
+   "options":["Osteoblast","Osteoclast","Osteocyte","Osteogenic cell"],
+   "explain":"Osteoblasts are in the epiphyseal plates (growth in length) and on the periosteum (growth in width)."},
+  {"id":"CE14","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell is located inside the spongy bone AND compact bone?",
+   "options":["Osteocyte","Osteoblast","Osteoclast","Osteogenic cell"],
+   "explain":"Osteocytes are located inside the spongy bone and compact bone."},
+  {"id":"CE15","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell removes dead bone after a fracture?",
+   "options":["Osteoclast","Osteoblast","Osteocyte","Osteogenic cell"],
+   "explain":"Osteoclasts remove dead bone after a fracture."},
+  {"id":"CE16","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell shaves away old bone when your bones are growing wider?",
+   "options":["Osteoclast","Osteoblast","Osteocyte","Osteogenic cell"],
+   "explain":"Osteoclasts shave away old bone when bones are growing wider."},
+  {"id":"CE17","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell creates osteoblasts?",
+   "options":["Osteogenic cells","Osteocytes","Osteoclasts","Chondrocytes"],
+   "explain":"Osteogenic cells are the stem cells that create osteoblasts."},
+  {"id":"CE18","topic":"cells","format":"mc","src":"SG Cells 5",
+   "prompt":"What is bone remodeling?",
+   "options":["Removing old, worn-out bone and replacing it with new healthy bone","The formation of bone from a hyaline cartilage model before birth","The realignment of broken bone ends by a doctor's hands or surgery","The storage of calcium and phosphate to release into the blood"],
+   "explain":"Bone remodeling is the removal of old, damaged, worn-out bone and replacing it with new healthy bone."},
+  {"id":"CE19","topic":"cells","format":"mc","src":"SG Cells 6",
+   "prompt":"Why is bone remodeling necessary?",
+   "options":["So that our bones do not become brittle and break","So that our bones can store more fat","So that our bones stop growing","So that our bones become lighter every year"],
+   "explain":"Bone remodeling is necessary so that our bones do not become brittle and break."},
+  {"id":"CE20","topic":"cells","format":"mc","src":"SG Cells 7",
+   "prompt":"How often is the skeleton fully replaced by bone remodeling?",
+   "options":["Every 10 years","Every year","Every 25 years","Every 6 to 8 weeks"],
+   "explain":"The skeleton is fully replaced by bone remodeling every 10 years."},
+  {"id":"CE21","topic":"cells","format":"mc","src":"SG Cells 2",
+   "prompt":"Why are osteoblasts located within the epiphyseal plates?",
+   "options":["To build new bone so our bones grow in length","To build new bone so our bones grow in width","To shave away bone and widen the medullary cavity","To store calcium for later use"],
+   "explain":"Osteoblasts in the epiphyseal plates build new bone to let bones grow in length."},
+  {"id":"CE22","topic":"cells","format":"mc","src":"SG Cells 2",
+   "prompt":"Why are osteoblasts located on the periosteum?",
+   "options":["To build new bone so our bones grow wider","To build new bone so our bones grow in length","To remove dead bone after a fracture","To produce blood cells"],
+   "explain":"Osteoblasts on the periosteum build new bone to make bones wider (also for fracture repair and remodeling)."},
+  {"id":"CE23","topic":"cells","format":"mc","src":"SG Cells 3",
+   "prompt":"Why are osteoclasts located within the endosteum?",
+   "options":["To shave away bone so the medullary cavity widens and bones aren't too heavy","To build new bone so the bones grow in length at the growth plates","To lay down osteoid so the bones grow wider from the inside","To produce red blood cells, white blood cells, and platelets"],
+   "explain":"Osteoclasts on the endosteum shave away bone to widen the medullary cavity, which keeps bones from becoming too heavy."},
+  {"id":"CE24","topic":"cells","format":"mc","src":"FR Essential Qs",
+   "prompt":"What are cartilage cells called?",
+   "options":["Chondrocytes","Osteocytes","Osteoblasts","Osteoclasts"],
+   "explain":"Cartilage cells are called chondrocytes."},
+  {"id":"CE25","topic":"cells","format":"mc","src":"SG6",
+   "prompt":"Bone belongs to which of the 4 major types of tissue?",
+   "options":["Connective tissue","Muscle tissue","Nervous tissue","Epithelial tissue"],
+   "explain":"Bone is a type of connective tissue with a matrix called osteoid."},
+  {"id":"CE26","topic":"cells","format":"mc","src":"SG Cells 8",
+   "prompt":"During remodeling, after osteoclasts shave away old bone, what do osteoblasts do?",
+   "options":["Lay down osteoid to replace it with new bone","Do mitosis to make more osteoclasts","Dissolve the medullary cavity","Turn into chondrocytes"],
+   "explain":"Osteoblasts replace the old worn-out bone with new bone by laying down osteoid, then bury themselves and become osteocytes."},
+  {"id":"CE27","topic":"cells","format":"mc","src":"SG Cells 3",
+   "prompt":"Why are osteoclasts located on the periosteum?",
+   "options":["To clean away old bone during bone remodeling or fracture repair","To build new bone on the outside so the bones grow wider","To become buried in osteoid and turn into osteocytes","To produce the hormone osteocalcin for many body processes"],
+   "explain":"On the periosteum, osteoclasts clean away old bone during bone remodeling or fracture repair."},
+  {"id":"CE28","topic":"cells","format":"mc","src":"SG Cells 4",
+   "prompt":"How do osteogenic cells become osteoblasts?",
+   "options":["They undergo mitosis","They get buried in osteoid","They dissolve old bone","They absorb calcium"],
+   "explain":"Osteogenic cells undergo mitosis and become osteoblasts because they are stem cells."},
+
+  {"id":"CE29","topic":"cells","format":"sata","src":"SG Cells table",
+   "prompt":"Which statements are true of osteoblasts?",
+   "options":["They build new bone","They create osteoid","They become osteocytes when buried","They can do mitosis","They shave away old bone"],
+   "answer":["They build new bone","They create osteoid","They become osteocytes when buried"],
+   "explain":"Osteoblasts build bone by creating osteoid and become osteocytes when buried; osteogenic cells do mitosis and osteoclasts shave away bone."},
+  {"id":"CE30","topic":"cells","format":"sata","src":"SG Cells table",
+   "prompt":"Which statements are true of osteoclasts?",
+   "options":["They clean away old bone","They are found in the periosteum and endosteum","They remove dead bone after a fracture","They create the matrix of bone","They are mature bone cells"],
+   "answer":["They clean away old bone","They are found in the periosteum and endosteum","They remove dead bone after a fracture"],
+   "explain":"Osteoclasts (\"bone break\") clean away old and dead bone from the periosteum and endosteum."},
+  {"id":"CE31","topic":"cells","format":"sata","src":"SG Cells table",
+   "prompt":"Which statements are true of osteogenic cells?",
+   "options":["They are stem cells","They can do mitosis","They create osteoblasts","They are mature bone cells","They translate into \"bone break\""],
+   "answer":["They are stem cells","They can do mitosis","They create osteoblasts"],
+   "explain":"Osteogenic cells (\"bone produce\") are stem cells that do mitosis and create osteoblasts."},
+  {"id":"CE32","topic":"cells","format":"sata","src":"SG Cells table",
+   "prompt":"Which statements are true of osteocytes?",
+   "options":["They are the mature bone cells","They are located inside spongy and compact bone","Their name translates into \"bone cell\"","They build new bone","They can do mitosis"],
+   "answer":["They are the mature bone cells","They are located inside spongy and compact bone","Their name translates into \"bone cell\""],
+   "explain":"Osteocytes (\"bone cell\") are the mature bone cells inside spongy and compact bone."},
+  {"id":"CE33","topic":"cells","format":"sata","src":"SG Cells 5-8",
+   "prompt":"Which statements are true about bone remodeling?",
+   "options":["It removes old, worn-out bone","It replaces old bone with new healthy bone","It keeps bones from becoming brittle and breaking","It fully replaces the skeleton every 10 years","Only osteoclasts take part in it"],
+   "answer":["It removes old, worn-out bone","It replaces old bone with new healthy bone","It keeps bones from becoming brittle and breaking","It fully replaces the skeleton every 10 years"],
+   "explain":"Remodeling replaces old bone with new bone every 10 years so bones don't become brittle; osteoclasts and osteoblasts work together."},
+  {"id":"CE34","topic":"cells","format":"sata","src":"SG Cells table",
+   "prompt":"Where are osteoblasts found?",
+   "options":["On the periosteum","In the epiphyseal plates","Inside compact bone as mature cells","In the yellow marrow"],
+   "answer":["On the periosteum","In the epiphyseal plates"],
+   "explain":"Osteoblasts are in the epiphyseal plates and on the periosteum; the cells inside compact bone are osteocytes."},
+
+  {"id":"CE35","topic":"cells","format":"match","src":"SG Cells table",
+   "prompt":"Match each bone cell to its job.",
+   "pairs":[["Osteogenic cell","Stem cell that does mitosis and creates osteoblasts"],
+            ["Osteoblast","Builds new bone by creating osteoid"],
+            ["Osteocyte","Mature bone cell that lets bones do their daily functions"],
+            ["Osteoclast","Cleans away old or dead bone"]],
+   "explain":"Osteogenic cells make osteoblasts, osteoblasts build bone, osteocytes are the mature cells, and osteoclasts clean away bone."},
+  {"id":"CE36","topic":"cells","format":"match","src":"SG Cells table; FR Essential Qs",
+   "prompt":"Match each term to its translation or meaning.",
+   "pairs":[["Osteoclast","\"Bone break\""],["Osteocyte","\"Bone cell\""],["Osteogenic","\"Bone produce\""],["Hema","\"Blood\""],["Chondrocyte","Cartilage cell"]],
+   "explain":"Osteoclast = bone break, osteocyte = bone cell, osteogenic = bone produce, hema = blood, chondrocyte = cartilage cell."},
+  {"id":"CE37","topic":"cells","format":"match","src":"SG Cells table",
+   "prompt":"Match each description to the bone cell.",
+   "pairs":[["Inside the spongy bone and compact bone","Osteocyte"],
+            ["In the periosteum and endosteum (not osteogenic cells)","Osteoclast"],
+            ["In the epiphyseal plates and on the periosteum","Osteoblast"],
+            ["A stem cell that becomes an osteoblast","Osteogenic cell"]],
+   "explain":"Osteocytes live inside bone, osteoclasts work on the periosteum and endosteum, osteoblasts are in the growth plates and periosteum."},
+  {"id":"CE38","topic":"cells","format":"match","src":"SG Cells 4",
+   "prompt":"Match each step to how bone cells are created, in order.",
+   "pairs":[["Step 1","Osteogenic cells (stem cells) undergo mitosis"],
+            ["Step 2","Osteogenic cells become osteoblasts"],
+            ["Step 3","Osteoblasts create osteoid"],
+            ["Step 4","Osteoblasts become buried and turn into osteocytes"]],
+   "explain":"Osteogenic cells undergo mitosis and become osteoblasts; osteoblasts create osteoid and become buried to be osteocytes."},
+  {"id":"CE39","topic":"cells","format":"match","src":"SG Cells 5-8",
+   "prompt":"Match each remodeling term to its description.",
+   "pairs":[["Osteoclasts","Shave away old, worn-out bone"],
+            ["Osteoblasts","Replace old bone by laying down osteoid"],
+            ["Osteocytes","What osteoblasts become after burying themselves"],
+            ["Every 10 years","How often the skeleton is fully replaced"]],
+   "explain":"In remodeling, osteoclasts shave away old bone, osteoblasts lay down osteoid and become osteocytes, and the whole skeleton is replaced every 10 years."},
+
+  {"id":"CE40","topic":"cells","format":"sort","src":"SG Cells table",
+   "prompt":"Sort each description into the bone cell it describes.",
+   "boxes":["Osteoblast","Osteoclast"],
+   "tiles":[["Builds new bone","Osteoblast"],["Creates osteoid","Osteoblast"],["Becomes an osteocyte when buried","Osteoblast"],["Found in the epiphyseal plates","Osteoblast"],["Shaves away old bone","Osteoclast"],["Translates into \"bone break\"","Osteoclast"],["Removes dead bone after a fracture","Osteoclast"],["Widens the medullary cavity from the endosteum","Osteoclast"]],
+   "explain":"Osteoblasts build bone (osteoid) and become osteocytes; osteoclasts break down old and dead bone."},
+  {"id":"CE41","topic":"cells","format":"sort","src":"SG Cells table",
+   "prompt":"Sort each description into the bone cell it describes.",
+   "boxes":["Osteogenic cell","Osteocyte"],
+   "tiles":[["Stem cell","Osteogenic cell"],["Can do mitosis","Osteogenic cell"],["Creates osteoblasts","Osteogenic cell"],["Translates into \"bone produce\"","Osteogenic cell"],["Mature bone cell","Osteocyte"],["Located inside spongy and compact bone","Osteocyte"],["Translates into \"bone cell\"","Osteocyte"],["Lets bones perform their daily functions","Osteocyte"]],
+   "explain":"Osteogenic cells are the stem cells that produce osteoblasts; osteocytes are the mature cells living inside bone."},
+  {"id":"CE42","topic":"cells","format":"sort","src":"SG Cells 2-3",
+   "prompt":"Sort each job by the cell that does it.",
+   "boxes":["Osteoblasts","Osteoclasts"],
+   "tiles":[["Build bone so it grows in length (epiphyseal plates)","Osteoblasts"],["Build bone so it grows wider (periosteum)","Osteoblasts"],["Lay down new bone during remodeling","Osteoblasts"],["Clean away old bone during remodeling","Osteoclasts"],["Shave away bone to widen the medullary cavity","Osteoclasts"],["Keep bones from becoming too heavy","Osteoclasts"]],
+   "explain":"Osteoblasts build bone in length and width; osteoclasts clean away old bone and widen the medullary cavity so bones don't get too heavy."},
+  {"id":"CE43","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell gets buried and becomes another type of bone cell?",
+   "options":["Osteoblast","Osteoclast","Osteocyte","Osteogenic cell"],
+   "explain":"Osteoblasts get buried in the osteoid they make and become osteocytes."},
+  {"id":"CE44","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell becomes an osteocyte?",
+   "options":["Osteoblast","Osteoclast","Chondrocyte","Chondroblast"],
+   "explain":"Osteoblasts become osteocytes when they bury themselves in osteoid."},
+  {"id":"CE45","topic":"cells","format":"mc","src":"SG Cells table",
+   "prompt":"Which type of bone cell is a stem cell?",
+   "options":["Osteogenic cells","Osteoblasts","Osteocytes","Osteoclasts"],
+   "explain":"Osteogenic cells are stem cells; they do mitosis and become osteoblasts."},
+  {"id":"CE46","topic":"cells","format":"mc","src":"SG Cells 2",
+   "prompt":"Osteoblasts on the periosteum build bone so bones grow wider. What else do they help with there?",
+   "options":["Fracture repair and bone remodeling","Blood cell production and fat storage","Making the bone grow in length","Producing the soft callus of cartilage"],
+   "explain":"Osteoblasts on the periosteum make bones wider and also help with fracture repair and bone remodeling."},
+
+  /* ───────────────── 6. ENDOCHONDRAL OSSIFICATION ───────────────── */
+  {"id":"OS01","topic":"ossification","format":"mc","src":"SG EO1",
+   "prompt":"What is endochondral ossification?",
+   "options":["The formation of bone from hyaline cartilage","The removal of old bone and replacement with new bone","The realignment of broken bone ends","The production of blood cells in red marrow"],
+   "explain":"Endochondral ossification is the formation of bone from hyaline cartilage."},
+  {"id":"OS02","topic":"ossification","format":"mc","src":"SG EO2",
+   "prompt":"When does endochondral ossification begin?",
+   "options":["6 to 8 weeks in the womb","Around the time of birth","Between ages 18 and 25","6 to 8 hours after birth"],
+   "explain":"Endochondral ossification begins at 6 to 8 weeks in the womb."},
+  {"id":"OS03","topic":"ossification","format":"mc","src":"SG EO3",
+   "prompt":"What specific material are our bones made of at the beginning of endochondral ossification?",
+   "options":["Hyaline cartilage","Compact bone","Osteoid","Spongy bone"],
+   "explain":"At the beginning, our bones are made of hyaline cartilage."},
+  {"id":"OS04","topic":"ossification","format":"mc","src":"SG EO4",
+   "prompt":"What material are our bones made of at the end of endochondral ossification?",
+   "options":["Bone","Hyaline cartilage","Tendon","Yellow marrow"],
+   "explain":"At the end of endochondral ossification, our bones are made of bone."},
+  {"id":"OS05","topic":"ossification","format":"mc","src":"SG EO6",
+   "prompt":"Which type of cell starts the process of endochondral ossification?",
+   "options":["Chondrocytes","Osteoblasts","Osteocytes","Osteoclasts"],
+   "explain":"Chondrocytes, or cartilage cells, form a model of where the bone will eventually be."},
+  {"id":"OS06","topic":"ossification","format":"mc","src":"SG EO7",
+   "prompt":"What is the perichondrium?",
+   "options":["A layer of cartilage around the original cartilage model","The hollow space inside the diaphysis","The membrane that lines the medullary cavity","The hard callus that forms after a fracture"],
+   "explain":"The perichondrium is a layer of cartilage around the original cartilage model."},
+  {"id":"OS07","topic":"ossification","format":"mc","src":"SG EO8",
+   "prompt":"When the perichondrium turns to bone, what is it now called?",
+   "options":["Periosteum","Endosteum","Epiphyseal plate","Articular cartilage"],
+   "explain":"When the perichondrium ossifies, it becomes the periosteum."},
+  {"id":"OS08","topic":"ossification","format":"mc","src":"SG EO9",
+   "prompt":"The formation of the periosteum causes what to occur within the developing bone?",
+   "options":["It cuts off nutrients, so the cartilage inside dies and is replaced by bone","It delivers extra nutrients, so the cartilage grows faster","It forms the medullary cavity","It creates the secondary ossification centers"],
+   "explain":"The periosteum cuts off nutrients into the cartilage model, causing cartilage within the model to die and be replaced by bone."},
+  {"id":"OS09","topic":"ossification","format":"mc","src":"SG EO10",
+   "prompt":"What must form within the epiphyses and diaphysis for ossification to begin taking place?",
+   "options":["Blood vessels","Tendons","A hematoma","Yellow marrow"],
+   "explain":"Blood vessels must enter the bone to deliver the nutrients that osteoblasts need to create osteoid."},
+  {"id":"OS10","topic":"ossification","format":"mc","src":"SG EO11",
+   "prompt":"Where is the primary ossification center found?",
+   "options":["Diaphysis","Epiphyses","Periosteum","Articular cartilage"],
+   "explain":"The primary ossification center is in the diaphysis."},
+  {"id":"OS11","topic":"ossification","format":"mc","src":"SG EO12",
+   "prompt":"Where are the secondary ossification centers found?",
+   "options":["Epiphyses","Diaphysis","Medullary cavity","Perichondrium"],
+   "explain":"The secondary ossification centers are in the epiphyses."},
+  {"id":"OS12","topic":"ossification","format":"mc","src":"SG EO13",
+   "prompt":"When do the secondary ossification centers form?",
+   "options":["Around the time of birth","6 to 8 weeks in the womb","Between ages 18 and 25","After every fracture"],
+   "explain":"The secondary ossification centers form around the time of birth."},
+  {"id":"OS13","topic":"ossification","format":"mc","src":"SG EO14",
+   "prompt":"Which ossifies first: the diaphysis or the epiphyses?",
+   "options":["Diaphysis","Epiphyses","Both at the same time","Whichever end is closer to the trunk"],
+   "explain":"The diaphysis ossifies first (primary ossification center), then the epiphyses (secondary centers)."},
+  {"id":"OS14","topic":"ossification","format":"mc","src":"SG EO15",
+   "prompt":"What is the role of osteoblasts in endochondral ossification?",
+   "options":["Build new bone in the primary and secondary ossification centers","Clean away newly formed bone to make the medullary cavity","Form the original cartilage model","Cut off nutrients to the cartilage"],
+   "explain":"Osteoblasts build new bone in the primary and secondary ossification centers; they cause ossification."},
+  {"id":"OS15","topic":"ossification","format":"mc","src":"SG EO16",
+   "prompt":"What is the role of osteoclasts in endochondral ossification?",
+   "options":["Clean away new bone in the diaphysis to form the medullary cavity","Lay down osteoid to build bone in the primary ossification center","Form a cartilage model in the shape of the future bone","Cut off nutrients to the cartilage by forming the periosteum"],
+   "explain":"Osteoclasts clean away newly formed bone in the diaphysis, forming the medullary cavity."},
+  {"id":"OS16","topic":"ossification","format":"mc","src":"SG EO17",
+   "prompt":"Does ossification occur from the outside-in or the inside-out?",
+   "options":["Inside-out","Outside-in","From both ends toward the middle","From the periosteum only"],
+   "explain":"Ossification occurs from the inside-out."},
+  {"id":"OS17","topic":"ossification","format":"mc","src":"SG EO18",
+   "prompt":"What cartilages are left at the end of endochondral ossification?",
+   "options":["The articular cartilage and epiphyseal plates","The perichondrium and periosteum","The cartilage model and medullary cavity","None; all cartilage becomes bone"],
+   "explain":"The only cartilages left are the articular cartilage and the epiphyseal plates."},
+  {"id":"OS18","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What is Step 1 of endochondral ossification?",
+   "options":["Cartilage model forms","Perichondrium and periosteum form","Primary ossification center","Medullary cavity"],
+   "explain":"Step 1: chondrocytes create a cartilage model, made of hyaline cartilage, in the shape of the future bone."},
+  {"id":"OS19","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What happens right after the cartilage model forms?",
+   "options":["The perichondrium and periosteum form","The primary ossification center forms","The medullary cavity forms","Ossification is complete"],
+   "explain":"Step 2: a perichondrium forms around the model and ossifies into a periosteum."},
+  {"id":"OS20","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What happens right after the primary ossification center forms?",
+   "options":["The medullary cavity forms","The secondary ossification centers form","The cartilage model forms","The perichondrium forms"],
+   "explain":"Step 4: osteoclasts shave away newly formed bone in the diaphysis to create a medullary cavity."},
+  {"id":"OS21","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What happens right after the medullary cavity forms?",
+   "options":["The secondary ossification centers form","The primary ossification center forms","The perichondrium forms","The cartilage model forms"],
+   "explain":"Step 5: blood vessels enter the epiphyses, forming secondary ossification centers."},
+  {"id":"OS22","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What is the last (6th) step of endochondral ossification?",
+   "options":["Ossification is complete","Secondary ossification centers","Medullary cavity","Perichondrium and periosteum form"],
+   "explain":"Step 6: ossification is complete; the only cartilage left is the articular cartilage and the epiphyseal plates."},
+  {"id":"OS23","topic":"ossification","format":"mc","src":"FR Essential Qs",
+   "prompt":"What is the process of cartilage becoming bone called?",
+   "options":["Ossification","Hematopoiesis","Remodeling","Reduction"],
+   "explain":"The process of cartilage becoming bone is called ossification."},
+  {"id":"OS24","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"In which step do blood vessels enter the epiphyses?",
+   "options":["Step 5: Secondary ossification centers","Step 3: Primary ossification center","Step 2: Perichondrium and periosteum form","Step 4: Medullary cavity"],
+   "explain":"In Step 5, blood vessels enter the epiphyses, forming secondary ossification centers."},
+  {"id":"OS25","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"In which step do osteoclasts shave away newly formed bone in the diaphysis?",
+   "options":["Step 4: Medullary cavity","Step 3: Primary ossification center","Step 5: Secondary ossification centers","Step 6: Ossification is complete"],
+   "explain":"In Step 4, osteoclasts shave away newly formed bone in the diaphysis to create a medullary cavity."},
+  {"id":"OS26","topic":"ossification","format":"mc","src":"FR Essential Qs; SG2",
+   "prompt":"What is the skeleton made of before it is bone?",
+   "options":["Cartilage","Muscle","Tendon","Osteoid"],
+   "explain":"Before it is bone, the skeleton is made of cartilage."},
+  {"id":"OS27","topic":"ossification","format":"mc","src":"SG EO10",
+   "prompt":"Why must blood vessels enter the bone during ossification?",
+   "options":["They deliver the nutrients that osteoblasts need to create osteoid","They carry the dead chondrocytes away from the cartilage model","They harden into the epiphyseal plates at the ends of the bone","They wrap around the model and become the perichondrium"],
+   "explain":"Blood vessels deliver the nutrients that osteoblasts need to create osteoid."},
+  {"id":"OS28","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"In which step do blood vessels enter the diaphysis?",
+   "options":["Step 3: Primary ossification center","Step 5: Secondary ossification centers","Step 1: Cartilage model forms","Step 4: Medullary cavity"],
+   "explain":"In Step 3, blood vessels enter the diaphysis to form the primary ossification center."},
+
+  {"id":"OS29","topic":"ossification","format":"sata","src":"SG EO5 step 1",
+   "prompt":"Which statements describe Step 1 (cartilage model forms)?",
+   "options":["Chondrocytes are created in the shape of the future bone","The model is made of hyaline cartilage","Blood vessels enter the diaphysis","Osteoclasts form the medullary cavity","Only articular cartilage is left"],
+   "answer":["Chondrocytes are created in the shape of the future bone","The model is made of hyaline cartilage"],
+   "explain":"In Step 1, chondrocytes form a hyaline cartilage model in the shape of the future bone."},
+  {"id":"OS30","topic":"ossification","format":"sata","src":"SG EO5 step 2",
+   "prompt":"Which statements describe Step 2 (perichondrium and periosteum form)?",
+   "options":["A perichondrium forms around the cartilage model","The perichondrium ossifies into a periosteum","The periosteum cuts off nutrients to the cartilage","Chondrocytes inside the model begin to die","Secondary ossification centers form"],
+   "answer":["A perichondrium forms around the cartilage model","The perichondrium ossifies into a periosteum","The periosteum cuts off nutrients to the cartilage","Chondrocytes inside the model begin to die"],
+   "explain":"In Step 2, the perichondrium forms and ossifies into a periosteum, which cuts off nutrients so the chondrocytes die and bone replaces them."},
+  {"id":"OS31","topic":"ossification","format":"sata","src":"SG EO5 step 3",
+   "prompt":"Which statements describe Step 3 (primary ossification center)?",
+   "options":["Blood vessels enter the diaphysis","Osteoblasts use ingredients from the blood to lay down osteoid","Ossification occurs in the diaphysis from the inside-out","It happens in the epiphyses","Osteoclasts create the medullary cavity"],
+   "answer":["Blood vessels enter the diaphysis","Osteoblasts use ingredients from the blood to lay down osteoid","Ossification occurs in the diaphysis from the inside-out"],
+   "explain":"In Step 3, blood vessels enter the diaphysis and osteoblasts build bone there from the inside-out."},
+  {"id":"OS32","topic":"ossification","format":"sata","src":"SG EO18",
+   "prompt":"Which of these remain cartilage at the end of endochondral ossification?",
+   "options":["Articular cartilage","Epiphyseal plates","Diaphysis","Periosteum","Medullary cavity"],
+   "answer":["Articular cartilage","Epiphyseal plates"],
+   "explain":"Only the articular cartilage and the epiphyseal plates are left as cartilage; all other cartilage has become bone."},
+  {"id":"OS33","topic":"ossification","format":"sata","src":"SG EO2,3,13,14",
+   "prompt":"Which statements about endochondral ossification are true?",
+   "options":["It begins at 6 to 8 weeks in the womb","Bones start as hyaline cartilage","Secondary ossification centers form around the time of birth","The diaphysis ossifies before the epiphyses","The epiphyses ossify first"],
+   "answer":["It begins at 6 to 8 weeks in the womb","Bones start as hyaline cartilage","Secondary ossification centers form around the time of birth","The diaphysis ossifies before the epiphyses"],
+   "explain":"Ossification starts at 6 to 8 weeks in the womb from hyaline cartilage; the diaphysis ossifies first and the epiphyses around birth."},
+  {"id":"OS34","topic":"ossification","format":"sata","src":"SG EO5 step 5",
+   "prompt":"Which statements describe Step 5 (secondary ossification centers)?",
+   "options":["Blood vessels enter the epiphyses","Osteoblasts build bone in the epiphyses","Ossification in the epiphyses occurs from the inside-out","Osteoclasts create the medullary cavity","The cartilage model forms"],
+   "answer":["Blood vessels enter the epiphyses","Osteoblasts build bone in the epiphyses","Ossification in the epiphyses occurs from the inside-out"],
+   "explain":"In Step 5, blood vessels enter the epiphyses and osteoblasts build bone there from the inside-out."},
+
+  {"id":"OS35","topic":"ossification","format":"match","src":"SG EO5",
+   "prompt":"Match each step of endochondral ossification to its name.",
+   "pairs":[["Step 1","Cartilage model forms"],["Step 2","Perichondrium and periosteum form"],["Step 3","Primary ossification center"],["Step 4","Medullary cavity"],["Step 5","Secondary ossification centers"],["Step 6","Ossification is complete"]],
+   "explain":"The 6 steps: cartilage model, perichondrium and periosteum, primary ossification center, medullary cavity, secondary ossification centers, ossification complete."},
+  {"id":"OS36","topic":"ossification","format":"match","src":"SG EO5",
+   "prompt":"Match each step of endochondral ossification to what happens in it.",
+   "pairs":[["Step 1","Chondrocytes create a hyaline cartilage model in the shape of the bone"],
+            ["Step 2","Perichondrium forms and ossifies into a periosteum, cutting off nutrients to the cartilage"],
+            ["Step 3","Blood vessels enter the diaphysis and osteoblasts build bone there"],
+            ["Step 4","Osteoclasts shave away new bone in the diaphysis to create a hollow space"],
+            ["Step 5","Blood vessels enter the epiphyses and osteoblasts build bone there"],
+            ["Step 6","Only the articular cartilage and epiphyseal plates are left as cartilage"]],
+   "explain":"These are the study guide summaries of the 6 steps of endochondral ossification."},
+  {"id":"OS37","topic":"ossification","format":"match","src":"SG EO6-12",
+   "prompt":"Match each term to its description.",
+   "pairs":[["Chondrocytes","Cartilage cells that form the original model"],
+            ["Perichondrium","Layer of cartilage around the cartilage model"],
+            ["Periosteum","What the perichondrium becomes when it ossifies"],
+            ["Primary ossification center","Located in the diaphysis"],
+            ["Secondary ossification centers","Located in the epiphyses"]],
+   "explain":"Chondrocytes build the model, the perichondrium around it becomes the periosteum, and ossification centers form first in the diaphysis and then the epiphyses."},
+  {"id":"OS38","topic":"ossification","format":"match","src":"SG EO3,10,15,16",
+   "prompt":"Match each item to its role in endochondral ossification.",
+   "pairs":[["Hyaline cartilage","What bones are made of at the beginning"],
+            ["Blood vessels","Must enter the bone to deliver nutrients to osteoblasts"],
+            ["Osteoblasts","Build new bone in the ossification centers"],
+            ["Osteoclasts","Clean away new bone in the diaphysis to form the medullary cavity"]],
+   "explain":"Bones start as hyaline cartilage; blood vessels bring nutrients; osteoblasts build bone; osteoclasts carve the medullary cavity."},
+  {"id":"OS39","topic":"ossification","format":"match","src":"SG EO5",
+   "prompt":"Match each step number to its name.",
+   "pairs":[["Step 3","Primary ossification center"],["Step 4","Medullary cavity"],["Step 5","Secondary ossification centers"],["Step 6","Ossification is complete"]],
+   "explain":"Steps 3 to 6: primary ossification center, medullary cavity, secondary ossification centers, ossification complete."},
+
+  {"id":"OS40","topic":"ossification","format":"sort","src":"SG EO5, EO11-14",
+   "prompt":"Sort each description into the ossification center it describes.",
+   "boxes":["Primary ossification center","Secondary ossification centers"],
+   "tiles":[["In the diaphysis","Primary ossification center"],["The first to ossify","Primary ossification center"],["Step 3","Primary ossification center"],["In the epiphyses","Secondary ossification centers"],["Around the time of birth","Secondary ossification centers"],["Step 5","Secondary ossification centers"]],
+   "explain":"The primary center forms first in the diaphysis (Step 3); the secondary centers form in the epiphyses around birth (Step 5)."},
+  {"id":"OS41","topic":"ossification","format":"sort","src":"SG EO5 step 6, EO18",
+   "prompt":"Sort each structure by what it is after ossification is complete.",
+   "boxes":["Still cartilage","No longer cartilage"],
+   "tiles":[["Articular cartilage","Still cartilage"],["Epiphyseal plates","Still cartilage"],["Cartilage model of the diaphysis","No longer cartilage"],["Perichondrium (now periosteum)","No longer cartilage"],["Chondrocytes inside the model (replaced)","No longer cartilage"],["Secondary ossification centers in the epiphyses","No longer cartilage"]],
+   "explain":"At the end, only the articular cartilage and epiphyseal plates are left as cartilage; all other cartilage has become bone."},
+  {"id":"OS42","topic":"ossification","format":"sort","src":"SG EO5",
+   "prompt":"Sort each step of endochondral ossification by when it happens.",
+   "boxes":["Early (Steps 1–3)","Late (Steps 4–6)"],
+   "tiles":[["Cartilage model forms","Early (Steps 1–3)"],["Perichondrium and periosteum form","Early (Steps 1–3)"],["Primary ossification center","Early (Steps 1–3)"],["Medullary cavity","Late (Steps 4–6)"],["Secondary ossification centers","Late (Steps 4–6)"],["Ossification is complete","Late (Steps 4–6)"]],
+   "explain":"Steps 1–3 are the cartilage model, perichondrium and periosteum, and primary center; Steps 4–6 are the medullary cavity, secondary centers, and completion."},
+  {"id":"OS43","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What happens right after the perichondrium and periosteum form?",
+   "options":["The primary ossification center forms","The secondary ossification centers form","The medullary cavity forms","The cartilage model forms"],
+   "explain":"Step 3: blood vessels enter the diaphysis to form the primary ossification center."},
+  {"id":"OS44","topic":"ossification","format":"mc","src":"SG EO5",
+   "prompt":"What happens right after the secondary ossification centers form?",
+   "options":["Ossification is complete","The medullary cavity forms","The primary ossification center forms","The perichondrium forms"],
+   "explain":"Step 6: ossification is complete, and only the articular cartilage and epiphyseal plates are left as cartilage."},
+
+  /* ───────────────── 7. FRACTURE REPAIR ───────────────── */
+  {"id":"FR01","topic":"fracture","format":"mc","src":"SG FR1",
+   "prompt":"Most fracture repair is done by the body itself. What is the doctor's role?",
+   "options":["Realigning the bone so it heals properly","Producing the soft callus","Forming the hematoma","Remodeling the bone callus"],
+   "explain":"The doctor realigns the bone to ensure that it heals properly."},
+  {"id":"FR02","topic":"fracture","format":"mc","src":"SG FR2",
+   "prompt":"What term means \"realignment of broken bone ends\"?",
+   "options":["Reduction","Remodeling","Ossification","Hematoma"],
+   "explain":"Reduction is the realignment of the broken ends."},
+  {"id":"FR03","topic":"fracture","format":"mc","src":"FR Treatment",
+   "prompt":"What is a closed reduction?",
+   "options":["The doctor's hands set the bone ends back into alignment","Surgery secures the bone ends with screws and plates","A cast is placed without realigning the bone","Osteoclasts remove the broken ends"],
+   "explain":"In a closed (external) reduction, the doctor's hands set the bone ends back into alignment."},
+  {"id":"FR04","topic":"fracture","format":"mc","src":"FR Treatment",
+   "prompt":"What is an open reduction?",
+   "options":["Surgery secures the bone ends together with screws and plates","The doctor's hands set the broken bone ends back into alignment","The fracture is left open so the bone ends can heal on their own","The bone is realigned by placing a cast around the outside of the limb"],
+   "explain":"In an open (internal) reduction, surgery is required to secure the ends of the bones together with screws and plates."},
+  {"id":"FR05","topic":"fracture","format":"mc","src":"SG FR4",
+   "prompt":"What is another term for a closed reduction?",
+   "options":["External reduction","Internal reduction","Surgical reduction","Soft reduction"],
+   "explain":"A closed reduction is also called an external reduction."},
+  {"id":"FR06","topic":"fracture","format":"mc","src":"SG FR5",
+   "prompt":"What is another term for an open reduction?",
+   "options":["Internal reduction","External reduction","Manual reduction","Hard reduction"],
+   "explain":"An open reduction is also called an internal reduction."},
+  {"id":"FR07","topic":"fracture","format":"mc","src":"SG FR6",
+   "prompt":"How long does the average fracture take to heal?",
+   "options":["6 to 8 weeks","6 to 8 hours","6 to 8 days","6 to 8 months"],
+   "explain":"A simple fracture of an average-sized bone takes 6 to 8 weeks to heal."},
+  {"id":"FR08","topic":"fracture","format":"mc","src":"FR Treatment",
+   "prompt":"Healing time is longer for which bones?",
+   "options":["Larger, more mature bones","Smaller, younger bones","Flat bones only","Bones with no blood vessels"],
+   "explain":"Healing time is longer for larger, more mature bones."},
+  {"id":"FR09","topic":"fracture","format":"mc","src":"SG FR7",
+   "prompt":"What is Step 1 of fracture repair?",
+   "options":["Hematoma forms","Soft callus forms","Soft callus ossifies into a bone callus","Bone remodeling"],
+   "explain":"Step 1: blood vessels are torn, the blood clots, and a hematoma forms."},
+  {"id":"FR10","topic":"fracture","format":"mc","src":"SG FR8",
+   "prompt":"What is a hematoma?",
+   "options":["A blood clot","A cartilage splint","A bone callus","A type of bone cell"],
+   "explain":"A hematoma is a blood clot."},
+  {"id":"FR11","topic":"fracture","format":"mc","src":"SG FR9",
+   "prompt":"How long does it take a hematoma to form after a bone is fractured?",
+   "options":["6 to 8 hours","6 to 8 days","Within a week","About 2 months"],
+   "explain":"The blood clots and forms a hematoma within 6 to 8 hours."},
+  {"id":"FR12","topic":"fracture","format":"mc","src":"SG FR10",
+   "prompt":"Why do bone cells start to die after a fracture?",
+   "options":["The blood vessels are broken, so the cells run out of oxygen and nutrients","The hematoma presses on them and crushes the bone tissue","Osteoclasts absorb the living bone cells along the break","Chondroblasts replace them with cartilage right away"],
+   "explain":"The blood vessels are broken and blood supply stops, so bone cells run out of oxygen and nutrients."},
+  {"id":"FR13","topic":"fracture","format":"mc","src":"SG FR11",
+   "prompt":"Do the blood vessels regrow after a fracture? If so, how long does it take?",
+   "options":["Yes, it takes only a few days","Yes, it takes about 2 months","No, they never regrow","Yes, it takes 6 to 8 weeks"],
+   "explain":"Yes, new blood vessels grow in the clot after only a few days."},
+  {"id":"FR14","topic":"fracture","format":"mc","src":"SG FR12",
+   "prompt":"What type of cells produce the soft callus?",
+   "options":["Chondroblasts","Osteoblasts","Osteoclasts","Osteocytes"],
+   "explain":"Chondroblasts (cartilage-building cells) produce the cartilage matrix of the soft callus."},
+  {"id":"FR15","topic":"fracture","format":"mc","src":"SG FR13",
+   "prompt":"Is the soft callus temporary or permanent?",
+   "options":["Temporary","Permanent","Temporary only in children","Permanent only in adults"],
+   "explain":"The soft callus is temporary; it forms a temporary splint."},
+  {"id":"FR16","topic":"fracture","format":"mc","src":"SG FR14",
+   "prompt":"What replaces the soft callus?",
+   "options":["Bone callus (hard callus)","Hematoma","Articular cartilage","Yellow marrow"],
+   "explain":"The soft callus is replaced by the bone callus (hard callus)."},
+  {"id":"FR17","topic":"fracture","format":"mc","src":"SG FR15",
+   "prompt":"How long after a fracture do the osteoblasts start repairing the broken bone?",
+   "options":["Within a week","Within 6 to 8 hours","After 2 months","After 6 to 8 weeks"],
+   "explain":"Within a week, osteoblasts begin producing osteoid."},
+  {"id":"FR18","topic":"fracture","format":"mc","src":"SG FR16",
+   "prompt":"What is the role of osteoblasts in the formation of the hard callus?",
+   "options":["They produce osteoid (bone matrix)","They produce cartilage matrix","They absorb dead bone","They form the blood clot"],
+   "explain":"Osteoblasts produce osteoid, the bone matrix, which replaces the soft callus."},
+  {"id":"FR19","topic":"fracture","format":"mc","src":"SG FR17",
+   "prompt":"How long does it take for the hard callus to firmly connect the broken ends of the bones?",
+   "options":["Approximately 2 months","Within a week","6 to 8 hours","A few days"],
+   "explain":"After approximately 2 months of bone growth, the broken ends are firmly connected."},
+  {"id":"FR20","topic":"fracture","format":"mc","src":"SG FR18",
+   "prompt":"What are the two reasons bone remodeling is necessary at the end of fracture repair?",
+   "options":["Excess bone callus must be cleaned away, and the medullary cavity hollowed out","The soft callus must form, and chondroblasts must make more cartilage matrix","The bone must be realigned by the doctor, and a cast placed on it","The epiphyseal plates must ossify, and the bone must grow in length"],
+   "explain":"Remodeling cleans away the excess bone callus and hollows out the medullary cavity."},
+  {"id":"FR21","topic":"fracture","format":"mc","src":"SG FR19",
+   "prompt":"What is the role of osteoclasts in remodeling a broken bone?",
+   "options":["They absorb injured and dead bone tissue","They lay down new bone tissue","They produce the soft callus","They form the hematoma"],
+   "explain":"Osteoclasts absorb injured and dead bone tissue during remodeling."},
+  {"id":"FR22","topic":"fracture","format":"mc","src":"SG FR20",
+   "prompt":"What is the role of osteoblasts in remodeling a broken bone?",
+   "options":["They lay down new bone tissue in the fracture site","They absorb the injured and dead bone tissue at the break","They produce the cartilage matrix of the soft callus","They form the blood clot that becomes the hematoma"],
+   "explain":"Osteoblasts lay down new bone tissue in the fracture site."},
+  {"id":"FR23","topic":"fracture","format":"mc","src":"SG FR7",
+   "prompt":"In the 4 steps of fracture repair, what comes right after the hematoma forms?",
+   "options":["Chondroblasts make a soft callus of cartilage","Osteoblasts replace the soft callus with a hard callus","Osteoclasts hollow out the medullary cavity","Osteoblasts lay down new bone to fortify it"],
+   "explain":"Step 2: new blood vessels grow in the clot and chondroblasts form the soft callus."},
+  {"id":"FR24","topic":"fracture","format":"mc","src":"SG FR7",
+   "prompt":"In the 4 steps of fracture repair, what comes right after the soft callus forms?",
+   "options":["Osteoblasts replace the soft callus with a bone (hard) callus","Osteoclasts clean away excess callus and hollow out the medullary cavity","Blood vessels tear and leak blood that clots into a hematoma","Chondroblasts break down the hard callus and reshape the bone"],
+   "explain":"Step 3: osteoblasts produce osteoid, replacing the soft callus with a bone (hard) callus."},
+  {"id":"FR25","topic":"fracture","format":"mc","src":"SG FR7",
+   "prompt":"What is the last (4th) step of fracture repair?",
+   "options":["Bone remodeling","Soft callus forms","Hematoma forms","Soft callus ossifies into a bone callus"],
+   "explain":"Step 4: bone remodeling cleans away excess bone callus and hollows out the medullary cavity."},
+  {"id":"FR26","topic":"fracture","format":"mc","src":"FR Step 2",
+   "prompt":"The soft callus is made of what kind of matrix?",
+   "options":["Cartilage matrix","Bone matrix (osteoid)","Blood clot","Adipose tissue"],
+   "explain":"Chondroblasts produce a bulging cartilage matrix connecting the broken ends; this is the soft callus."},
+  {"id":"FR27","topic":"fracture","format":"mc","src":"FR Step 2",
+   "prompt":"In which step of fracture repair do new blood vessels grow in the clot?",
+   "options":["Step 2: Soft callus forms","Step 1: Hematoma forms","Step 3: Bone callus forms","Step 4: Bone remodeling"],
+   "explain":"In Step 2, after a few days, new blood vessels grow in the clot."},
+  {"id":"FR28","topic":"fracture","format":"mc","src":"FR Treatment",
+   "prompt":"Treatment of a fracture begins with…",
+   "options":["Reduction: realignment of the broken ends","Remodeling: removal of old bone","Formation of the soft callus","Hematopoiesis in the red marrow"],
+   "explain":"Treatment begins with reduction, the realignment of the broken ends."},
+  {"id":"FR29","topic":"fracture","format":"mc","src":"FR Step 4",
+   "prompt":"In which step do osteoclasts absorb injured and dead bone tissue?",
+   "options":["Step 4: Bone remodeling","Step 1: Hematoma forms","Step 2: Soft callus forms","Step 3: Bone callus forms"],
+   "explain":"In Step 4, bone remodeling, osteoclasts absorb injured and dead bone tissue and osteoblasts lay down new bone."},
+
+  {"id":"FR30","topic":"fracture","format":"sata","src":"FR Step 1",
+   "prompt":"Which statements describe Step 1 (hematoma forms)?",
+   "options":["Blood vessels in the bone and periosteum are torn","The blood clots and forms a hematoma","It forms within 6 to 8 hours","Bone cells start to die without nutrition","Osteoblasts produce osteoid"],
+   "answer":["Blood vessels in the bone and periosteum are torn","The blood clots and forms a hematoma","It forms within 6 to 8 hours","Bone cells start to die without nutrition"],
+   "explain":"In Step 1, torn blood vessels leak blood that clots into a hematoma within 6 to 8 hours, and bone cells start to die."},
+  {"id":"FR31","topic":"fracture","format":"sata","src":"FR Step 2",
+   "prompt":"Which statements describe Step 2 (soft callus forms)?",
+   "options":["New blood vessels grow in the clot","Chondroblasts produce a cartilage matrix","The soft callus forms a temporary splint","The broken ends are firmly connected after 2 months","Osteoclasts hollow out the medullary cavity"],
+   "answer":["New blood vessels grow in the clot","Chondroblasts produce a cartilage matrix","The soft callus forms a temporary splint"],
+   "explain":"In Step 2, new blood vessels grow in the clot and chondroblasts build a temporary cartilage splint, the soft callus."},
+  {"id":"FR32","topic":"fracture","format":"sata","src":"FR Step 3",
+   "prompt":"Which statements describe Step 3 (soft callus ossifies into a bone callus)?",
+   "options":["Osteoblasts begin producing osteoid within a week","The soft callus is replaced by a hard (bone) callus","After 2 months the broken ends are firmly connected","Osteoclasts hollow out the medullary cavity","Chondroblasts produce cartilage"],
+   "answer":["Osteoblasts begin producing osteoid within a week","The soft callus is replaced by a hard (bone) callus","After 2 months the broken ends are firmly connected"],
+   "explain":"In Step 3, osteoblasts produce osteoid that replaces the soft callus with a bone callus, and after 2 months the ends are firmly connected."},
+  {"id":"FR33","topic":"fracture","format":"sata","src":"FR Step 4",
+   "prompt":"Which statements describe Step 4 (bone remodeling)?",
+   "options":["Osteoclasts absorb injured and dead bone tissue","Osteoblasts lay down new bone","Excess bone callus is cleaned away","The medullary cavity is hollowed out","Chondroblasts make a cartilage splint"],
+   "answer":["Osteoclasts absorb injured and dead bone tissue","Osteoblasts lay down new bone","Excess bone callus is cleaned away","The medullary cavity is hollowed out"],
+   "explain":"In Step 4, osteoclasts absorb dead bone and clean away excess callus, the medullary cavity is hollowed out, and osteoblasts lay down new bone."},
+  {"id":"FR34","topic":"fracture","format":"sata","src":"FR Treatment; SG FR3-4",
+   "prompt":"Which statements describe a closed reduction?",
+   "options":["The doctor's hands set the bone ends into alignment","It is also called an external reduction","Surgery is required","Screws and plates are used"],
+   "answer":["The doctor's hands set the bone ends into alignment","It is also called an external reduction"],
+   "explain":"A closed (external) reduction uses the doctor's hands to set the bone; surgery with screws and plates is an open (internal) reduction."},
+  {"id":"FR35","topic":"fracture","format":"sata","src":"FR Treatment; SG FR3-5",
+   "prompt":"Which statements describe an open reduction?",
+   "options":["Surgery is required","The bone ends are secured with screws and plates","It is also called an internal reduction","The doctor's hands set the bone ends","It is also called an external reduction"],
+   "answer":["Surgery is required","The bone ends are secured with screws and plates","It is also called an internal reduction"],
+   "explain":"An open (internal) reduction is surgery that secures the ends of the bones with screws and plates."},
+  {"id":"FR36","topic":"fracture","format":"sata","src":"SG FR6-17",
+   "prompt":"Which timelines of fracture repair are correct?",
+   "options":["Hematoma forms within 6 to 8 hours","New blood vessels grow after a few days","Osteoblasts begin producing osteoid within a week","The average fracture heals in 6 to 8 weeks","The hard callus firmly connects the ends within a week"],
+   "answer":["Hematoma forms within 6 to 8 hours","New blood vessels grow after a few days","Osteoblasts begin producing osteoid within a week","The average fracture heals in 6 to 8 weeks"],
+   "explain":"Hematoma: 6 to 8 hours; blood vessels: a few days; osteoblasts: within a week; firm connection: about 2 months; average healing: 6 to 8 weeks."},
+
+  {"id":"FR37","topic":"fracture","format":"match","src":"SG FR7",
+   "prompt":"Match each step of fracture repair to its name.",
+   "pairs":[["Step 1","Hematoma forms"],["Step 2","Soft callus forms"],["Step 3","Soft callus ossifies into a bone callus"],["Step 4","Bone remodeling"]],
+   "explain":"The 4 steps: hematoma forms, soft callus forms, soft callus ossifies into a bone callus, bone remodeling."},
+  {"id":"FR38","topic":"fracture","format":"match","src":"SG FR7",
+   "prompt":"Match each step of fracture repair to what happens in it.",
+   "pairs":[["Step 1","Torn blood vessels leak blood that clots; bone cells start to die"],
+            ["Step 2","New blood vessels grow in the clot; chondroblasts make a temporary cartilage connection"],
+            ["Step 3","Osteoblasts produce osteoid that replaces the soft callus; ends firmly connected after 2 months"],
+            ["Step 4","Osteoclasts clean away excess bone callus and hollow out the medullary cavity; osteoblasts build new bone"]],
+   "explain":"These are the study guide summaries of the 4 steps of fracture repair."},
+  {"id":"FR39","topic":"fracture","format":"match","src":"SG FR6-17",
+   "prompt":"Match each event to its timeline.",
+   "pairs":[["Hematoma forms","6 to 8 hours"],
+            ["New blood vessels grow in the clot","A few days"],
+            ["Osteoblasts begin producing osteoid","Within a week"],
+            ["Broken ends are firmly connected","About 2 months"],
+            ["Average fracture heals","6 to 8 weeks"]],
+   "explain":"Hematoma: 6 to 8 hours; blood vessels: a few days; osteoblasts: within a week; firm connection: about 2 months; average healing: 6 to 8 weeks."},
+  {"id":"FR40","topic":"fracture","format":"match","src":"FR Treatment; SG FR2-8",
+   "prompt":"Match each term to its meaning.",
+   "pairs":[["Reduction","Realignment of the broken bone ends"],
+            ["Closed (external) reduction","The doctor's hands set the bone ends into alignment"],
+            ["Open (internal) reduction","Surgery secures the bone ends with screws and plates"],
+            ["Hematoma","Blood clot"],
+            ["Soft callus","Temporary cartilage splint between the broken ends"]],
+   "explain":"Reduction realigns the ends (closed by hand, open by surgery); a hematoma is a blood clot; the soft callus is a temporary cartilage splint."},
+  {"id":"FR41","topic":"fracture","format":"match","src":"SG FR12-20",
+   "prompt":"Match each cell or structure to its role in fracture repair.",
+   "pairs":[["Chondroblasts","Produce the soft callus (cartilage matrix)"],
+            ["Osteoblasts","Produce osteoid to form the hard callus and lay down new bone"],
+            ["Osteoclasts","Absorb injured and dead bone tissue during remodeling"],
+            ["Bone (hard) callus","Replaces the soft callus"]],
+   "explain":"Chondroblasts build the soft callus, osteoblasts build the hard callus and new bone, osteoclasts absorb dead bone, and the hard callus replaces the soft callus."},
+
+  {"id":"FR42","topic":"fracture","format":"sort","src":"FR Treatment; SG FR3-5",
+   "prompt":"Sort each description into the type of reduction it describes.",
+   "boxes":["Closed reduction","Open reduction"],
+   "tiles":[["The doctor's hands set the bone ends","Closed reduction"],["Also called external reduction","Closed reduction"],["Bone ends are set back into alignment by hand","Closed reduction"],["Surgery is required","Open reduction"],["Also called internal reduction","Open reduction"],["Screws and plates secure the bone ends","Open reduction"]],
+   "explain":"Closed (external) reduction is done by hand; open (internal) reduction is surgery with screws and plates."},
+  {"id":"FR43","topic":"fracture","format":"sort","src":"FR Steps 2-3",
+   "prompt":"Sort each description into the callus it describes.",
+   "boxes":["Soft callus","Bone (hard) callus"],
+   "tiles":[["Made by chondroblasts","Soft callus"],["Cartilage matrix","Soft callus"],["Temporary splint","Soft callus"],["Made by osteoblasts","Bone (hard) callus"],["Made of osteoid","Bone (hard) callus"],["Firmly connects the ends after 2 months","Bone (hard) callus"]],
+   "explain":"The soft callus is a temporary cartilage splint made by chondroblasts; the bone callus is osteoid made by osteoblasts that firmly connects the ends."},
+  {"id":"FR44","topic":"fracture","format":"sort","src":"FR Steps 3-4; SG FR16-20",
+   "prompt":"Sort each job in fracture repair by the cell that does it.",
+   "boxes":["Osteoblasts","Osteoclasts"],
+   "tiles":[["Produce osteoid","Osteoblasts"],["Replace the soft callus with the hard callus","Osteoblasts"],["Lay down new bone in the fracture site","Osteoblasts"],["Absorb injured and dead bone tissue","Osteoclasts"],["Clean away excess bone callus","Osteoclasts"],["Hollow out the medullary cavity","Osteoclasts"]],
+   "explain":"Osteoblasts build (osteoid, hard callus, new bone); osteoclasts clean up (dead bone, excess callus, medullary cavity)."},
+  {"id":"FR45","topic":"fracture","format":"sort","src":"SG FR7",
+   "prompt":"Sort each event by whether it happens early or late in fracture repair.",
+   "boxes":["Early (Steps 1–2)","Late (Steps 3–4)"],
+   "tiles":[["Hematoma forms","Early (Steps 1–2)"],["Soft callus forms","Early (Steps 1–2)"],["Chondroblasts make a cartilage matrix","Early (Steps 1–2)"],["Soft callus ossifies into a bone callus","Late (Steps 3–4)"],["Bone remodeling","Late (Steps 3–4)"],["Osteoclasts clean away excess bone callus","Late (Steps 3–4)"]],
+   "explain":"Steps 1–2 are the hematoma and soft callus; Steps 3–4 are the bone callus and remodeling."},
+  {"id":"FR46","topic":"fracture","format":"mc","src":"FR Step 1; SG FR7",
+   "prompt":"In Step 1 of fracture repair, blood vessels are torn in which two places?",
+   "options":["The bone and the periosteum","The cartilage and the tendons","The epiphyseal plates and articular cartilage","The skin and the muscles"],
+   "explain":"When the bone breaks, blood vessels in the bone and periosteum are torn."},
+
+  /* ───────────────── EXTRA: FRACTURE TYPES (optional) ───────────────── */
+  {"id":"XT01","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"A bone breaks in two places, causing a floating piece of bone between the breaks.",
+   "options":["Segmental","Comminuted","Oblique","Impacted"],
+   "explain":"A segmental fracture breaks in two places, leaving a floating piece of bone between the breaks."},
+  {"id":"XT02","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"A fracture that breaks the skin.",
+   "options":["Open","Closed","Partial","Displaced"],
+   "explain":"An open fracture breaks the skin and is at the greatest risk of infection."},
+  {"id":"XT03","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"A fracture that doesn't break the whole way through a bone.",
+   "options":["Partial","Complete","Transverse","Segmental"],
+   "explain":"A partial fracture doesn't break the whole way through the bone."},
+  {"id":"XT04","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"A fracture that goes all the way through the bone.",
+   "options":["Complete","Partial","Greenstick","Closed"],
+   "explain":"A complete fracture goes all the way through the bone."},
+  {"id":"XT05","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"A fracture that occurs at a diagonal across the bone.",
+   "options":["Oblique","Transverse","Segmental","Impacted"],
+   "explain":"An oblique fracture occurs at a diagonal across the bone."},
+  {"id":"XT06","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"A partial fracture that causes a bone to bend; occurs only in infants and toddlers.",
+   "options":["Greenstick","Comminuted","Impacted","Oblique"],
+   "explain":"A greenstick fracture is a partial fracture that bends the bone; it occurs only in infants and toddlers."},
+  {"id":"XT07","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"Broken ends of bones are jammed together.",
+   "options":["Impacted","Segmental","Displaced","Transverse"],
+   "explain":"In an impacted fracture, the broken ends of the bones are jammed together."},
+  {"id":"XT08","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"Occurs in a straight line across the bone.",
+   "options":["Transverse","Oblique","Greenstick","Comminuted"],
+   "explain":"A transverse fracture occurs in a straight line across the bone."},
+  {"id":"XT09","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"The bone doesn't break the skin.",
+   "options":["Closed","Open","Non-displaced","Partial"],
+   "explain":"In a closed fracture, the bone doesn't break the skin."},
+  {"id":"XT10","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"Tons of fragments of bone due to intense force.",
+   "options":["Comminuted","Segmental","Impacted","Greenstick"],
+   "explain":"A comminuted fracture has tons of fragments of bone due to intense force."},
+  {"id":"XT11","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"When the bones are broken, but still aligned.",
+   "options":["Non-displaced","Displaced","Closed","Impacted"],
+   "explain":"A non-displaced fracture is broken but the bones are still aligned."},
+  {"id":"XT12","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"When the bones are no longer aligned (needs to be set).",
+   "options":["Displaced","Non-displaced","Open","Partial"],
+   "explain":"A displaced fracture is no longer aligned and needs to be set."},
+  {"id":"XT13","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"Which fracture type is at the greatest risk of infection?",
+   "options":["Open","Closed","Greenstick","Transverse"],
+   "explain":"An open fracture breaks the skin and is at the greatest risk of infection."},
+  {"id":"XT14","topic":"extra","format":"mc","src":"SG Fracture Types",
+   "prompt":"Which fracture type occurs only in infants and toddlers?",
+   "options":["Greenstick","Comminuted","Segmental","Oblique"],
+   "explain":"Greenstick fractures, partial fractures that bend the bone, occur only in infants and toddlers."},
+
+  {"id":"XT15","topic":"extra","format":"sata","src":"SG Fracture Types pictures",
+   "prompt":"A bone has a crack that does not go all the way through, the skin is not broken, and the bone is still aligned. Which terms apply?",
+   "options":["Partial","Closed","Non-displaced","Complete","Open","Displaced"],
+   "answer":["Partial","Closed","Non-displaced"],
+   "explain":"The key's first picture: partial, closed, non-displaced."},
+  {"id":"XT16","topic":"extra","format":"sata","src":"SG Fracture Types pictures",
+   "prompt":"A bone is broken all the way through in a straight line, the skin is not broken, and the pieces are no longer aligned. Which terms apply?",
+   "options":["Complete","Transverse","Closed","Displaced","Partial","Oblique"],
+   "answer":["Complete","Transverse","Closed","Displaced"],
+   "explain":"The key's second picture: complete, transverse, closed, displaced."},
+  {"id":"XT17","topic":"extra","format":"sata","src":"SG Fracture Types pictures",
+   "prompt":"A bone is broken all the way through in a straight line, a piece sticks out through the skin, and the pieces are no longer aligned. Which terms apply?",
+   "options":["Complete","Transverse","Open","Displaced","Closed","Greenstick"],
+   "answer":["Complete","Transverse","Open","Displaced"],
+   "explain":"The key's picture with the bone through the skin: complete, transverse, open, displaced."},
+  {"id":"XT18","topic":"extra","format":"sata","src":"SG Fracture Types pictures",
+   "prompt":"A bone is broken all the way through at a diagonal, the skin is not broken, and the pieces are still aligned. Which terms apply?",
+   "options":["Complete","Oblique","Closed","Non-displaced","Transverse","Open"],
+   "answer":["Complete","Oblique","Closed","Non-displaced"],
+   "explain":"The key's third picture: complete, oblique, closed, non-displaced."},
+
+  {"id":"XT19","topic":"extra","format":"match","src":"SG Fracture Types",
+   "prompt":"Match each fracture type to its description.",
+   "pairs":[["Segmental","Breaks in two places, leaving a floating piece"],
+            ["Comminuted","Tons of fragments due to intense force"],
+            ["Impacted","Broken ends jammed together"],
+            ["Greenstick","Partial fracture that bends the bone"],
+            ["Oblique","Diagonal across the bone"]],
+   "explain":"These are the descriptions from the study guide's fracture types table."},
+  {"id":"XT20","topic":"extra","format":"match","src":"SG Fracture Types",
+   "prompt":"Match each fracture type to its description.",
+   "pairs":[["Open","Breaks the skin"],["Closed","Doesn't break the skin"],["Displaced","Bones no longer aligned; needs to be set"],["Non-displaced","Broken but still aligned"],["Transverse","Straight line across the bone"]],
+   "explain":"These are the descriptions from the study guide's fracture types table."},
+  {"id":"XT21","topic":"extra","format":"sort","src":"SG Fracture Types",
+   "prompt":"Sort each description into the fracture type it describes.",
+   "boxes":["Partial fracture","Complete fracture"],
+   "tiles":[["Doesn't break the whole way through the bone","Partial fracture"],["Greenstick","Partial fracture"],["Causes the bone to bend","Partial fracture"],["Goes all the way through the bone","Complete fracture"],["Can leave a floating piece (segmental)","Complete fracture"],["Can shatter into many fragments (comminuted)","Complete fracture"]],
+   "explain":"Partial fractures (like greenstick) don't go all the way through; complete fractures do, and the key's segmental and comminuted pictures are complete fractures."},
+  {"id":"XT22","topic":"extra","format":"sata","src":"SG Fracture Types pictures (segmental)",
+   "prompt":"A bone is broken all the way through, straight across, in two places, leaving a floating piece. The skin is not broken and the pieces are still aligned. Which terms apply?",
+   "options":["Complete","Transverse","Closed","Non-displaced","Segmental","Open"],
+   "answer":["Complete","Transverse","Closed","Non-displaced","Segmental"],
+   "explain":"The key's segmental picture is complete, transverse, closed, non-displaced, and segmental."},
+  {"id":"XT23","topic":"extra","format":"sata","src":"SG Fracture Types pictures (impacted)",
+   "prompt":"A bone is broken all the way through in a straight line, the skin is not broken, and the broken ends are jammed together. Which terms apply?",
+   "options":["Complete","Transverse","Closed","Impacted","Open","Greenstick"],
+   "answer":["Complete","Transverse","Closed","Impacted"],
+   "explain":"The key's impacted picture is complete, transverse, closed, and impacted (displacement is debatable for this picture, so it is left out)."}
+  ]
+};
+
+// ============================================================
+// APP
+// ============================================================
+(function () {
+  'use strict';
+
+  const STORE_KEY = 'bone-basics-study-v1';
+  const SET_SIZE = 10;
+  const TEST_SIZE = 30;
+  const TOPICS = BANK.topics;
+  const ITEMS = BANK.items;
+  const byId = {};
+  ITEMS.forEach(it => { byId[it.id] = it; });
+  const topicName = key => (TOPICS.find(t => t.key === key) || {}).name || key;
+
+  // ---------- persistence (localStorage, best effort) ----------
+  function freshProgress() { return { scores: {}, test: null, missed: [] }; }
+  let progress = freshProgress();
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        progress = Object.assign(freshProgress(), p);
+        progress.missed = (progress.missed || []).filter(id => byId[id]);
+      }
+    } catch (e) { progress = freshProgress(); }
+  }
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch (e) { /* storage unavailable: keep in memory */ }
+  }
+  function addMissed(id) { if (!progress.missed.includes(id)) { progress.missed.push(id); save(); } }
+  function removeMissed(id) { const i = progress.missed.indexOf(id); if (i >= 0) { progress.missed.splice(i, 1); save(); } }
+
+  // ---------- helpers ----------
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function h(tag, attrs, ...children) {
+    const el = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === 'class') el.className = attrs[k];
+      else if (k === 'onclick') el.addEventListener('click', attrs[k]);
+      else if (k === 'html') el.innerHTML = attrs[k];
+      else if (k === 'disabled') { if (attrs[k]) el.setAttribute('disabled', ''); }
+      else el.setAttribute(k, attrs[k]);
+    }
+    for (const c of children) {
+      if (c == null || c === false) continue;
+      if (Array.isArray(c)) c.forEach(x => x != null && el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+      else el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+  function sameSet(a, b) { if (a.length !== b.length) return false; const s = new Set(a); return b.every(x => s.has(x)); }
+
+  // Draw n items from a topic in mixed formats: round-robin across formats so every set mixes them.
+  // "Name this bone" items (skill: identify) are capped so a set mostly tests the topic itself.
+  function drawFromTopic(topicKey, n, idCap) {
+    const cap = idCap == null ? Infinity : idCap;
+    const groups = {};
+    ITEMS.filter(it => it.topic === topicKey).forEach(it => { (groups[it.format] = groups[it.format] || []).push(it); });
+    const order = shuffle(Object.keys(groups));
+    const queues = {}; order.forEach(f => { queues[f] = shuffle(groups[f]); });
+    const out = [];
+    let ids = 0, guard = 0;
+    const take = f => {
+      while (queues[f].length) {
+        const it = queues[f].shift();
+        if (it.skill === 'identify') { if (ids >= cap) continue; ids++; }
+        out.push(it); return true;
+      }
+      return false;
+    };
+    while (out.length < n && guard++ < 1000) {
+      let any = false;
+      for (const f of order) { if (out.length < n && take(f)) any = true; }
+      if (!any) break;
+    }
+    return shuffle(out);
+  }
+
+  // ---------- long bone diagram (original SVG) ----------
+  function diagramSVG() {
+    // Layout follows the Study Guide KEY's labeled long bone: proximal epiphysis = spongy head,
+    // epiphyseal plate, then a red-marrow spongy zone; diaphysis = compact wall around the
+    // medullary cavity (salmon) and yellow marrow.
+    const F = 'font-family="system-ui, Arial, sans-serif"';
+    // [number, label x, label y, target x, target y]
+    const labels = [
+      [4, 30, 44, 18, 222], [5, 84, 44, 62, 218], [7, 142, 44, 155, 222], [11, 212, 44, 240, 215],
+      [10, 268, 44, 268, 191], [6, 324, 44, 322, 204], [13, 392, 44, 360, 169],
+      [12, 104, 322, 129, 248], [8, 220, 322, 220, 231], [9, 315, 322, 315, 231]
+    ];
+    const L = [];
+    for (const [n, cx, cy, tx, ty] of labels) {
+      L.push(`<line x1="${cx}" y1="${cy + (cy < 200 ? 15 : -15)}" x2="${tx}" y2="${ty}" stroke="#222" stroke-width="1.6"/>`);
+      L.push(`<circle cx="${tx}" cy="${ty}" r="3.4" fill="#222" stroke="#fff" stroke-width="1"/>`);
+      L.push(`<circle cx="${cx}" cy="${cy}" r="15" fill="#fff" stroke="#222" stroke-width="2"/>`);
+      L.push(`<text x="${cx}" y="${cy + 5.5}" text-anchor="middle" font-size="16" font-weight="700" fill="#111" ${F}>${n}</text>`);
+    }
+    const bracket = (n, x1, x2, cx) => `
+      <path d="M${x1} 362 v10 h${x2 - x1} v-10" fill="none" stroke="#333" stroke-width="1.6"/>
+      <line x1="${cx}" y1="372" x2="${cx}" y2="386" stroke="#333" stroke-width="1.6"/>
+      <circle cx="${cx}" cy="402" r="15" fill="#fff" stroke="#333" stroke-width="2"/>
+      <text x="${cx}" y="407.5" text-anchor="middle" font-size="16" font-weight="700" fill="#111" ${F}>${n}</text>`;
+    const blob = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#b8392e" stroke="#7a2019" stroke-width="1"/>`;
+    return `<svg viewBox="0 0 520 430" role="img" aria-label="Simplified long bone cut open, with numbered pointers 1 to 13" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="bbSpongy" width="14" height="14" patternUnits="userSpaceOnUse">
+          <rect width="14" height="14" fill="#f3e6d2"/>
+          <circle cx="4" cy="4" r="2.6" fill="#c84b3f"/><circle cx="11" cy="9" r="2.2" fill="#c84b3f"/><circle cx="6" cy="11.5" r="1.6" fill="#c84b3f"/>
+        </pattern>
+        <clipPath id="bbCapL"><rect x="0" y="100" width="36" height="260"/></clipPath>
+        <clipPath id="bbCapR"><rect x="484" y="100" width="40" height="260"/></clipPath>
+      </defs>
+      <!-- bone silhouette: outline first, then fill over it to hide inner seams -->
+      <g stroke="#8a6d4e" stroke-width="2.5" fill="#efe2cc">
+        <circle cx="75" cy="230" r="58"/><ellipse cx="440" cy="230" rx="62" ry="58"/><rect x="105" y="195" width="305" height="70" rx="12"/>
+      </g>
+      <g fill="#efe2cc"><circle cx="75" cy="230" r="58"/><ellipse cx="440" cy="230" rx="62" ry="58"/><rect x="105" y="195" width="305" height="70" rx="12"/></g>
+      <!-- articular cartilage caps -->
+      <circle cx="75" cy="230" r="58" fill="none" stroke="#9fd3e6" stroke-width="11" clip-path="url(#bbCapL)"/>
+      <ellipse cx="440" cy="230" rx="62" ry="58" fill="none" stroke="#9fd3e6" stroke-width="11" clip-path="url(#bbCapR)"/>
+      <!-- proximal epiphysis: spongy bone in the head -->
+      <ellipse cx="77" cy="230" rx="48" ry="46" fill="url(#bbSpongy)" stroke="#8a6d4e" stroke-width="1"/>
+      <!-- proximal epiphysis: spongy zone full of red marrow, past the growth plate -->
+      <rect x="133" y="200" width="45" height="60" rx="6" fill="url(#bbSpongy)" stroke="#8a6d4e" stroke-width="1"/>
+      ${blob(155, 222, 6.5)}${blob(145, 246, 5)}${blob(167, 240, 5)}${blob(146, 207, 4)}${blob(169, 208, 4)}
+      <!-- epiphyseal plate (growth plate) -->
+      <line x1="129" y1="197" x2="129" y2="263" stroke="#4fae9e" stroke-width="7"/>
+      <!-- diaphysis: medullary cavity (salmon) then yellow marrow, lined by the endosteum -->
+      <rect x="186" y="215" width="196" height="30" rx="8" fill="#f0c84a"/>
+      <path d="M194 215 h60 v30 h-60 a8 8 0 0 1 -8 -8 v-14 a8 8 0 0 1 8 -8 z" fill="#ec9f92"/>
+      <rect x="186" y="215" width="196" height="30" rx="8" fill="none" stroke="#8e5aa8" stroke-width="3"/>
+      <!-- periosteum: outer membrane of the shaft -->
+      <path d="M184 191 H398" stroke="#4a3728" stroke-width="4.5" stroke-linecap="round"/>
+      <!-- blood vessel entering through the shaft wall -->
+      <path d="M372 150 c-10 10 -16 25 -16 44 c0 12 -6 20 -12 30" fill="none" stroke="#c0392b" stroke-width="4" stroke-linecap="round"/>
+      <text x="18" y="314" font-size="13" fill="#555" ${F}>hip side</text>
+      <text x="448" y="314" font-size="13" fill="#555" ${F}>knee side</text>
+      ${L.join('')}
+      ${bracket(1, 18, 178, 98)}${bracket(2, 182, 400, 291)}${bracket(3, 404, 502, 453)}
+    </svg>`;
+  }
+
+  // ---------- grading ----------
+  function grade(item, answer) {
+    if (item.format === 'mc') return answer === item.options[0];
+    if (item.format === 'sata') return sameSet(answer, item.answer);
+    if (item.format === 'match') return item.pairs.every(([t, d]) => answer[t] === d);
+    if (item.format === 'sort') return item.tiles.every(([tile, box]) => answer[tile] === box);
+    return false;
+  }
+  function correctText(item) {
+    if (item.format === 'mc') return item.options[0];
+    if (item.format === 'sata') return item.answer.join('; ');
+    if (item.format === 'match') return item.pairs.map(([t, d]) => `${t} → ${d}`).join('; ');
+    if (item.format === 'sort') return item.boxes.map(b => `${b}: ${item.tiles.filter(t => t[1] === b).map(t => t[0]).join(', ')}`).join(' | ');
+    return '';
+  }
+  function answerText(item, answer) {
+    if (answer == null) return '(no answer)';
+    if (item.format === 'mc') return answer;
+    if (item.format === 'sata') return answer.length ? answer.join('; ') : '(nothing selected)';
+    if (item.format === 'match') return item.pairs.map(([t]) => `${t} → ${answer[t] || '?'}`).join('; ');
+    if (item.format === 'sort') return item.tiles.map(([tile]) => `${tile} → ${answer[tile] || '?'}`).join('; ');
+    return '';
+  }
+
+  // ---------- DOM refs ----------
+  const $ = id => document.getElementById(id);
+  const screens = { home: $('home'), quiz: $('quiz'), results: $('results') };
+  function show(name) {
+    for (const k in screens) screens[k].hidden = (k !== name);
+    $('modeTag').textContent = name === 'home' ? '' : (session ? modeLabel() : '');
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- session ----------
+  let session = null;
+  function modeLabel() {
+    if (!session) return '';
+    if (session.mode === 'topic') return topicName(session.topic);
+    if (session.mode === 'missed') return 'Missed Questions';
+    return 'Practice Test';
+  }
+
+  function startTopic(key) {
+    const queue = drawFromTopic(key, SET_SIZE, BANK.identifyCap.set);
+    session = { mode: 'topic', topic: key, queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+  function startMissed() {
+    const ids = shuffle(progress.missed);
+    const queue = ids.map(id => byId[id]);
+    if (!queue.length) return;
+    session = { mode: 'missed', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+  function startTest() {
+    let queue = [];
+    for (const key in BANK.testAllocation) queue = queue.concat(drawFromTopic(key, BANK.testAllocation[key], BANK.identifyCap.test));
+    queue = shuffle(queue).slice(0, TEST_SIZE);
+    session = { mode: 'test', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+
+  // ---------- question rendering ----------
+  const INSTR = {
+    mc: 'Tap one answer.',
+    sata: 'Select all that apply. Then tap Check.',
+    match: 'Tap a term, then tap its match. When all are paired, tap Check.',
+    sort: 'Tap a tile, then tap a box. When all tiles are placed, tap Check.'
+  };
+
+  function renderQuestion() {
+    const item = session.queue[session.index];
+    const isRetry = session.index >= session.firstCount;
+    const root = screens.quiz; clear(root);
+    const total = session.queue.length;
+    root.appendChild(h('div', { class: 'qhead' },
+      h('span', null, h('span', { class: 'n' }, `Question ${session.index + 1} of ${total}`), session.mode === 'topic' ? ` · ${topicName(item.topic)}` : ` · ${topicName(item.topic)}`),
+      h('span', null, `${item.format === 'mc' ? 'Multiple choice' : item.format === 'sata' ? 'Select all' : item.format === 'match' ? 'Matching' : 'Sort'}`)
+    ));
+    root.appendChild(h('div', { class: 'progress' }, h('div', { style: `width:${(session.index / total) * 100}%` })));
+    if (isRetry) root.appendChild(h('span', { class: 'retry-note' }, 'Try again — you missed this one earlier in this set'));
+    root.appendChild(h('p', { class: 'instruction' }, INSTR[item.format] + (session.mode === 'test' && item.format === 'mc' ? ' Then tap Next.' : '')));
+    root.appendChild(h('p', { class: 'prompt' }, item.prompt));
+    if (item.img === 'longbone') root.appendChild(h('div', { class: 'diagram', html: diagramSVG() }));
+
+    const area = h('div');
+    root.appendChild(area);
+    const actions = h('div', { class: 'actions' });
+    root.appendChild(actions);
+    const fbHolder = h('div');
+    root.appendChild(fbHolder);
+
+    const ctl = { getAnswer: () => null, complete: () => false, markFeedback: () => {} };
+    const checkBtn = h('button', { class: 'primary', disabled: true, onclick: () => submit() }, session.mode === 'test' ? 'Next' : 'Check');
+    const refresh = () => { checkBtn.disabled = !ctl.complete(); };
+
+    if (item.format === 'mc') renderMC(item, area, ctl, refresh, () => submit());
+    else if (item.format === 'sata') renderSATA(item, area, ctl, refresh);
+    else if (item.format === 'match') renderMatch(item, area, ctl, refresh);
+    else renderSort(item, area, ctl, refresh);
+
+    // MC in practice mode submits on tap; everything else uses the Check/Next button.
+    if (!(item.format === 'mc' && session.mode !== 'test')) actions.appendChild(checkBtn);
+
+    let submitted = false;
+    function submit() {
+      if (submitted) return; submitted = true;
+      const answer = ctl.getAnswer();
+      const correct = grade(item, answer);
+      checkBtn.remove();
+      ctl.lock();
+      if (session.mode === 'test') { record(item, correct, answer, isRetry); next(); return; }
+      record(item, correct, answer, isRetry);
+      ctl.markFeedback(answer);
+      const fb = h('div', { class: 'feedback ' + (correct ? 'good' : 'bad') },
+        h('p', { class: 'verdict' }, correct ? 'Correct!' : 'Not quite.'),
+        correct ? null : h('p', null, 'Correct answer: ', h('span', { class: 'ans' }, correctText(item))),
+        h('p', null, item.explain));
+      const detail = ctl.feedbackDetail ? ctl.feedbackDetail(answer) : null;
+      if (detail) fb.appendChild(detail);
+      fbHolder.appendChild(fb);
+      const nextBtn = h('button', { class: 'primary', onclick: next }, 'Next');
+      actions.appendChild(nextBtn);
+      nextBtn.focus({ preventScroll: true });
+      nextBtn.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function record(item, correct, answer, isRetry) {
+    if (!isRetry) {
+      session.results.push({ item, correct, answer });
+      if (!correct) {
+        addMissed(item.id);
+        if (session.mode !== 'test') session.retry.push(item);
+      } else if (session.mode === 'missed') {
+        removeMissed(item.id);
+      }
+    }
+  }
+
+  function next() {
+    session.index++;
+    if (session.index >= session.queue.length) {
+      if (session.retry.length && session.mode !== 'test') {
+        session.queue = session.queue.concat(shuffle(session.retry));
+        session.retry = [];
+        renderQuestion();
+        return;
+      }
+      finish();
+      return;
+    }
+    renderQuestion();
+  }
+
+  // ----- Multiple choice -----
+  function renderMC(item, area, ctl, refresh, onTap) {
+    const opts = shuffle(item.options);
+    const list = h('div', { class: 'options' });
+    let chosen = null, locked = false;
+    const btns = opts.map(o => {
+      const b = h('button', { class: 'opt radio', onclick: () => {
+        if (locked) return;
+        chosen = o;
+        btns.forEach(x => x.classList.toggle('selected', x.dataset.v === o));
+        refresh();
+        if (session.mode !== 'test') onTap();
+      } }, h('span', { class: 'box' }), h('span', { class: 'lbl' }, o));
+      b.dataset.v = o; return b;
+    });
+    btns.forEach(b => list.appendChild(b));
+    area.appendChild(list);
+    ctl.getAnswer = () => chosen;
+    ctl.complete = () => chosen != null;
+    ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    ctl.markFeedback = () => {
+      btns.forEach(b => {
+        b.classList.remove('selected');
+        if (b.dataset.v === item.options[0]) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ correct')); }
+        else if (b.dataset.v === chosen) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ your pick')); }
+      });
+    };
+  }
+
+  // ----- Select all that apply -----
+  function renderSATA(item, area, ctl, refresh) {
+    const opts = shuffle(item.options);
+    const list = h('div', { class: 'options' });
+    const picked = new Set(); let locked = false;
+    const btns = opts.map(o => {
+      const b = h('button', { class: 'opt', 'aria-pressed': 'false', onclick: () => {
+        if (locked) return;
+        if (picked.has(o)) picked.delete(o); else picked.add(o);
+        b.classList.toggle('selected', picked.has(o)); b.setAttribute('aria-pressed', String(picked.has(o)));
+        b.querySelector('.box').textContent = picked.has(o) ? '✓' : '';
+        refresh();
+      } }, h('span', { class: 'box' }), h('span', { class: 'lbl' }, o));
+      b.dataset.v = o; return b;
+    });
+    btns.forEach(b => list.appendChild(b));
+    area.appendChild(list);
+    ctl.getAnswer = () => Array.from(picked);
+    ctl.complete = () => picked.size > 0;
+    ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    ctl.markFeedback = () => {
+      btns.forEach(b => {
+        const v = b.dataset.v, shouldBe = item.answer.includes(v), was = picked.has(v);
+        b.classList.remove('selected');
+        if (shouldBe && was) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ right')); }
+        else if (!shouldBe && was) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ should not be selected')); }
+        else if (shouldBe && !was) { b.classList.add('missed-opt'); b.querySelector('.box').textContent = '✓'; b.appendChild(h('span', { class: 'note' }, '✓ you missed this one')); }
+        else { b.appendChild(h('span', { class: 'note' }, '✓ right (left blank)')); b.querySelector('.note').classList.add('ok'); }
+      });
+    };
+  }
+
+  // ----- Matching -----
+  function renderMatch(item, area, ctl, refresh) {
+    const terms = shuffle(item.pairs.map(p => p[0]));
+    const defs = shuffle(item.pairs.map(p => p[1]));
+    const pairs = {};       // term -> def
+    let selTerm = null, selDef = null, locked = false;
+    const termBtns = {}, defBtns = {};
+    const wrap = h('div', { class: 'match' });
+    const colT = h('div', { class: 'col' }, h('div', { class: 'col-title' }, 'Terms'));
+    const colD = h('div', { class: 'col' }, h('div', { class: 'col-title' }, 'Matches'));
+    terms.forEach(t => {
+      const b = h('button', { class: 'chip', onclick: () => { if (locked) return; selTerm = (selTerm === t) ? null : t; tryPair(); paint(); } },
+        h('span', { class: 'badge' }, ''), h('span', { class: 'lbl' }, t));
+      termBtns[t] = b; colT.appendChild(b);
+    });
+    defs.forEach(d => {
+      const b = h('button', { class: 'chip', onclick: () => { if (locked) return; selDef = (selDef === d) ? null : d; tryPair(); paint(); } },
+        h('span', { class: 'badge' }, ''), h('span', { class: 'lbl' }, d));
+      defBtns[d] = b; colD.appendChild(b);
+    });
+    wrap.appendChild(colT); wrap.appendChild(colD);
+    area.appendChild(wrap);
+    const tools = h('div', { class: 'tools' },
+      h('button', { class: 'small-btn', onclick: () => { if (locked) return; for (const k in pairs) delete pairs[k]; selTerm = selDef = null; paint(); } }, 'Clear pairs'),
+      h('span', { class: 'hint' }, 'Paired items share the same number.'));
+    area.appendChild(tools);
+
+    function tryPair() {
+      if (selTerm != null && selDef != null) {
+        for (const k in pairs) if (pairs[k] === selDef) delete pairs[k];   // a match can belong to one term only
+        pairs[selTerm] = selDef;
+        selTerm = selDef = null;
+      }
+      refresh();
+    }
+    function paint() {
+      const order = Object.keys(pairs); // numbering in pairing order
+      for (const t in termBtns) {
+        const b = termBtns[t]; const idx = order.indexOf(t);
+        b.classList.toggle('selected', selTerm === t);
+        b.classList.toggle('paired', idx >= 0);
+        b.querySelector('.badge').textContent = idx >= 0 ? String(idx + 1) : '';
+      }
+      for (const d in defBtns) {
+        const b = defBtns[d]; const t = order.find(k => pairs[k] === d); const idx = t ? order.indexOf(t) : -1;
+        b.classList.toggle('selected', selDef === d);
+        b.classList.toggle('paired', idx >= 0);
+        b.querySelector('.badge').textContent = idx >= 0 ? String(idx + 1) : '';
+      }
+    }
+    ctl.getAnswer = () => Object.assign({}, pairs);
+    ctl.complete = () => item.pairs.every(([t]) => pairs[t] != null);
+    ctl.lock = () => { locked = true; Object.values(termBtns).concat(Object.values(defBtns)).forEach(b => b.setAttribute('disabled', '')); tools.remove(); };
+    ctl.markFeedback = () => {
+      item.pairs.forEach(([t, d]) => {
+        const ok = pairs[t] === d;
+        termBtns[t].classList.add(ok ? 'right' : 'wrong');
+        if (pairs[t] != null) defBtns[pairs[t]].classList.add(ok ? 'right' : 'wrong');
+      });
+    };
+    ctl.feedbackDetail = () => h('ul', null, item.pairs.map(([t, d]) => {
+      const ok = pairs[t] === d;
+      return h('li', null, h('span', { class: ok ? 'ok' : 'no' }, ok ? '✓ ' : '✗ '), `${t} → ${pairs[t] || '?'}`, ok ? '' : h('span', null, ' — should be: ', h('b', null, d)));
+    }));
+  }
+
+  // ----- Sort into boxes -----
+  function renderSort(item, area, ctl, refresh) {
+    const tiles = shuffle(item.tiles.map(t => t[0]));
+    const placed = {};  // tile -> box
+    let sel = null, locked = false;
+    const pool = h('div', { class: 'pool', role: 'group', 'aria-label': 'Tiles to sort', onclick: e => {
+      if (locked) return;
+      if (e.target === pool && sel && placed[sel]) { delete placed[sel]; sel = null; paint(); }
+    } });
+    const boxesEl = h('div', { class: 'boxes' + (item.boxes.length === 2 ? ' two' : '') });
+    const boxEls = {};
+    item.boxes.forEach(b => {
+      const el = h('div', { class: 'dropbox', role: 'button', tabindex: '0', onclick: () => place(b) },
+        h('div', { class: 'box-title' }, b), h('div', { class: 'box-tiles' }));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); place(b); } });
+      boxEls[b] = el; boxesEl.appendChild(el);
+    });
+    const tileEls = {};
+    tiles.forEach(t => {
+      const el = h('button', { class: 'tile', onclick: e => {
+        e.stopPropagation(); if (locked) return;
+        // A selected tile tapped onto a tile already sitting in a box goes into that box.
+        if (sel && sel !== t && placed[t]) { place(placed[t]); return; }
+        sel = (sel === t) ? null : t; paint();
+      } }, t);
+      tileEls[t] = el;
+    });
+    area.appendChild(h('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Tiles'));
+    area.appendChild(pool);
+    area.appendChild(boxesEl);
+
+    function place(box) {
+      if (locked || !sel) return;
+      placed[sel] = box; sel = null; paint(); refresh();
+    }
+    function paint() {
+      clear(pool);
+      for (const b in boxEls) clear(boxEls[b].querySelector('.box-tiles'));
+      tiles.forEach(t => {
+        const el = tileEls[t];
+        el.classList.toggle('selected', sel === t);
+        if (placed[t]) boxEls[placed[t]].querySelector('.box-tiles').appendChild(el); else pool.appendChild(el);
+      });
+      pool.classList.toggle('empty', tiles.every(t => placed[t]));
+      for (const b in boxEls) boxEls[b].classList.toggle('target', !!sel);
+    }
+    paint();
+    ctl.getAnswer = () => Object.assign({}, placed);
+    ctl.complete = () => tiles.every(t => placed[t]);
+    ctl.lock = () => { locked = true; tiles.forEach(t => tileEls[t].setAttribute('disabled', '')); for (const b in boxEls) { boxEls[b].classList.remove('target'); boxEls[b].removeAttribute('tabindex'); } };
+    ctl.markFeedback = () => {
+      item.tiles.forEach(([t, box]) => {
+        const ok = placed[t] === box;
+        tileEls[t].classList.add(ok ? 'right' : 'wrong');
+        if (!ok) tileEls[t].appendChild(h('span', { class: 'fix' }, `→ ${box}`));
+      });
+    };
+  }
+
+  // ---------- finishing ----------
+  function finish() {
+    const r = session.results;
+    const correct = r.filter(x => x.correct).length;
+    const total = r.length;
+    if (session.mode === 'topic') { progress.scores[session.topic] = { correct, total }; save(); }
+    if (session.mode === 'test') { progress.test = { correct, total }; save(); }
+    const root = screens.results; clear(root);
+    const pct = total ? Math.round((correct / total) * 100) : 0;
+    root.appendChild(h('h1', null, session.mode === 'test' ? 'Practice Test results' : session.mode === 'missed' ? 'Missed Questions round done' : `${topicName(session.topic)}: set complete`));
+    root.appendChild(h('div', { class: 'score-card' },
+      h('div', { class: 'big' }, `${correct} / ${total}`),
+      h('div', { class: 'sub' }, `${pct}% on first try` + (session.mode === 'missed' ? ` · ${progress.missed.length} still in Missed Questions` : ''))));
+
+    if (session.mode === 'test') {
+      const perTopic = {};
+      r.forEach(x => { const k = x.item.topic; perTopic[k] = perTopic[k] || { c: 0, t: 0 }; perTopic[k].t++; if (x.correct) perTopic[k].c++; });
+      const table = h('table', { class: 'per-topic' }, h('thead', null, h('tr', null, h('th', null, 'Topic'), h('th', null, 'Score'))),
+        h('tbody', null, TOPICS.filter(t => perTopic[t.key]).map(t => h('tr', null, h('td', null, t.name), h('td', null, `${perTopic[t.key].c} / ${perTopic[t.key].t}`)))));
+      root.appendChild(h('h2', null, 'Score by topic'));
+      root.appendChild(table);
+      const wrong = r.filter(x => !x.correct);
+      root.appendChild(h('h2', null, wrong.length ? `Review your ${wrong.length} wrong answer${wrong.length === 1 ? '' : 's'}` : 'No wrong answers. Nice work.'));
+      if (wrong.length) root.appendChild(h('p', { class: 'lead' }, 'These were added to Missed Questions.'));
+      const list = h('div', { class: 'review' });
+      wrong.forEach(x => {
+        list.appendChild(h('div', { class: 'review-item' },
+          h('div', { class: 'tp' }, topicName(x.item.topic)),
+          h('div', { class: 'q' }, x.item.prompt),
+          x.item.img === 'longbone' ? h('div', { class: 'diagram', html: diagramSVG() }) : null,
+          h('p', null, h('span', { class: 'no' }, 'Your answer: '), answerText(x.item, x.answer)),
+          h('p', null, h('span', { class: 'ok' }, 'Correct answer: '), correctText(x.item)),
+          h('p', null, x.item.explain)));
+      });
+      root.appendChild(list);
+    }
+
+    const actions = h('div', { class: 'actions' });
+    if (session.mode === 'topic') actions.appendChild(h('button', { class: 'primary', onclick: () => startTopic(session.topic) }, 'Practice again'));
+    if (session.mode === 'missed') actions.appendChild(h('button', { class: 'primary', disabled: progress.missed.length === 0, onclick: startMissed }, 'Practice again'));
+    if (session.mode === 'test') actions.appendChild(h('button', { class: 'primary', onclick: startTest }, 'Take another test'));
+    actions.appendChild(h('button', { class: 'ghost', onclick: goHome }, 'Home'));
+    root.appendChild(actions);
+    show('results');
+  }
+
+  // ---------- home ----------
+  function goHome() { session = null; renderHome(); show('home'); }
+  function renderHome() {
+    const root = screens.home; clear(root);
+    root.appendChild(h('h1', null, 'Bone Basics Study'));
+    root.appendChild(h('p', { class: 'lead' }, 'Pick a topic. Each set is 10 questions with instant feedback. Anything you miss comes back at the end of the set and goes into Missed Questions.'));
+    const grid = h('div', { class: 'topics' });
+    TOPICS.forEach(t => {
+      const s = progress.scores[t.key];
+      const missedN = progress.missed.filter(id => byId[id].topic === t.key).length;
+      grid.appendChild(h('button', { class: 'topic-btn', onclick: () => startTopic(t.key) },
+        h('span', { class: 'name' }, t.name),
+        h('span', { class: 'meta' },
+          h('span', { class: 'score' }, s ? `Last score: ${s.correct}/${s.total}` : 'Not started'),
+          missedN ? h('span', { class: 'pill missed' }, `${missedN} missed waiting`) : (s ? h('span', { class: 'pill clear' }, 'No missed questions') : (t.extra ? h('span', { class: 'pill extra' }, 'Optional') : null)))));
+    });
+    root.appendChild(grid);
+    const n = progress.missed.length;
+    const acts = h('div', { class: 'home-actions' },
+      h('button', { class: 'big-btn secondary', disabled: n === 0, onclick: startMissed }, h('span', null, `Missed Questions (${n})`), h('span', { class: 'meta' }, n ? 'Drill only what you got wrong' : 'Nothing missed yet')),
+      h('button', { class: 'big-btn', onclick: startTest }, h('span', null, 'Practice Test'), h('span', { class: 'meta' }, progress.test ? `Last: ${progress.test.correct}/${progress.test.total} · 30 questions, no feedback until the end` : '30 questions, no feedback until the end')));
+    root.appendChild(acts);
+    const resetRow = h('div', { class: 'reset-row' });
+    const confirmBox = h('div', { class: 'confirm' }, h('span', null, 'Erase all scores and the Missed Questions list?'),
+      h('button', { class: 'small-btn danger', onclick: () => { progress = freshProgress(); save(); renderHome(); } }, 'Yes, reset'),
+      h('button', { class: 'small-btn', onclick: () => { confirmBox.hidden = true; } }, 'Cancel'));
+    confirmBox.hidden = true;
+    resetRow.appendChild(h('button', { class: 'link-btn', onclick: () => { confirmBox.hidden = !confirmBox.hidden; } }, 'Reset progress'));
+    resetRow.appendChild(confirmBox);
+    root.appendChild(resetRow);
+  }
+
+  // ---------- boot ----------
+  $('homeLink').addEventListener('click', goHome);
+  load();
+  renderHome();
+  show('home');
+
+  // exposed for automated testing only
+  window.__bb = { BANK, grade, drawFromTopic, getProgress: () => progress, getSession: () => session };
+})();
+
+</script>
+</body>
+</html>
