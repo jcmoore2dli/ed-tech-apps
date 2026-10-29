@@ -46,6 +46,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.45;
@@ -134,6 +135,9 @@ h2 { font-size: 20px; margin: 20px 0 10px; text-wrap: balance; }
 .opt .lbl { flex: 1; min-width: 0; }
 .opt .note { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 .opt.right .note { color: var(--good); } .opt.wrong .note { color: var(--bad); } .opt.missed-opt .note { color: var(--good); }
+.opt .note.muted { color: var(--muted); font-weight: 600; }
+.instruction .ok, .instruction .no { font-weight: 800; }
+.key-btn[aria-pressed="true"] { border-color: var(--good); color: var(--good); }
 
 /* Matching */
 .match { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 10px; }
@@ -143,7 +147,7 @@ h2 { font-size: 20px; margin: 20px 0 10px; text-wrap: balance; }
   display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 10px; min-height: 48px;
   background: var(--surface); border: 2px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 15px; line-height: 1.25;
 }
-.chip .lbl { flex: 1; min-width: 0; }
+.chip .lbl { flex: 1; min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 .chip .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--surface-2); color: var(--muted); }
 .chip.selected { border-color: var(--accent); background: var(--accent-soft); }
 .chip.paired .badge { background: var(--accent); color: var(--accent-ink); }
@@ -2171,7 +2175,8 @@ const BANK = {
     ));
     root.appendChild(h('div', { class: 'progress' }, h('div', { style: `width:${(session.index / total) * 100}%` })));
     if (isRetry) root.appendChild(h('span', { class: 'retry-note' }, 'Try again — you missed this one earlier in this set'));
-    root.appendChild(h('p', { class: 'instruction' }, INSTR[item.format] + (session.mode === 'test' && item.format === 'mc' ? ' Then tap Next.' : '')));
+    const instr = h('p', { class: 'instruction' }, INSTR[item.format] + (session.mode === 'test' && item.format === 'mc' ? ' Then tap Next.' : ''));
+    root.appendChild(instr);
     root.appendChild(h('p', { class: 'prompt' }, item.prompt));
     if (item.img === 'longbone') root.appendChild(h('div', { class: 'diagram', html: diagramSVG() }));
 
@@ -2204,6 +2209,26 @@ const BANK = {
       if (session.mode === 'test') { record(item, correct, answer, isRetry); next(); return; }
       record(item, correct, answer, isRetry);
       ctl.markFeedback(answer);
+      const legendMine = () => {
+        clear(instr);
+        if (item.format === 'mc') instr.append(h('span', { class: 'ok' }, 'Green = correct answer'), ' · ', h('span', { class: 'no' }, 'Red = your pick'));
+        else if (correct) instr.append(h('span', { class: 'ok' }, 'All correct'));
+        else instr.append('Your answers: ', h('span', { class: 'ok' }, 'green = right'), ' · ', h('span', { class: 'no' }, 'red = wrong'));
+      };
+      const legendKey = () => { clear(instr); instr.append(h('span', { class: 'ok' }, 'Showing the correct answers')); };
+      legendMine();
+      // Wrong answer on a multi-part question: offer a toggle between the answer key and the student's own answers.
+      if (!correct && ctl.showCorrect) {
+        let showingKey = false;
+        const keyBtn = h('button', { class: 'ghost key-btn', 'aria-pressed': 'false', onclick: () => {
+          showingKey = !showingKey;
+          if (showingKey) ctl.showCorrect(); else ctl.showMine();
+          keyBtn.textContent = showingKey ? 'Show my answers' : 'Show correct answers';
+          keyBtn.setAttribute('aria-pressed', String(showingKey));
+          if (showingKey) legendKey(); else legendMine();
+        } }, 'Show correct answers');
+        actions.appendChild(keyBtn);
+      }
       const fb = h('div', { class: 'feedback ' + (correct ? 'good' : 'bad') },
         h('p', { class: 'verdict' }, correct ? 'Correct!' : 'Not quite.'),
         correct ? null : h('p', null, 'Correct answer: ', h('span', { class: 'ans' }, correctText(item))),
@@ -2294,16 +2319,35 @@ const BANK = {
     ctl.getAnswer = () => Array.from(picked);
     ctl.complete = () => picked.size > 0;
     ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    const resetOpts = () => btns.forEach(b => {
+      b.classList.remove('selected', 'right', 'wrong', 'missed-opt');
+      b.querySelectorAll('.note').forEach(n => n.remove());
+      b.querySelector('.box').textContent = '';
+    });
     ctl.markFeedback = () => {
+      resetOpts();
       btns.forEach(b => {
         const v = b.dataset.v, shouldBe = item.answer.includes(v), was = picked.has(v);
-        b.classList.remove('selected');
+        if (was) b.querySelector('.box').textContent = '✓';
         if (shouldBe && was) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ right')); }
         else if (!shouldBe && was) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ should not be selected')); }
         else if (shouldBe && !was) { b.classList.add('missed-opt'); b.querySelector('.box').textContent = '✓'; b.appendChild(h('span', { class: 'note' }, '✓ you missed this one')); }
         else { b.appendChild(h('span', { class: 'note' }, '✓ right (left blank)')); b.querySelector('.note').classList.add('ok'); }
       });
     };
+    // Answer key: only the correct options are checked, all in green.
+    ctl.showCorrect = () => {
+      resetOpts();
+      btns.forEach(b => {
+        if (item.answer.includes(b.dataset.v)) {
+          b.classList.add('right'); b.querySelector('.box').textContent = '✓';
+          b.appendChild(h('span', { class: 'note' }, '✓ select'));
+        } else {
+          b.appendChild(h('span', { class: 'note muted' }, 'leave blank'));
+        }
+      });
+    };
+    ctl.showMine = () => ctl.markFeedback();
   }
 
   // ----- Matching -----
@@ -2359,13 +2403,37 @@ const BANK = {
     ctl.getAnswer = () => Object.assign({}, pairs);
     ctl.complete = () => item.pairs.every(([t]) => pairs[t] != null);
     ctl.lock = () => { locked = true; Object.values(termBtns).concat(Object.values(defBtns)).forEach(b => b.setAttribute('disabled', '')); tools.remove(); };
+    const allChips = () => Object.values(termBtns).concat(Object.values(defBtns));
     ctl.markFeedback = () => {
+      allChips().forEach(b => { b.classList.remove('right', 'wrong'); b.style.minHeight = ''; });
+      defs.forEach(d => colD.appendChild(defBtns[d]));   // back to the original order
+      paint();
       item.pairs.forEach(([t, d]) => {
         const ok = pairs[t] === d;
         termBtns[t].classList.add(ok ? 'right' : 'wrong');
         if (pairs[t] != null) defBtns[pairs[t]].classList.add(ok ? 'right' : 'wrong');
       });
     };
+    // Answer key: each correct match moves directly across from its term, numbered and green.
+    ctl.showCorrect = () => {
+      const key = Object.fromEntries(item.pairs);
+      terms.forEach((t, i) => {
+        const d = defBtns[key[t]];
+        colD.appendChild(d);
+        [termBtns[t], d].forEach(b => {
+          b.classList.remove('wrong', 'selected'); b.classList.add('right', 'paired');
+          b.querySelector('.badge').textContent = String(i + 1);
+        });
+      });
+      // Line each term up with its match so the pairs read across as rows.
+      terms.forEach(t => {
+        const a = termBtns[t], d = defBtns[key[t]];
+        a.style.minHeight = d.style.minHeight = '';
+        const hgt = Math.max(a.offsetHeight, d.offsetHeight) + 'px';
+        a.style.minHeight = d.style.minHeight = hgt;
+      });
+    };
+    ctl.showMine = () => ctl.markFeedback();
     ctl.feedbackDetail = () => h('ul', null, item.pairs.map(([t, d]) => {
       const ok = pairs[t] === d;
       return h('li', null, h('span', { class: ok ? 'ok' : 'no' }, ok ? '✓ ' : '✗ '), `${t} → ${pairs[t] || '?'}`, ok ? '' : h('span', null, ' — should be: ', h('b', null, d)));
@@ -2399,7 +2467,8 @@ const BANK = {
       } }, t);
       tileEls[t] = el;
     });
-    area.appendChild(h('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Tiles'));
+    const poolLabel = h('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Tiles');
+    area.appendChild(poolLabel);
     area.appendChild(pool);
     area.appendChild(boxesEl);
 
@@ -2421,14 +2490,34 @@ const BANK = {
     paint();
     ctl.getAnswer = () => Object.assign({}, placed);
     ctl.complete = () => tiles.every(t => placed[t]);
-    ctl.lock = () => { locked = true; tiles.forEach(t => tileEls[t].setAttribute('disabled', '')); for (const b in boxEls) { boxEls[b].classList.remove('target'); boxEls[b].removeAttribute('tabindex'); } };
+    ctl.lock = () => {
+      locked = true; poolLabel.hidden = true; pool.hidden = true;
+      tiles.forEach(t => tileEls[t].setAttribute('disabled', ''));
+      for (const b in boxEls) { boxEls[b].classList.remove('target'); boxEls[b].removeAttribute('tabindex'); }
+    };
+    const layout = map => {
+      for (const b in boxEls) clear(boxEls[b].querySelector('.box-tiles'));
+      tiles.forEach(t => {
+        const el = tileEls[t];
+        el.classList.remove('right', 'wrong', 'selected');
+        el.querySelectorAll('.fix').forEach(f => f.remove());
+        boxEls[map[t]].querySelector('.box-tiles').appendChild(el);
+      });
+    };
     ctl.markFeedback = () => {
+      layout(placed);
       item.tiles.forEach(([t, box]) => {
         const ok = placed[t] === box;
         tileEls[t].classList.add(ok ? 'right' : 'wrong');
         if (!ok) tileEls[t].appendChild(h('span', { class: 'fix' }, `→ ${box}`));
       });
     };
+    // Answer key: every tile moves into its correct box, all green.
+    ctl.showCorrect = () => {
+      layout(Object.fromEntries(item.tiles));
+      tiles.forEach(t => tileEls[t].classList.add('right'));
+    };
+    ctl.showMine = () => ctl.markFeedback();
   }
 
   // ---------- finishing ----------
