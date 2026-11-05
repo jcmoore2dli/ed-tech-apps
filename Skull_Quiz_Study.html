@@ -1,0 +1,1530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skull Quiz Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one centered column (max 720px), big tap targets, one instruction line above each question.
+   Palette: warm paper + periwinkle accent (echoes the course slides); semantic green/red for grading. */
+:root {
+  --bg: #f6f4ee;
+  --surface: #ffffff;
+  --surface-2: #efece4;
+  --ink: #1e1c19;
+  --muted: #655f56;
+  --line: #d9d3c6;
+  --accent: #5457c0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4e5f8;
+  --good: #1f7a46;
+  --good-bg: #e3f3e8;
+  --bad: #b2271d;
+  --bad-bg: #fbe7e4;
+  --warn-bg: #fff3d6;
+  --warn: #8a5a00;
+  --bone: #efe2cc;
+  --bone-edge: #8a6d4e;
+  --shadow: 0 1px 2px rgba(30,28,25,.06), 0 4px 14px rgba(30,28,25,.06);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161b; --surface: #1f2027; --surface-2: #2a2b34; --ink: #ecebf0; --muted: #a7a6b3; --line: #383944;
+    --accent: #8f92f2; --accent-ink: #101120; --accent-soft: #2b2d4d;
+    --good: #6fd198; --good-bg: #17301f; --bad: #ff9a8f; --bad-bg: #3b1f1b; --warn-bg: #3a2f14; --warn: #ffd27a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161b; --surface: #1f2027; --surface-2: #2a2b34; --ink: #ecebf0; --muted: #a7a6b3; --line: #383944;
+  --accent: #8f92f2; --accent-ink: #101120; --accent-soft: #2b2d4d;
+  --good: #6fd198; --good-bg: #17301f; --bad: #ff9a8f; --bad-bg: #3b1f1b; --warn-bg: #3a2f14; --warn: #ffd27a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+button { font: inherit; color: inherit; }
+.top {
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.brand { font-weight: 700; letter-spacing: .01em; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--ink); font-size: 17px; }
+.brand:hover { color: var(--accent); }
+.brand { white-space: nowrap; }
+.tag { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main.wrap { padding-block: 20px 48px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 6px 0 4px; text-wrap: balance; }
+h2 { font-size: 20px; margin: 20px 0 10px; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0 0 18px; }
+
+/* Home */
+.topics { display: grid; gap: 10px; margin: 0 0 18px; }
+.topic-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.topic-btn:hover { border-color: var(--accent); }
+.topic-btn .name { font-weight: 700; font-size: 18px; }
+.topic-btn .meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 14px; color: var(--muted); white-space: nowrap; }
+.topic-btn .score { font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.pill.missed { background: var(--bad-bg); color: var(--bad); }
+.pill.clear { background: var(--good-bg); color: var(--good); }
+.pill.extra { background: var(--surface-2); color: var(--muted); }
+.big-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 16px 18px; border-radius: 12px; border: 0; cursor: pointer; font-size: 18px; font-weight: 700;
+  background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow);
+}
+.big-btn.secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.big-btn:disabled { opacity: .55; cursor: default; }
+.big-btn .meta { font-size: 14px; font-weight: 500; opacity: .85; white-space: nowrap; }
+.home-actions { display: grid; gap: 10px; }
+.reset-row { margin-top: 28px; font-size: 14px; color: var(--muted); }
+.link-btn { background: none; border: 0; padding: 4px 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 14px; }
+.link-btn:hover { color: var(--bad); }
+.confirm { margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.small-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 600; font-size: 15px; }
+.small-btn.danger { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+/* Quiz */
+.qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.qhead .n { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); }
+.progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
+.progress > div { height: 100%; background: var(--accent); transition: width .25s; }
+.instruction { font-size: 14px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; }
+.prompt { font-size: 20px; font-weight: 600; line-height: 1.35; margin: 0 0 16px; text-wrap: pretty; }
+.retry-note { display: inline-block; margin-bottom: 8px; padding: 3px 10px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); font-size: 13px; font-weight: 700; }
+.diagram { background: #fffdf8; border: 1px solid var(--line); border-radius: 12px; padding: 8px; margin: 0 0 16px; }
+.diagram svg { display: block; width: 100%; height: auto; max-width: 100%; }
+
+.options { display: grid; gap: 10px; }
+.opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 13px 14px; min-height: 52px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 12px; cursor: pointer; line-height: 1.3;
+}
+.opt:hover { border-color: var(--accent); }
+.opt .box { flex: none; width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 6px; display: grid; place-items: center; font-size: 14px; font-weight: 700; }
+.opt.radio .box { border-radius: 50%; }
+.opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+.opt.selected .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.right .box { background: var(--good); border-color: var(--good); color: #fff; }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt.wrong .box { background: var(--bad); border-color: var(--bad); color: #fff; }
+.opt.missed-opt { border-color: var(--good); border-style: dashed; }
+.opt.missed-opt .box { border-color: var(--good); color: var(--good); }
+.opt[disabled] { cursor: default; }
+.opt .lbl { flex: 1; min-width: 0; }
+.opt .note { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.opt.right .note { color: var(--good); } .opt.wrong .note { color: var(--bad); } .opt.missed-opt .note { color: var(--good); }
+.opt .note.muted { color: var(--muted); font-weight: 600; }
+.instruction .ok, .instruction .no { font-weight: 800; }
+.key-btn[aria-pressed="true"] { border-color: var(--good); color: var(--good); }
+
+/* Matching */
+.match { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 10px; }
+.match .col { display: grid; gap: 8px; align-content: start; }
+.match .col-title { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.chip {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 10px; min-height: 48px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 15px; line-height: 1.25;
+}
+.chip .lbl { flex: 1; min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.chip .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--surface-2); color: var(--muted); }
+.chip.selected { border-color: var(--accent); background: var(--accent-soft); }
+.chip.paired .badge { background: var(--accent); color: var(--accent-ink); }
+.chip.right { border-color: var(--good); background: var(--good-bg); }
+.chip.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.chip[disabled] { cursor: default; }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.hint { font-size: 14px; color: var(--muted); }
+
+/* Sorting */
+.pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; min-height: 60px; border: 2px dashed var(--line); border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+.pool.empty::after { content: "All tiles placed. Tap a tile in a box to move it back here."; color: var(--muted); font-size: 14px; }
+.tile { padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font-size: 15px; line-height: 1.25; text-align: left; }
+.tile.selected { border-color: var(--accent); background: var(--accent-soft); }
+.tile.right { border-color: var(--good); background: var(--good-bg); }
+.tile.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.tile[disabled] { cursor: default; }
+.boxes { display: grid; gap: 10px; margin-top: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.boxes.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dropbox { border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 10px; min-height: 110px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.dropbox.target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.dropbox .box-title { font-weight: 700; font-size: 15px; color: var(--accent); }
+.dropbox .box-tiles { display: flex; flex-wrap: wrap; gap: 6px; }
+.dropbox .box-tiles .tile { font-size: 14px; padding: 7px 10px; }
+.tile .fix { display: block; font-size: 12px; color: var(--bad); font-weight: 600; }
+
+/* Buttons + feedback */
+.actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.primary { padding: 14px 24px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px; cursor: pointer; min-width: 140px; }
+.primary:disabled { opacity: .45; cursor: default; }
+.ghost { padding: 14px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 17px; cursor: pointer; }
+.feedback { margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.feedback.good { border-color: var(--good); background: var(--good-bg); }
+.feedback.bad { border-color: var(--bad); background: var(--bad-bg); }
+.feedback .verdict { font-weight: 800; font-size: 18px; margin: 0 0 6px; }
+.feedback.good .verdict { color: var(--good); } .feedback.bad .verdict { color: var(--bad); }
+.feedback p { margin: 4px 0; }
+.feedback .ans { font-weight: 600; }
+.feedback ul { margin: 6px 0 0; padding-left: 18px; }
+.feedback li { margin: 3px 0; }
+.ok { color: var(--good); font-weight: 700; } .no { color: var(--bad); font-weight: 700; }
+
+/* Results */
+.score-card { text-align: center; padding: 24px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 16px; }
+.score-card .big { font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.score-card .sub { color: var(--muted); margin-top: 6px; }
+.per-topic { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font-size: 15px; }
+.per-topic th, .per-topic td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.per-topic td:last-child, .per-topic th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.review { display: grid; gap: 12px; }
+.review-item { padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.review-item .tp { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.review-item .q { font-weight: 600; margin: 4px 0 8px; }
+.review-item p { margin: 4px 0; font-size: 15px; }
+.review-item .diagram { margin-top: 8px; }
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .progress > div { transition: none; } }
+@media (max-width: 420px) {
+  body { font-size: 16px; }
+  .prompt { font-size: 18px; }
+  .topic-btn { flex-direction: column; align-items: flex-start; }
+  .topic-btn .meta { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+  .big-btn { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+
+/* Skull app additions */
+.diagram { margin: 0 0 16px; text-align: center; }
+.diagram svg { max-width: 460px; margin: 0 auto; }
+.diagram figcaption { font-size: 13px; color: #6b6255; margin-top: 2px; }
+figure.diagram { margin-left: 0; margin-right: 0; }
+.explore-btn { margin-bottom: 4px; }
+.version { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.bone-groups { display: grid; gap: 12px; margin-bottom: 14px; }
+.bone-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.bone-chip { padding: 8px 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font-size: 15px; font-weight: 600; }
+.bone-chip.cranial { border-color: #8cc3e6; }
+.bone-chip.facial { border-color: #e6cf6a; }
+.bone-chip.on { background: #f0663a; border-color: #f0663a; color: #fff; }
+.bone-card { padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 14px; min-height: 52px; }
+.bone-card p { margin: 6px 0; }
+.bone-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bone-name { font-weight: 800; font-size: 19px; margin-right: 4px; }
+.pill.cranial { background: #d6ecfa; color: #1d5a82; }
+.pill.facial { background: #fbf0bf; color: #6d5600; }
+.views { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.explore-fig { margin: 0; }
+.explore-fig [data-bone] { cursor: pointer; }
+.explore-fig svg *:not([data-bone]):not(svg):not(g) { pointer-events: none; }
+
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <button id="homeLink" class="brand" type="button">Skull Quiz Study</button>
+  <span id="modeTag" class="tag"></span>
+</div></header>
+<main class="wrap">
+  <section id="home" aria-label="Home"></section>
+  <section id="explore" aria-label="Explore the skull" hidden></section>
+  <section id="quiz" aria-label="Question" hidden></section>
+  <section id="results" aria-label="Results" hidden></section>
+</main>
+
+<script>
+// ============================================================
+// ITEM BANK — generated from bank.py. Every item: id, topic, format,
+// prompt, answer data, and a one-sentence "explain" from the class
+// materials. Formats: "mc" (options[0] is correct; shuffled at play
+// time), "sata" (options + answer), "match" (pairs), "sort" (boxes +
+// tiles). "img": {view, hi} highlights a bone; {arrow} points to a part.
+// Source tags in "src": SL = Skull slides, WS = Skull Exploration
+// Activity worksheet, SC = Skull Anatomy Sorting Cards.
+// ============================================================
+const BANK = {
+ "topics": [
+  {
+   "key": "basics",
+   "name": "Skull Basics"
+  },
+  {
+   "key": "cranial",
+   "name": "Cranial Bones"
+  },
+  {
+   "key": "facial",
+   "name": "Facial Bones"
+  },
+  {
+   "key": "parts",
+   "name": "Important Parts"
+  },
+  {
+   "key": "diagram",
+   "name": "Name That Bone (pictures)",
+   "noCap": true
+  },
+  {
+   "key": "whoami",
+   "name": "Who Am I?"
+  },
+  {
+   "key": "extra",
+   "name": "Extra: Axial vs. Appendicular",
+   "extra": true
+  }
+ ],
+ "testAllocation": {
+  "basics": 4,
+  "cranial": 5,
+  "facial": 5,
+  "parts": 4,
+  "diagram": 4,
+  "whoami": 3
+ },
+ "identifyCap": {
+  "set": 3,
+  "test": 1
+ },
+ "bones": {
+  "frontal": {
+   "name": "Frontal bone",
+   "group": "Cranial",
+   "count": "Single",
+   "where": "Front wall of the cranium; forms the forehead (anterior wall).",
+   "parts": "Supraorbital margin: the upper edge of the eye socket."
+  },
+  "parietal": {
+   "name": "Parietal bones",
+   "group": "Cranial",
+   "count": "Pair",
+   "where": "Top and side walls of the cranium (superior and lateral walls).",
+   "parts": ""
+  },
+  "temporal": {
+   "name": "Temporal bones",
+   "group": "Cranial",
+   "count": "Pair",
+   "where": "Bottom and side walls of the cranium (inferior and lateral walls).",
+   "parts": "Zygomatic process (back part of the zygomatic arch), mastoid process (bump behind the ear), temporomandibular joint (TMJ)."
+  },
+  "occipital": {
+   "name": "Occipital bone",
+   "group": "Cranial",
+   "count": "Single",
+   "where": "Back and bottom walls of the cranium (posterior and inferior wall).",
+   "parts": "Foramen magnum (hole for the spinal cord), occipital condyles (form a joint with the first vertebra)."
+  },
+  "sphenoid": {
+   "name": "Sphenoid bone",
+   "group": "Cranial",
+   "count": "Single",
+   "where": "Deep in the cranium, behind the orbits. Shaped like a butterfly. The \"keystone\" bone: joins with almost every other skull bone. Visible in the temples and the back of the eye socket.",
+   "parts": ""
+  },
+  "ethmoid": {
+   "name": "Ethmoid bone",
+   "group": "Cranial",
+   "count": "Single",
+   "where": "Deep in the cranium, between the sphenoid and the bones of the nose; the deepest skull bone. Makes up much of the nasal cavity and part of the orbits.",
+   "parts": "Nasal septum, superior & middle nasal conchae."
+  },
+  "nasal": {
+   "name": "Nasal bones",
+   "group": "Facial",
+   "count": "Pair",
+   "where": "Form the bridge of the nose. What breaks when the nose is broken.",
+   "parts": ""
+  },
+  "lacrimal": {
+   "name": "Lacrimal bones",
+   "group": "Facial",
+   "count": "Pair",
+   "where": "Smallest facial bones, in the inner corner of each orbit.",
+   "parts": "Lacrimal fossa (tear duct): how tears leave the eye."
+  },
+  "maxilla": {
+   "name": "Maxillae",
+   "group": "Facial",
+   "count": "Pair",
+   "where": "Upper jaw, front of the hard palate, floor of the orbit, and nose. Every facial bone except the mandible touches them.",
+   "parts": "Alveoli (teeth sockets)."
+  },
+  "zygomatic": {
+   "name": "Zygomatic bones",
+   "group": "Facial",
+   "count": "Pair",
+   "where": "The cheekbones. Form the lateral wall of the orbit and half of the zygomatic arch.",
+   "parts": ""
+  },
+  "mandible": {
+   "name": "Mandible",
+   "group": "Facial",
+   "count": "Single",
+   "where": "Lower jaw. Largest & strongest facial bone and the only movable skull bone. 2 separate bones at birth that fuse by age 1.",
+   "parts": "Alveoli (teeth sockets)."
+  },
+  "vomer": {
+   "name": "Vomer bone",
+   "group": "Facial",
+   "count": "Single",
+   "where": "Triangle-shaped. Forms the posterior & inferior part of the nasal septum (with the ethmoid).",
+   "parts": ""
+  },
+  "palatine": {
+   "name": "Palatine bones",
+   "group": "Facial",
+   "count": "Pair",
+   "where": "Posterior 1/3 of the hard palate. Only visible from below.",
+   "parts": ""
+  },
+  "inferior-concha": {
+   "name": "Inferior nasal conchae",
+   "group": "Facial",
+   "count": "Pair",
+   "where": "Curved bones that project from the lateral walls of the nasal cavity.",
+   "parts": ""
+  }
+ },
+ "visible": {
+  "front": [
+   "frontal",
+   "parietal",
+   "temporal",
+   "sphenoid",
+   "ethmoid",
+   "nasal",
+   "lacrimal",
+   "maxilla",
+   "zygomatic",
+   "mandible",
+   "vomer",
+   "inferior-concha"
+  ],
+  "side": [
+   "frontal",
+   "parietal",
+   "temporal",
+   "occipital",
+   "sphenoid",
+   "ethmoid",
+   "lacrimal",
+   "nasal",
+   "maxilla",
+   "zygomatic",
+   "mandible"
+  ],
+  "base": [
+   "maxilla",
+   "palatine",
+   "vomer",
+   "sphenoid",
+   "temporal",
+   "occipital",
+   "zygomatic"
+  ]
+ },
+  "items": [
+    {"id": "BA01", "topic": "basics", "format": "mc", "src": "SL The Skull; WS1", "prompt": "How many bones make up the adult skull?", "options": ["22", "8", "14", "1"], "explain": "The skull is made of 22 bones in an adult. They fit together like a puzzle."},
+    {"id": "BA02", "topic": "basics", "format": "mc", "src": "SL The Skull; WS2", "prompt": "What are the two types of bones that make up the skull?", "options": ["Cranial bones and facial bones", "Axial bones and appendicular bones", "Cranial bones and spinal bones", "Facial bones and teeth"], "explain": "The two types of skull bones are cranial bones and facial bones."},
+    {"id": "BA03", "topic": "basics", "format": "mc", "src": "SL Cranial Bones; WS3", "prompt": "How many cranial bones are there?", "options": ["8", "6", "14", "22"], "explain": "There are 8 cranial bones (6 names, because the parietal and temporal bones come in pairs)."},
+    {"id": "BA04", "topic": "basics", "format": "mc", "src": "SL Facial Bones; WS4", "prompt": "How many facial bones are there?", "options": ["14", "8", "6", "22"], "explain": "There are 14 facial bones: 22 skull bones − 8 cranial bones = 14 facial bones."},
+    {"id": "BA05", "topic": "basics", "format": "mc", "src": "SL The Skull; WS5", "prompt": "Is the skull part of the axial or appendicular skeleton?", "options": ["Axial", "Appendicular", "Both", "Neither"], "explain": "The skull is part of the axial skeleton."},
+    {"id": "BA06", "topic": "basics", "format": "mc", "src": "SL The Skull", "prompt": "What is the only movable bone of the skull?", "options": ["Mandible (lower jaw)", "Maxillae (upper jaw)", "Zygomatic bones (cheekbones)", "Temporal bones"], "explain": "21 skull bones don't move. The only movable skull bone is the mandible (lower jaw)."},
+    {"id": "BA07", "topic": "basics", "format": "mc", "src": "SL The Skull", "prompt": "How many of the 22 skull bones do NOT move?", "options": ["21", "22", "20", "14"], "explain": "21 of the skull bones don't move. Only the mandible moves."},
+    {"id": "BA08", "topic": "basics", "format": "mc", "src": "SL The Skull", "prompt": "Most skull bones are bound together by sutures. What is a suture?", "options": ["An immovable joint", "A movable joint", "A hole for the spinal cord", "A tooth socket"], "explain": "Most skull bones are bound by sutures: immovable joints."},
+    {"id": "BA09", "topic": "basics", "format": "mc", "src": "WS6", "prompt": "What body cavity holds the brain?", "options": ["The cranium (cranial cavity)", "The orbit", "The nasal cavity", "The foramen magnum"], "explain": "Your cranium is the cavity that your brain sits in."},
+    {"id": "BA10", "topic": "basics", "format": "mc", "src": "SL Cranial Bones", "prompt": "What is the main job of the cranial bones?", "options": ["Surround and protect the brain", "Provide openings for air and food", "Give the face its shape", "Hold the teeth"], "explain": "Cranial bones surround and protect the brain."},
+    {"id": "BA11", "topic": "basics", "format": "sata", "src": "WS7", "prompt": "What are the two jobs of the cranial bones?", "options": ["Protect the brain", "Provide a place for head and neck muscles to attach", "Provide openings for air and food", "Make up the structure of the face", "Hold the teeth"], "answer": ["Protect the brain", "Provide a place for head and neck muscles to attach"], "explain": "The 8 cranial bones protect your brain and provide a place for the head and neck muscles to attach."},
+    {"id": "BA12", "topic": "basics", "format": "sata", "src": "SL Facial Bones; WS8", "prompt": "What are the three jobs of the facial bones?", "options": ["Make up the structure of the face", "Provide openings for air and food", "Provide a place for muscles of facial expression to attach", "Surround and protect the brain", "Form a joint with the first vertebra"], "answer": ["Make up the structure of the face", "Provide openings for air and food", "Provide a place for muscles of facial expression to attach"], "explain": "Facial bones make up the structure of the face (eye sockets, jaws, nose), provide openings for air and food, and give the muscles of facial expression a place to attach."},
+    {"id": "BA13", "topic": "basics", "format": "sort", "src": "WS2-3 bone lists", "prompt": "Sort each bone: cranial or facial?", "boxes": ["Cranial bone", "Facial bone"], "tiles": [["Frontal", "Cranial bone"], ["Parietal", "Cranial bone"], ["Occipital", "Cranial bone"], ["Sphenoid", "Cranial bone"], ["Nasal", "Facial bone"], ["Vomer", "Facial bone"], ["Mandible", "Facial bone"]], "explain": "Cranial: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Facial: nasal, maxillae, lacrimal, mandible, zygomatic, vomer, palatine, inferior nasal conchae."},
+    {"id": "BA14", "topic": "basics", "format": "sort", "src": "WS2-3 bone lists", "prompt": "Sort each bone: cranial or facial?", "boxes": ["Cranial bone", "Facial bone"], "tiles": [["Temporal", "Cranial bone"], ["Ethmoid", "Cranial bone"], ["Maxillae", "Facial bone"], ["Lacrimal", "Facial bone"], ["Zygomatic", "Facial bone"], ["Palatine", "Facial bone"], ["Inferior nasal conchae", "Facial bone"]], "explain": "The ethmoid is a cranial bone even though it makes up much of the nasal cavity. The inferior nasal conchae are their own facial bones."},
+    {"id": "BA15", "topic": "basics", "format": "sort", "src": "WS7-8; SL Facial Bones", "prompt": "Sort each job: is it a job of the cranial bones or the facial bones?", "boxes": ["Cranial bones", "Facial bones"], "tiles": [["Protect the brain", "Cranial bones"], ["Attachment for head and neck muscles", "Cranial bones"], ["Make up the structure of the face", "Facial bones"], ["Openings for air and food", "Facial bones"], ["Attachment for muscles of facial expression", "Facial bones"]], "explain": "Cranial bones protect the brain and anchor head and neck muscles. Facial bones shape the face, make openings for air and food, and anchor the muscles of facial expression."},
+    {"id": "BA16", "topic": "basics", "format": "mc", "src": "WS2", "prompt": "Which of these is a CRANIAL bone?", "options": ["Ethmoid", "Vomer", "Palatine", "Lacrimal"], "explain": "The ethmoid is one of the 6 cranial bones (frontal, parietal, temporal, occipital, sphenoid, ethmoid). Vomer, palatine, and lacrimal are facial bones."},
+    {"id": "BA17", "topic": "basics", "format": "mc", "src": "WS3", "prompt": "Which of these is a FACIAL bone?", "options": ["Vomer", "Sphenoid", "Ethmoid", "Temporal"], "explain": "The vomer is a facial bone. Sphenoid, ethmoid, and temporal are cranial bones."},
+    {"id": "BA18", "topic": "basics", "format": "mc", "src": "WS2", "prompt": "There are 8 cranial bones but only 6 names. Why?", "options": ["The parietal and temporal bones come in pairs", "The frontal and occipital bones come in pairs", "The sphenoid and ethmoid bones come in pairs", "Two cranial bones are part of the face"], "explain": "Two cranial bones occur in pairs: parietal (2) and temporal (2). The other four are single."},
+    {"id": "BA19", "topic": "basics", "format": "mc", "src": "WS3", "prompt": "There are 14 facial bones but only 8 names. Which TWO facial bones are single (not pairs)?", "options": ["Mandible and vomer", "Maxillae and nasal", "Zygomatic and lacrimal", "Palatine and vomer"], "explain": "Most facial bones come in pairs. Only the mandible and the vomer are single."},
+    {"id": "BA20", "topic": "basics", "format": "mc", "src": "WS1 coloring note", "prompt": "Are teeth bones?", "options": ["No, teeth are not bone", "Yes, teeth are facial bones", "Yes, teeth are cranial bones", "Only the molars are bone"], "explain": "Teeth are not bone. That's why you don't color the teeth on the worksheet."},
+    {"id": "BA21", "topic": "basics", "format": "mc", "src": "SL Mandible", "prompt": "At birth, the mandible is made of how many separate bones?", "options": ["2", "1", "3", "4"], "explain": "The mandible is 2 separate bones at birth, but they fuse by age 1."},
+    {"id": "BA22", "topic": "basics", "format": "mc", "src": "WS facial bones paragraph", "prompt": "What you look like is largely due to the shape and size of your…", "options": ["Facial bones", "Cranial bones", "Teeth", "Sutures"], "explain": "Your 14 facial bones make up the structure of your face, so what you look like is largely due to their shape and size."},
+    {"id": "BA23", "topic": "basics", "format": "match", "src": "SL The Skull", "prompt": "Match each number to the fact it goes with.", "pairs": [["22", "Bones in the adult skull"], ["8", "Cranial bones"], ["14", "Facial bones"], ["21", "Skull bones that don't move"], ["1", "Skull bones that can move"]], "explain": "22 bones in the skull: 8 cranial + 14 facial. 21 don't move; only 1 (the mandible) moves."},
+    {"id": "BA24", "topic": "basics", "format": "match", "src": "SL; WS", "prompt": "Match each word to its meaning.", "pairs": [["Cranium", "The cavity your brain sits in"], ["Suture", "Immovable joint between skull bones"], ["Mandible", "Lower jaw"], ["Maxillae", "Upper jaw"], ["Orbit", "Eye socket"]], "explain": "The cranium holds the brain, sutures are immovable joints, the mandible is the lower jaw, the maxillae form the upper jaw, and the orbit is the eye socket."},
+    {"id": "CR01", "topic": "cranial", "format": "mc", "src": "SL Frontal Bone", "prompt": "Which cranial bone forms the forehead?", "options": ["Frontal", "Parietal", "Sphenoid", "Occipital"], "explain": "The frontal bone is the front wall of the cranium and forms the forehead."},
+    {"id": "CR02", "topic": "cranial", "format": "mc", "src": "SL Parietal Bones", "prompt": "Which bones make up the TOP and side walls of the cranium?", "options": ["Parietal bones", "Temporal bones", "Frontal bone", "Occipital bone"], "explain": "The parietal bones (a pair) make up the top and side walls of the cranium."},
+    {"id": "CR03", "topic": "cranial", "format": "mc", "src": "SL Temporal Bone", "prompt": "Which bones make up the BOTTOM and side walls of the cranium?", "options": ["Temporal bones", "Parietal bones", "Occipital bone", "Sphenoid bone"], "explain": "The temporal bones (a pair) make up the bottom and side walls of the cranium."},
+    {"id": "CR04", "topic": "cranial", "format": "mc", "src": "SL Occipital Bone", "prompt": "Which bone makes up the BACK and bottom walls of the cranium?", "options": ["Occipital", "Temporal", "Parietal", "Sphenoid"], "explain": "The occipital bone (single) makes up the back and bottom walls of the cranium."},
+    {"id": "CR05", "topic": "cranial", "format": "mc", "src": "SL Sphenoid Bone", "prompt": "Which bone is shaped like a butterfly?", "options": ["Sphenoid", "Ethmoid", "Vomer", "Occipital"], "explain": "The sphenoid bone is shaped like a butterfly."},
+    {"id": "CR06", "topic": "cranial", "format": "mc", "src": "SL Sphenoid Bone", "prompt": "Which bone is called the \"keystone\" bone because it joins with almost every other skull bone?", "options": ["Sphenoid", "Frontal", "Ethmoid", "Maxillae"], "explain": "The sphenoid is the \"keystone\" bone: it joins with almost every other skull bone."},
+    {"id": "CR07", "topic": "cranial", "format": "mc", "src": "WS2 table", "prompt": "Which bone is the deepest bone of the skull?", "options": ["Ethmoid", "Sphenoid", "Vomer", "Occipital"], "explain": "The worksheet calls the ethmoid the deepest bone of the skull. It lies between the sphenoid and the bones of the nose."},
+    {"id": "CR08", "topic": "cranial", "format": "mc", "src": "SL Ethmoid Bone", "prompt": "Which cranial bone makes up much of the nasal cavity?", "options": ["Ethmoid", "Sphenoid", "Frontal", "Temporal"], "explain": "The ethmoid is found deep in the cranium and makes up much of the nasal cavity."},
+    {"id": "CR09", "topic": "cranial", "format": "mc", "src": "SL Sphenoid Bone", "prompt": "The sphenoid bone is found deep in the cranium, behind the…", "options": ["Orbits (eye sockets)", "Nasal bones", "Ears", "Foramen magnum"], "explain": "The sphenoid is found deep in the cranium, behind the orbits (eye sockets)."},
+    {"id": "CR10", "topic": "cranial", "format": "mc", "src": "SL Frontal Bone; WS2", "prompt": "The frontal bone is which wall of the cranium?", "options": ["Front (anterior) wall", "Back (posterior) wall", "Top (superior) wall", "Bottom (inferior) wall"], "explain": "The frontal bone is the front (anterior) wall of the cranium."},
+    {"id": "CR11", "topic": "cranial", "format": "mc", "src": "SL Parietal Bones", "prompt": "How many parietal bones do you have?", "options": ["2", "1", "4", "8"], "explain": "The parietal bones are a pair: one on each side of the top of your head."},
+    {"id": "CR12", "topic": "cranial", "format": "sata", "src": "WS2; SL", "prompt": "Which cranial bones come in pairs?", "options": ["Parietal", "Temporal", "Frontal", "Occipital", "Sphenoid", "Ethmoid"], "answer": ["Parietal", "Temporal"], "explain": "Only the parietal and temporal bones come in pairs. Frontal, occipital, sphenoid, and ethmoid are single."},
+    {"id": "CR13", "topic": "cranial", "format": "sort", "src": "SL single/pair bullets", "prompt": "Sort each cranial bone: single bone or a pair?", "boxes": ["Single", "Pair"], "tiles": [["Frontal", "Single"], ["Occipital", "Single"], ["Sphenoid", "Single"], ["Ethmoid", "Single"], ["Parietal", "Pair"], ["Temporal", "Pair"]], "explain": "Single: frontal, occipital, sphenoid, ethmoid. Pairs: parietal and temporal (that's how 6 names make 8 bones)."},
+    {"id": "CR14", "topic": "cranial", "format": "match", "src": "SL cranial bone slides", "prompt": "Match each cranial bone to where it is.", "pairs": [["Frontal", "Front wall of the cranium; forms the forehead"], ["Parietal", "Top and side walls of the cranium"], ["Temporal", "Bottom and side walls of the cranium"], ["Occipital", "Back and bottom walls of the cranium"], ["Sphenoid", "Deep in the cranium, behind the orbits"], ["Ethmoid", "Deep in the cranium; makes up much of the nasal cavity"]], "explain": "These are the locations from the cranial bone slides."},
+    {"id": "CR15", "topic": "cranial", "format": "match", "src": "WS2 table", "prompt": "Match each cranial bone to its worksheet description.", "pairs": [["Frontal", "Anterior wall of the cranium"], ["Parietal", "Superior and lateral walls of the cranium"], ["Occipital", "Posterior and inferior wall of the cranium"], ["Temporal", "Inferior and lateral walls of the cranium"]], "explain": "Anterior = front, posterior = back, superior = top, inferior = bottom, lateral = side."},
+    {"id": "CR16", "topic": "cranial", "format": "match", "src": "WS2 table terms", "prompt": "Match each direction word to its meaning.", "pairs": [["Anterior", "Front"], ["Posterior", "Back"], ["Superior", "Top (above)"], ["Inferior", "Bottom (below)"], ["Lateral", "Side"]], "explain": "The worksheet describes the cranial bones with these words."},
+    {"id": "CR17", "topic": "cranial", "format": "mc", "src": "WS2 table", "prompt": "\"Inferior and lateral walls of the cranium\" describes which bone?", "options": ["Temporal", "Parietal", "Occipital", "Frontal"], "explain": "Inferior = bottom, lateral = side. The temporal bones are the bottom and side walls."},
+    {"id": "CR18", "topic": "cranial", "format": "mc", "src": "WS2 table", "prompt": "\"Superior and lateral walls of the cranium\" describes which bone?", "options": ["Parietal", "Temporal", "Occipital", "Sphenoid"], "explain": "Superior = top, lateral = side. The parietal bones are the top and side walls."},
+    {"id": "CR19", "topic": "cranial", "format": "mc", "src": "WS2 table", "prompt": "\"Posterior and inferior wall of the cranium\" describes which bone?", "options": ["Occipital", "Frontal", "Temporal", "Parietal"], "explain": "Posterior = back, inferior = bottom. The occipital bone is the back and bottom wall."},
+    {"id": "CR20", "topic": "cranial", "format": "mc", "src": "WS2 table", "prompt": "The sphenoid bone is visible in the temples and in the…", "options": ["Back of the eye socket", "Roof of the mouth", "Bridge of the nose", "Lower jaw"], "explain": "The worksheet says the sphenoid is visible in the temples and the back of the eye socket (orbit)."},
+    {"id": "CR21", "topic": "cranial", "format": "mc", "src": "WS2 table", "prompt": "The ethmoid bone lies between the sphenoid bone and the…", "options": ["Bones of the nose", "Occipital bone", "Mandible", "Parietal bones"], "explain": "The ethmoid lies between the sphenoid bone and the bones of the nose; it forms part of the nasal cavity and the orbits."},
+    {"id": "CR22", "topic": "cranial", "format": "sata", "src": "SL Ethmoid & Sphenoid", "prompt": "Which cranial bones are found DEEP in the cranium?", "options": ["Sphenoid", "Ethmoid", "Frontal", "Parietal", "Occipital"], "answer": ["Sphenoid", "Ethmoid"], "explain": "The slides say both the sphenoid and the ethmoid are found deep in the cranium."},
+    {"id": "CR23", "topic": "cranial", "format": "mc", "src": "SL Temporal Bone", "prompt": "Which cranial bones are on the sides of your head, by your ears?", "options": ["Temporal", "Parietal", "Sphenoid", "Occipital"], "explain": "The temporal bones form the bottom and side walls of the cranium; the mastoid process is the bump behind the ear."},
+    {"id": "CR24", "topic": "cranial", "format": "sata", "src": "WS2 table; SL", "prompt": "Which cranial bones help form the orbit (eye socket)?", "options": ["Frontal", "Sphenoid", "Ethmoid", "Occipital", "Parietal"], "answer": ["Frontal", "Sphenoid", "Ethmoid"], "explain": "The frontal forms the supraorbital margin, the sphenoid sits at the back of the eye socket, and the ethmoid forms part of the orbits."},
+    {"id": "FA01", "topic": "facial", "format": "mc", "src": "SL Nasal Bones", "prompt": "Which bones form the bridge of the nose?", "options": ["Nasal bones", "Vomer", "Lacrimal bones", "Ethmoid"], "explain": "The nasal bones (a pair) form the bridge of the nose."},
+    {"id": "FA02", "topic": "facial", "format": "mc", "src": "SL Nasal Bones", "prompt": "When someone breaks their nose, which bones break?", "options": ["Nasal bones", "Vomer", "Maxillae", "Inferior nasal conchae"], "explain": "The nasal bones are what break when the nose is broken."},
+    {"id": "FA03", "topic": "facial", "format": "mc", "src": "SL Lacrimal Bones", "prompt": "What are the smallest bones of the face?", "options": ["Lacrimal bones", "Nasal bones", "Palatine bones", "Vomer"], "explain": "The lacrimal bones are the smallest facial bones."},
+    {"id": "FA04", "topic": "facial", "format": "mc", "src": "SL Maxillae", "prompt": "Which bones form the upper jaw?", "options": ["Maxillae", "Mandible", "Palatine bones", "Zygomatic bones"], "explain": "The maxillae form much of the upper jaw, hard palate, floor of the orbit, and nose."},
+    {"id": "FA05", "topic": "facial", "format": "mc", "src": "WS3 table", "prompt": "Which bone is the lower jaw?", "options": ["Mandible", "Maxillae", "Zygomatic", "Vomer"], "explain": "The mandible is the lower jawbone."},
+    {"id": "FA06", "topic": "facial", "format": "mc", "src": "SL Mandible", "prompt": "Which is the largest and strongest facial bone?", "options": ["Mandible", "Maxillae", "Zygomatic bones", "Nasal bones"], "explain": "The mandible is the largest and strongest facial bone."},
+    {"id": "FA07", "topic": "facial", "format": "mc", "src": "SL Zygomatic Bones", "prompt": "Which bones are commonly called the cheekbones?", "options": ["Zygomatic", "Maxillae", "Temporal", "Mandible"], "explain": "The zygomatic bones are the cheekbones."},
+    {"id": "FA08", "topic": "facial", "format": "mc", "src": "SL Vomer Bone", "prompt": "Which bone is triangle-shaped and forms the posterior & inferior part of the nasal septum?", "options": ["Vomer", "Ethmoid", "Nasal bones", "Palatine"], "explain": "The vomer is a single, triangle-shaped bone that forms the posterior & inferior portion of the nasal septum."},
+    {"id": "FA09", "topic": "facial", "format": "mc", "src": "SL Palatine bone", "prompt": "Which bones form the posterior 1/3 (back third) of the hard palate?", "options": ["Palatine bones", "Maxillae", "Vomer", "Sphenoid"], "explain": "The palatine bones (a pair) form the posterior 1/3 of the hard palate."},
+    {"id": "FA10", "topic": "facial", "format": "mc", "src": "WS3 table", "prompt": "Which bones form the anterior (front) portion of the hard palate?", "options": ["Maxillae", "Palatine bones", "Mandible", "Vomer"], "explain": "The maxillae form the anterior portion of the hard palate; the palatine bones form the back third."},
+    {"id": "FA11", "topic": "facial", "format": "mc", "src": "WS3 table", "prompt": "Which curved bones project from the lateral walls of the nasal cavity?", "options": ["Inferior nasal conchae", "Nasal bones", "Vomer", "Lacrimal bones"], "explain": "The inferior nasal conchae are curved bones that project from the lateral walls of the nasal cavity."},
+    {"id": "FA12", "topic": "facial", "format": "mc", "src": "WS3 table", "prompt": "All of the facial bones except the mandible touch which bone?", "options": ["Maxillae", "Zygomatic", "Vomer", "Nasal"], "explain": "The worksheet says all facial bones (except the mandible) touch the maxillae."},
+    {"id": "FA13", "topic": "facial", "format": "mc", "src": "SL Zygomatic Bones", "prompt": "Which bones form the lateral wall of the orbit (eye socket)?", "options": ["Zygomatic bones", "Lacrimal bones", "Nasal bones", "Palatine bones"], "explain": "The zygomatic bones form the lateral wall of the orbit and half of the zygomatic arch."},
+    {"id": "FA14", "topic": "facial", "format": "mc", "src": "SL Maxillae", "prompt": "The maxillae form which part of the orbit (eye socket)?", "options": ["The floor", "The roof", "The lateral wall", "The back wall"], "explain": "The maxillae form much of the upper jaw, hard palate, floor of the orbit, and nose."},
+    {"id": "FA15", "topic": "facial", "format": "mc", "src": "WS3 table", "prompt": "Where are the lacrimal bones found?", "options": ["In the inner corner of each eye socket", "In the lateral wall of each eye socket", "At the bridge of the nose", "At the back of the hard palate"], "explain": "The lacrimal bones are the smallest bones of the face, found in the inner (interior) corner of each orbit."},
+    {"id": "FA16", "topic": "facial", "format": "sort", "src": "SL single/pair bullets", "prompt": "Sort each facial bone: single bone or a pair?", "boxes": ["Single", "Pair"], "tiles": [["Mandible", "Single"], ["Vomer", "Single"], ["Nasal", "Pair"], ["Maxillae", "Pair"], ["Lacrimal", "Pair"], ["Zygomatic", "Pair"], ["Palatine", "Pair"], ["Inferior nasal conchae", "Pair"]], "explain": "Only the mandible and vomer are single. The other 6 facial bones come in pairs: 2 + 6 × 2 = 14."},
+    {"id": "FA17", "topic": "facial", "format": "match", "src": "SL facial bone slides", "prompt": "Match each facial bone to its description.", "pairs": [["Nasal bones", "Form the bridge of the nose"], ["Lacrimal bones", "Smallest facial bones"], ["Zygomatic bones", "The cheekbones"], ["Mandible", "The only movable skull bone"], ["Vomer", "Triangle-shaped; back & bottom of the nasal septum"]], "explain": "These descriptions come from the facial bone slides."},
+    {"id": "FA18", "topic": "facial", "format": "match", "src": "SL; WS3 table", "prompt": "Match each facial bone to its description.", "pairs": [["Maxillae", "Upper jaw, front of hard palate, floor of orbit"], ["Palatine bones", "Posterior 1/3 of the hard palate"], ["Inferior nasal conchae", "Curved bones on the lateral walls of the nasal cavity"], ["Mandible", "Lower jaw; largest & strongest facial bone"], ["Nasal bones", "Bridge of the nose"]], "explain": "These descriptions come from the facial bone slides and the worksheet table."},
+    {"id": "FA19", "topic": "facial", "format": "sata", "src": "SL Maxillae; SL Palatine", "prompt": "Which bones form the hard palate (the bony roof of the mouth)?", "options": ["Maxillae", "Palatine bones", "Vomer", "Mandible", "Nasal bones"], "answer": ["Maxillae", "Palatine bones"], "explain": "The maxillae form the front of the hard palate and the palatine bones form the posterior 1/3."},
+    {"id": "FA20", "topic": "facial", "format": "sata", "src": "SL Zygomatic; SL Temporal", "prompt": "Which bones form the zygomatic arch?", "options": ["Zygomatic bone", "Temporal bone", "Maxilla", "Sphenoid", "Mandible"], "answer": ["Zygomatic bone", "Temporal bone"], "explain": "The zygomatic bone forms half of the zygomatic arch; the temporal bone's zygomatic process forms the back (posterior) part."},
+    {"id": "FA21", "topic": "facial", "format": "sata", "src": "SL; WS3 table", "prompt": "Which FACIAL bones help form the orbit (eye socket)?", "options": ["Zygomatic", "Maxillae", "Lacrimal", "Mandible", "Vomer", "Nasal"], "answer": ["Zygomatic", "Maxillae", "Lacrimal"], "explain": "Zygomatic = lateral wall, maxillae = floor, lacrimal = inner corner. (The frontal, sphenoid, and ethmoid are cranial bones that also help.)"},
+    {"id": "FA22", "topic": "facial", "format": "sata", "src": "SL single/pair bullets", "prompt": "Which facial bones are SINGLE (not pairs)?", "options": ["Mandible", "Vomer", "Maxillae", "Nasal", "Zygomatic", "Palatine"], "answer": ["Mandible", "Vomer"], "explain": "Only the mandible and the vomer are single facial bones."},
+    {"id": "FA23", "topic": "facial", "format": "mc", "src": "SL Mandible", "prompt": "The two halves of the mandible fuse together by what age?", "options": ["Age 1", "Birth", "Age 5", "Age 18"], "explain": "The mandible is 2 separate bones at birth, but they fuse by age 1."},
+    {"id": "FA24", "topic": "facial", "format": "mc", "src": "SL Inferior Nasal Conchae", "prompt": "Are the inferior nasal conchae single or a pair?", "options": ["A pair", "Single", "There are four of them", "They are part of the ethmoid"], "explain": "The inferior nasal conchae are a pair of facial bones. (The superior and middle conchae are parts of the ethmoid.)"},
+    {"id": "PT01", "topic": "parts", "format": "mc", "src": "SL Frontal Bone", "prompt": "The supraorbital margin is part of which bone?", "options": ["Frontal", "Zygomatic", "Maxillae", "Sphenoid"], "explain": "The supraorbital margin (upper edge of the orbit) is an important part of the frontal bone."},
+    {"id": "PT02", "topic": "parts", "format": "mc", "src": "SL Frontal Bone", "prompt": "What is the supraorbital margin?", "options": ["The upper edge of the eye socket", "The lower edge of the eye socket", "The bump behind the ear", "The hole for the spinal cord"], "explain": "\"Supra\" means above: the supraorbital margin is the edge above the orbit (eye socket), on the frontal bone."},
+    {"id": "PT03", "topic": "parts", "format": "mc", "src": "SL Temporal Bone", "prompt": "The mastoid process is part of which bone?", "options": ["Temporal", "Occipital", "Parietal", "Mandible"], "explain": "The mastoid process (the bump behind the ear) is part of the temporal bone."},
+    {"id": "PT04", "topic": "parts", "format": "mc", "src": "SL Temporal Bone", "prompt": "What is the mastoid process?", "options": ["The bump behind your ear", "The hole for the spinal cord", "Your cheekbone", "A tooth socket"], "explain": "The mastoid process is the bump behind the ear, on the temporal bone."},
+    {"id": "PT05", "topic": "parts", "format": "mc", "src": "SL Temporal Bone", "prompt": "The zygomatic process makes up the back part of the zygomatic arch. Which bone is it part of?", "options": ["Temporal", "Zygomatic", "Maxillae", "Sphenoid"], "explain": "Tricky name: the zygomatic PROCESS belongs to the temporal bone. It makes up the posterior portion of the zygomatic arch."},
+    {"id": "PT06", "topic": "parts", "format": "mc", "src": "SL Temporal Bone", "prompt": "The temporomandibular joint (TMJ) is listed as an important part of which cranial bone?", "options": ["Temporal", "Occipital", "Frontal", "Sphenoid"], "explain": "The TMJ is listed with the temporal bone. Its name tells you the two bones: temporo (temporal) + mandibular (mandible)."},
+    {"id": "PT07", "topic": "parts", "format": "mc", "src": "SL Temporal Bone", "prompt": "The temporomandibular joint (TMJ) is where the temporal bone meets the…", "options": ["Mandible", "Maxillae", "Occipital bone", "First vertebra"], "explain": "Temporo + mandibular: the TMJ is the joint between the temporal bone and the mandible. It lets the jaw move."},
+    {"id": "PT08", "topic": "parts", "format": "mc", "src": "SL Occipital Bone", "prompt": "What is the foramen magnum?", "options": ["The hole for the spinal cord", "The joint with the first vertebra", "The opening for the tear duct", "A tooth socket"], "explain": "The foramen magnum is the hole in the occipital bone for the spinal cord."},
+    {"id": "PT09", "topic": "parts", "format": "mc", "src": "SL Occipital Bone", "prompt": "The foramen magnum is in which bone?", "options": ["Occipital", "Temporal", "Sphenoid", "Parietal"], "explain": "The foramen magnum and the occipital condyles are important parts of the occipital bone."},
+    {"id": "PT10", "topic": "parts", "format": "mc", "src": "SL Occipital Bone", "prompt": "What do the occipital condyles do?", "options": ["Form a joint with the first vertebra", "Hold the teeth", "Drain tears from the eye", "Form the bridge of the nose"], "explain": "The occipital condyles form a joint with the first vertebra."},
+    {"id": "PT11", "topic": "parts", "format": "mc", "src": "SL Ethmoid Bone", "prompt": "The superior and middle nasal conchae are part of which bone?", "options": ["Ethmoid", "Inferior nasal conchae", "Vomer", "Maxillae"], "explain": "The superior & middle nasal conchae belong to the ethmoid. The inferior nasal conchae are separate facial bones."},
+    {"id": "PT12", "topic": "parts", "format": "mc", "src": "SL Ethmoid Bone", "prompt": "The nasal septum is listed as an important part of which CRANIAL bone?", "options": ["Ethmoid", "Sphenoid", "Frontal", "Occipital"], "explain": "The ethmoid's important parts are the nasal septum and the superior & middle nasal conchae. The vomer (a facial bone) forms the rest of the septum."},
+    {"id": "PT13", "topic": "parts", "format": "mc", "src": "SL Lacrimal Bones", "prompt": "The lacrimal fossa is where the tear duct passes. What does it do?", "options": ["It's how tears leave the eye", "It holds the eyeball", "It lets air into the nose", "It holds the upper teeth"], "explain": "The lacrimal fossa (tear duct) is how tears leave the eye."},
+    {"id": "PT14", "topic": "parts", "format": "mc", "src": "SL Maxillae; SL Mandible", "prompt": "What are alveoli?", "options": ["Teeth sockets", "Eye sockets", "Tear ducts", "Joints between skull bones"], "explain": "Alveoli are the teeth sockets in the maxillae and the mandible."},
+    {"id": "PT15", "topic": "parts", "format": "sata", "src": "SL Maxillae; SL Mandible", "prompt": "Which bones have alveoli (teeth sockets)?", "options": ["Maxillae", "Mandible", "Palatine bones", "Vomer", "Zygomatic bones"], "answer": ["Maxillae", "Mandible"], "explain": "The upper teeth sit in the alveoli of the maxillae; the lower teeth sit in the alveoli of the mandible."},
+    {"id": "PT16", "topic": "parts", "format": "match", "src": "SL important parts", "prompt": "Match each important part to the bone it belongs to.", "pairs": [["Supraorbital margin", "Frontal bone"], ["Mastoid process", "Temporal bone"], ["Foramen magnum", "Occipital bone"], ["Superior & middle nasal conchae", "Ethmoid bone"], ["Lacrimal fossa", "Lacrimal bone"]], "explain": "Frontal: supraorbital margin. Temporal: mastoid process. Occipital: foramen magnum. Ethmoid: superior & middle conchae. Lacrimal: lacrimal fossa."},
+    {"id": "PT17", "topic": "parts", "format": "match", "src": "SL important parts", "prompt": "Match each part to what it is or does.", "pairs": [["Foramen magnum", "Hole for the spinal cord"], ["Occipital condyles", "Form a joint with the first vertebra"], ["Mastoid process", "Bump behind the ear"], ["Alveoli", "Teeth sockets"], ["Lacrimal fossa", "Tear duct; how tears leave the eye"]], "explain": "These are the descriptions from the important-parts slides."},
+    {"id": "PT18", "topic": "parts", "format": "sort", "src": "SL Temporal; SL Occipital", "prompt": "Sort each part into the bone it belongs to.", "boxes": ["Temporal bone", "Occipital bone"], "tiles": [["Zygomatic process", "Temporal bone"], ["Mastoid process", "Temporal bone"], ["Temporomandibular joint", "Temporal bone"], ["Foramen magnum", "Occipital bone"], ["Occipital condyles", "Occipital bone"]], "explain": "Temporal: zygomatic process, mastoid process, TMJ. Occipital: foramen magnum and occipital condyles."},
+    {"id": "PT19", "topic": "parts", "format": "sata", "src": "SL Temporal Bone", "prompt": "Which are important parts of the TEMPORAL bone?", "options": ["Zygomatic process", "Mastoid process", "Temporomandibular joint", "Foramen magnum", "Supraorbital margin"], "answer": ["Zygomatic process", "Mastoid process", "Temporomandibular joint"], "explain": "The temporal bone's important parts are the zygomatic process, mastoid process, and temporomandibular joint."},
+    {"id": "PT20", "topic": "parts", "format": "sata", "src": "WS3 table; SL Vomer", "prompt": "Which bones form the nasal septum?", "options": ["Ethmoid", "Vomer", "Zygomatic", "Lacrimal", "Mandible"], "answer": ["Ethmoid", "Vomer"], "explain": "Together with the ethmoid bone, the vomer forms the nasal septum (the vomer is the posterior & inferior part)."},
+    {"id": "PT21", "topic": "parts", "format": "sort", "src": "SL important parts", "prompt": "Sort each part into the bone it belongs to.", "boxes": ["Frontal bone", "Ethmoid bone", "Maxillae / mandible"], "tiles": [["Supraorbital margin", "Frontal bone"], ["Nasal septum", "Ethmoid bone"], ["Superior & middle nasal conchae", "Ethmoid bone"], ["Alveoli (teeth sockets)", "Maxillae / mandible"]], "explain": "Frontal: supraorbital margin. Ethmoid: nasal septum and superior & middle conchae. Maxillae and mandible: alveoli."},
+    {"id": "PA01", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Supraorbital margin", "Mastoid process", "Lacrimal fossa", "Zygomatic process"], "explain": "The arrow points to the supraorbital margin: the upper edge of the eye socket, part of the frontal bone.", "img": {"arrow": "supraorbital"}, "skill": "identify"},
+    {"id": "PA02", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Nasal septum", "Supraorbital margin", "Lacrimal fossa", "Foramen magnum"], "explain": "The arrow points to the nasal septum, the wall down the middle of the nasal cavity (ethmoid above, vomer below).", "img": {"arrow": "nasal-septum"}, "skill": "identify"},
+    {"id": "PA03", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Zygomatic process", "Mastoid process", "Temporomandibular joint (TMJ)", "Supraorbital margin"], "explain": "The arrow points to the zygomatic process of the temporal bone, the back part of the zygomatic arch.", "img": {"arrow": "zyg-process"}, "skill": "identify"},
+    {"id": "PA04", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Temporomandibular joint (TMJ)", "Mastoid process", "Zygomatic process", "Foramen magnum"], "explain": "The arrow points to the temporomandibular joint, where the mandible meets the temporal bone just in front of the ear.", "img": {"arrow": "tmj"}, "skill": "identify"},
+    {"id": "PA05", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Mastoid process", "Zygomatic process", "Temporomandibular joint (TMJ)", "Occipital condyles"], "explain": "The arrow points to the mastoid process, the bump behind the ear on the temporal bone.", "img": {"arrow": "mastoid"}, "skill": "identify"},
+    {"id": "PA06", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Lacrimal fossa", "Supraorbital margin", "Nasal septum", "Temporomandibular joint (TMJ)"], "explain": "The arrow points to the lacrimal fossa in the inner corner of the eye socket: the tear duct, how tears leave the eye.", "img": {"arrow": "lacrimal-fossa"}, "skill": "identify"},
+    {"id": "PA07", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Foramen magnum", "Occipital condyles", "Mastoid process", "Lacrimal fossa"], "explain": "The arrow points to the foramen magnum, the big hole in the occipital bone for the spinal cord.", "img": {"arrow": "foramen-magnum"}, "skill": "identify"},
+    {"id": "PA08", "topic": "parts", "format": "mc", "src": "SL important parts (diagram)", "prompt": "What is the arrow pointing to?", "options": ["Occipital condyles", "Foramen magnum", "Mastoid process", "Temporomandibular joint (TMJ)"], "explain": "The arrow points to an occipital condyle, one of the two bumps beside the foramen magnum that form a joint with the first vertebra.", "img": {"arrow": "occ-condyles"}, "skill": "identify"},
+    {"id": "DG-front-frontal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Frontal", "Parietal", "Sphenoid", "Occipital"], "explain": "Frontal bone: the front wall of the cranium; forms the forehead and the top edge of the eye sockets.", "img": {"view": "front", "hi": "frontal"}, "skill": "identify"},
+    {"id": "DG-front-parietal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Parietal", "Frontal", "Temporal", "Occipital"], "explain": "Parietal bones: the top and side walls of the cranium.", "img": {"view": "front", "hi": "parietal"}, "skill": "identify"},
+    {"id": "DG-front-temporal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Temporal", "Parietal", "Sphenoid", "Occipital"], "explain": "Temporal bones: the bottom and side walls of the cranium, around the ear (mastoid process, zygomatic process, TMJ).", "img": {"view": "front", "hi": "temporal"}, "skill": "identify"},
+    {"id": "DG-front-sphenoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Sphenoid", "Ethmoid", "Temporal", "Zygomatic"], "explain": "Sphenoid bone: the butterfly-shaped \"keystone\" bone, visible in the temples and the back of the eye socket.", "img": {"view": "front", "hi": "sphenoid"}, "skill": "identify"},
+    {"id": "DG-front-ethmoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Ethmoid", "Sphenoid", "Lacrimal", "Vomer"], "explain": "Ethmoid bone: deep in the cranium; part of the eye socket's inner wall and much of the nasal cavity (upper septum, superior & middle conchae).", "img": {"view": "front", "hi": "ethmoid"}, "skill": "identify"},
+    {"id": "DG-front-nasal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Nasal", "Vomer", "Lacrimal", "Maxilla"], "explain": "Nasal bones: the bridge of the nose.", "img": {"view": "front", "hi": "nasal"}, "skill": "identify"},
+    {"id": "DG-front-lacrimal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Lacrimal", "Ethmoid", "Nasal", "Sphenoid"], "explain": "Lacrimal bones: the smallest facial bones, in the inner corner of each eye socket.", "img": {"view": "front", "hi": "lacrimal"}, "skill": "identify"},
+    {"id": "DG-front-maxilla", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Maxilla", "Mandible", "Zygomatic", "Palatine"], "explain": "Maxillae: the upper jaw, front of the hard palate, floor of the orbit, and sides of the nose.", "img": {"view": "front", "hi": "maxilla"}, "skill": "identify"},
+    {"id": "DG-front-zygomatic", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Zygomatic", "Maxilla", "Temporal", "Sphenoid"], "explain": "Zygomatic bones: the cheekbones; the lateral wall of the orbit and front half of the zygomatic arch.", "img": {"view": "front", "hi": "zygomatic"}, "skill": "identify"},
+    {"id": "DG-front-mandible", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Mandible", "Maxilla", "Zygomatic", "Temporal"], "explain": "Mandible: the lower jaw, the only movable skull bone.", "img": {"view": "front", "hi": "mandible"}, "skill": "identify"},
+    {"id": "DG-front-vomer", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Vomer", "Ethmoid", "Inferior nasal concha", "Nasal"], "explain": "Vomer: the triangle-shaped bone forming the lower, back part of the nasal septum.", "img": {"view": "front", "hi": "vomer"}, "skill": "identify"},
+    {"id": "DG-front-inferior-concha", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (front view)", "options": ["Inferior nasal concha", "Ethmoid", "Vomer", "Nasal"], "explain": "Inferior nasal conchae: curved bones on the side walls of the nasal cavity, below the ethmoid's middle conchae.", "img": {"view": "front", "hi": "inferior-concha"}, "skill": "identify"},
+    {"id": "DG-side-frontal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Frontal", "Parietal", "Sphenoid", "Occipital"], "explain": "Frontal bone: the front wall of the cranium; forms the forehead and the top edge of the eye sockets.", "img": {"view": "side", "hi": "frontal"}, "skill": "identify"},
+    {"id": "DG-side-parietal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Parietal", "Frontal", "Temporal", "Occipital"], "explain": "Parietal bones: the top and side walls of the cranium.", "img": {"view": "side", "hi": "parietal"}, "skill": "identify"},
+    {"id": "DG-side-temporal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Temporal", "Parietal", "Sphenoid", "Occipital"], "explain": "Temporal bones: the bottom and side walls of the cranium, around the ear (mastoid process, zygomatic process, TMJ).", "img": {"view": "side", "hi": "temporal"}, "skill": "identify"},
+    {"id": "DG-side-occipital", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Occipital", "Parietal", "Temporal", "Sphenoid"], "explain": "Occipital bone: the back and bottom wall of the cranium, with the foramen magnum.", "img": {"view": "side", "hi": "occipital"}, "skill": "identify"},
+    {"id": "DG-side-sphenoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Sphenoid", "Ethmoid", "Temporal", "Zygomatic"], "explain": "Sphenoid bone: the butterfly-shaped \"keystone\" bone, visible in the temples and the back of the eye socket.", "img": {"view": "side", "hi": "sphenoid"}, "skill": "identify"},
+    {"id": "DG-side-ethmoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Ethmoid", "Sphenoid", "Lacrimal", "Vomer"], "explain": "Ethmoid bone: deep in the cranium; part of the eye socket's inner wall and much of the nasal cavity (upper septum, superior & middle conchae).", "img": {"view": "side", "hi": "ethmoid"}, "skill": "identify"},
+    {"id": "DG-side-lacrimal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Lacrimal", "Ethmoid", "Nasal", "Sphenoid"], "explain": "Lacrimal bones: the smallest facial bones, in the inner corner of each eye socket.", "img": {"view": "side", "hi": "lacrimal"}, "skill": "identify"},
+    {"id": "DG-side-nasal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Nasal", "Vomer", "Lacrimal", "Maxilla"], "explain": "Nasal bones: the bridge of the nose.", "img": {"view": "side", "hi": "nasal"}, "skill": "identify"},
+    {"id": "DG-side-maxilla", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Maxilla", "Mandible", "Zygomatic", "Palatine"], "explain": "Maxillae: the upper jaw, front of the hard palate, floor of the orbit, and sides of the nose.", "img": {"view": "side", "hi": "maxilla"}, "skill": "identify"},
+    {"id": "DG-side-zygomatic", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Zygomatic", "Maxilla", "Temporal", "Sphenoid"], "explain": "Zygomatic bones: the cheekbones; the lateral wall of the orbit and front half of the zygomatic arch.", "img": {"view": "side", "hi": "zygomatic"}, "skill": "identify"},
+    {"id": "DG-side-mandible", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (side view)", "options": ["Mandible", "Maxilla", "Zygomatic", "Temporal"], "explain": "Mandible: the lower jaw, the only movable skull bone.", "img": {"view": "side", "hi": "mandible"}, "skill": "identify"},
+    {"id": "DG-base-maxilla", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Maxilla", "Mandible", "Zygomatic", "Palatine"], "explain": "Maxillae: the upper jaw, front of the hard palate, floor of the orbit, and sides of the nose.", "img": {"view": "base", "hi": "maxilla"}, "skill": "identify"},
+    {"id": "DG-base-palatine", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Palatine", "Maxilla", "Vomer", "Sphenoid"], "explain": "Palatine bones: the back 1/3 of the hard palate. You can only see them from below.", "img": {"view": "base", "hi": "palatine"}, "skill": "identify"},
+    {"id": "DG-base-vomer", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Vomer", "Ethmoid", "Inferior nasal concha", "Nasal"], "explain": "Vomer: the triangle-shaped bone forming the lower, back part of the nasal septum.", "img": {"view": "base", "hi": "vomer"}, "skill": "identify"},
+    {"id": "DG-base-sphenoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Sphenoid", "Ethmoid", "Temporal", "Zygomatic"], "explain": "Sphenoid bone: the butterfly-shaped \"keystone\" bone, visible in the temples and the back of the eye socket.", "img": {"view": "base", "hi": "sphenoid"}, "skill": "identify"},
+    {"id": "DG-base-temporal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Temporal", "Parietal", "Sphenoid", "Occipital"], "explain": "Temporal bones: the bottom and side walls of the cranium, around the ear (mastoid process, zygomatic process, TMJ).", "img": {"view": "base", "hi": "temporal"}, "skill": "identify"},
+    {"id": "DG-base-occipital", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Occipital", "Parietal", "Temporal", "Sphenoid"], "explain": "Occipital bone: the back and bottom wall of the cranium, with the foramen magnum.", "img": {"view": "base", "hi": "occipital"}, "skill": "identify"},
+    {"id": "DG-base-zygomatic", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Which bone is highlighted? (view from below)", "options": ["Zygomatic", "Maxilla", "Temporal", "Sphenoid"], "explain": "Zygomatic bones: the cheekbones; the lateral wall of the orbit and front half of the zygomatic arch.", "img": {"view": "base", "hi": "zygomatic"}, "skill": "identify"},
+    {"id": "DC-front-ethmoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (front view)", "options": ["Cranial bone", "Facial bone"], "explain": "It's the ethmoid, a cranial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "front", "hi": "ethmoid"}, "skill": "identify"},
+    {"id": "DC-side-sphenoid", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (side view)", "options": ["Cranial bone", "Facial bone"], "explain": "It's the sphenoid, a cranial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "side", "hi": "sphenoid"}, "skill": "identify"},
+    {"id": "DC-front-vomer", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (front view)", "options": ["Facial bone", "Cranial bone"], "explain": "It's the vomer, a facial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "front", "hi": "vomer"}, "skill": "identify"},
+    {"id": "DC-side-lacrimal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (side view)", "options": ["Facial bone", "Cranial bone"], "explain": "It's the lacrimal, a facial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "side", "hi": "lacrimal"}, "skill": "identify"},
+    {"id": "DC-base-temporal", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (view from below)", "options": ["Cranial bone", "Facial bone"], "explain": "It's the temporal, a cranial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "base", "hi": "temporal"}, "skill": "identify"},
+    {"id": "DC-base-palatine", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (view from below)", "options": ["Facial bone", "Cranial bone"], "explain": "It's the palatine, a facial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "base", "hi": "palatine"}, "skill": "identify"},
+    {"id": "DC-side-zygomatic", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (side view)", "options": ["Facial bone", "Cranial bone"], "explain": "It's the zygomatic, a facial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "side", "hi": "zygomatic"}, "skill": "identify"},
+    {"id": "DC-front-inferior-concha", "topic": "diagram", "format": "mc", "src": "Diagram (original drawing)", "prompt": "Is the highlighted bone a cranial bone or a facial bone? (front view)", "options": ["Facial bone", "Cranial bone"], "explain": "It's the inferior nasal concha, a facial bone. Cranial bones: frontal, parietal, temporal, occipital, sphenoid, ethmoid. Everything else is facial.", "img": {"view": "front", "hi": "inferior-concha"}, "skill": "identify"},
+    {"id": "WC01", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"The pair of bones that are also known as your cheek bones; form the lateral wall of the orbit.\"", "options": ["Zygomatic bones", "Maxillae", "Temporal bones", "Lacrimal bones"], "explain": "Zygomatic bones: the cheekbones; the lateral wall of the orbit and front half of the zygomatic arch."},
+    {"id": "WC02", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"The only movable skull bone; the largest & strongest facial bone.\"", "options": ["Mandible", "Maxillae", "Zygomatic bones", "Temporal bones"], "explain": "Mandible: the lower jaw, the only movable skull bone."},
+    {"id": "WC03", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A pair of bones that make up the bottom and side walls of the cranium; include the zygomatic arch & mastoid process.\"", "options": ["Temporal bones", "Parietal bones", "Occipital bone", "Zygomatic bones"], "explain": "Temporal bones: the bottom and side walls of the cranium, around the ear (mastoid process, zygomatic process, TMJ)."},
+    {"id": "WC04", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A pair of bones that make up the top and side walls of the cranium.\"", "options": ["Parietal bones", "Temporal bones", "Occipital bone", "Frontal bone"], "explain": "Parietal bones: the top and side walls of the cranium."},
+    {"id": "WC05", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A single, triangle-shaped bone that makes up the posterior & inferior portion of the nasal septum.\"", "options": ["Vomer bone", "Ethmoid bone", "Nasal bones", "Palatine bones"], "explain": "Vomer: the triangle-shaped bone forming the lower, back part of the nasal septum."},
+    {"id": "WC06", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A low pair of bones that project on the lateral walls of the nasal cavity.\"", "options": ["Inferior nasal conchae", "Ethmoid bone", "Nasal bones", "Vomer bone"], "explain": "Inferior nasal conchae: curved bones on the side walls of the nasal cavity, below the ethmoid's middle conchae."},
+    {"id": "WC07", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A pair of bones that form the bridge of the nose.\"", "options": ["Nasal bones", "Vomer bone", "Lacrimal bones", "Inferior nasal conchae"], "explain": "Nasal bones: the bridge of the nose."},
+    {"id": "WC08", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"Smallest facial bones; include a hollow depression that the tear duct passes through.\"", "options": ["Lacrimal bones", "Nasal bones", "Ethmoid bone", "Palatine bones"], "explain": "Lacrimal bones: the smallest facial bones, in the inner corner of each eye socket."},
+    {"id": "WC09", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"The back & bottom wall of the cranium; includes the foramen magnum.\"", "options": ["Occipital bone", "Parietal bones", "Temporal bones", "Sphenoid bone"], "explain": "Occipital bone: the back and bottom wall of the cranium, with the foramen magnum."},
+    {"id": "WC10", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A deep cranial bone that makes up much of the nasal cavity (including the septum and superior/middle nasal conchae).\"", "options": ["Ethmoid bone", "Sphenoid bone", "Vomer bone", "Inferior nasal conchae"], "explain": "Ethmoid bone: deep in the cranium; part of the eye socket's inner wall and much of the nasal cavity (upper septum, superior & middle conchae)."},
+    {"id": "WC11", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"Found deep in the cranium behind the orbits; shaped like a butterfly; \"keystone\" bone.\"", "options": ["Sphenoid bone", "Ethmoid bone", "Temporal bones", "Vomer bone"], "explain": "Sphenoid bone: the butterfly-shaped \"keystone\" bone, visible in the temples and the back of the eye socket."},
+    {"id": "WC12", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"The front wall of the cranium; forms the forehead and supraorbital margin.\"", "options": ["Frontal bone", "Parietal bones", "Occipital bone", "Sphenoid bone"], "explain": "Frontal bone: the front wall of the cranium; forms the forehead and the top edge of the eye sockets."},
+    {"id": "WC13", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A pair of bones that form most of the upper jaw, hard palate, floor of orbit, and nose.\"", "options": ["Maxillae", "Palatine bones", "Mandible", "Zygomatic bones"], "explain": "Maxillae: the upper jaw, front of the hard palate, floor of the orbit, and sides of the nose."},
+    {"id": "WC14", "topic": "whoami", "format": "mc", "src": "SC sorting card", "prompt": "Who am I? \"A pair of bones that form the posterior 1/3 of the hard palate.\"", "options": ["Palatine bones", "Maxillae", "Vomer bone", "Inferior nasal conchae"], "explain": "Palatine bones: the back 1/3 of the hard palate. You can only see them from below."},
+    {"id": "WT01", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Press on your forehead. Who am I?", "options": ["Frontal bone", "Parietal bones", "Occipital bone", "Sphenoid bone"], "explain": "Your forehead is the frontal bone, the front wall of the cranium."},
+    {"id": "WT02", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Put your hand on the top of your head. Who am I?", "options": ["Parietal bones", "Temporal bones", "Occipital bone", "Frontal bone"], "explain": "The parietal bones make up the top and side walls of the cranium."},
+    {"id": "WT03", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Touch the back of your head, just above your neck. Who am I?", "options": ["Occipital bone", "Parietal bones", "Temporal bones", "Sphenoid bone"], "explain": "The occipital bone is the back and bottom wall of the cranium."},
+    {"id": "WT04", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Feel the hard bump just behind your ear. I'm the bone it belongs to. Who am I?", "options": ["Temporal bones", "Parietal bones", "Occipital bone", "Zygomatic bones"], "explain": "That bump is the mastoid process, part of the temporal bone."},
+    {"id": "WT05", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Put a finger just in front of your ear and open and close your mouth. The joint you feel is between me and the mandible. Who am I?", "options": ["Temporal bones", "Parietal bones", "Occipital bone", "Zygomatic bones"], "explain": "That's the temporomandibular joint (TMJ): temporal bone + mandible."},
+    {"id": "WT06", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Gently pinch the hard bridge of your nose (not the soft tip). Who am I?", "options": ["Nasal bones", "Vomer bone", "Lacrimal bones", "Inferior nasal conchae"], "explain": "The nasal bones form the bridge of the nose."},
+    {"id": "WT07", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Feel the bony bumps under the outer corners of your eyes. Who am I?", "options": ["Zygomatic bones", "Maxillae", "Temporal bones", "Lacrimal bones"], "explain": "Those are your cheekbones, the zygomatic bones."},
+    {"id": "WT08", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Open and close your mouth. I'm the bone that moves. Who am I?", "options": ["Mandible", "Maxillae", "Zygomatic bones", "Temporal bones"], "explain": "The mandible (lower jaw) is the only movable skull bone."},
+    {"id": "WT09", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Touch your gums just above your top teeth. My sockets hold those teeth. Who am I?", "options": ["Maxillae", "Palatine bones", "Mandible", "Zygomatic bones"], "explain": "The upper teeth sit in the alveoli (teeth sockets) of the maxillae."},
+    {"id": "WT10", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Press your tongue against the front of the hard roof of your mouth. Who am I?", "options": ["Maxillae", "Palatine bones", "Mandible", "Zygomatic bones"], "explain": "The maxillae form the front of the hard palate."},
+    {"id": "WT11", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Slide your tongue back along the hard roof of your mouth to just before it turns soft. Who am I?", "options": ["Palatine bones", "Maxillae", "Vomer bone", "Inferior nasal conchae"], "explain": "The palatine bones form the posterior 1/3 of the hard palate."},
+    {"id": "WT12", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Touch the inner corner of your eye, next to your nose. I'm the smallest facial bone and tears drain past me. Who am I?", "options": ["Lacrimal bones", "Nasal bones", "Ethmoid bone", "Palatine bones"], "explain": "The lacrimal bones sit in the inner corner of each orbit; the tear duct passes through the lacrimal fossa."},
+    {"id": "WT13", "topic": "whoami", "format": "mc", "src": "Who Am I? (touch your face)", "prompt": "Touch your temple beside your eye. A butterfly-shaped bone deep in your skull peeks out here. Who am I?", "options": ["Sphenoid bone", "Ethmoid bone", "Temporal bones", "Vomer bone"], "explain": "The butterfly-shaped sphenoid is visible in the temples and the back of the eye socket."},
+    {"id": "WM01", "topic": "whoami", "format": "match", "src": "SC sorting cards", "prompt": "Match each bone to its sorting card.", "pairs": [["Frontal bone", "Front wall of the cranium; forehead and supraorbital margin"], ["Occipital bone", "Back & bottom wall of the cranium; includes the foramen magnum"], ["Sphenoid bone", "Deep, behind the orbits; butterfly-shaped \"keystone\" bone"], ["Ethmoid bone", "Deep cranial bone; much of the nasal cavity"], ["Temporal bones", "Bottom and side walls; zygomatic arch & mastoid process"]], "explain": "These are the cranial bone sorting cards."},
+    {"id": "WM02", "topic": "whoami", "format": "match", "src": "SC sorting cards", "prompt": "Match each bone to its sorting card.", "pairs": [["Lacrimal bones", "Smallest facial bones; the tear duct passes through"], ["Vomer bone", "Single, triangle-shaped; back & bottom of the septum"], ["Palatine bones", "Posterior 1/3 of the hard palate"], ["Inferior nasal conchae", "Low pair on the lateral walls of the nasal cavity"], ["Zygomatic bones", "Cheekbones; lateral wall of the orbit"]], "explain": "These are the facial bone sorting cards."},
+    {"id": "AX01", "topic": "extra", "format": "sort", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Sort each bone: axial or appendicular?", "boxes": ["Axial", "Appendicular"], "tiles": [["Skull", "Axial"], ["Ribs", "Axial"], ["Sternum", "Axial"], ["Lumbar vertebrae", "Axial"], ["Carpals", "Appendicular"], ["Scapula", "Appendicular"], ["Radius", "Appendicular"], ["Femur", "Appendicular"], ["Pelvis", "Appendicular"]], "explain": "From the challenge slides: skull, ribs, sternum, and lumbar vertebrae are axial; carpals, scapula, radius, femur, and pelvis are appendicular."},
+    {"id": "AX02", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Carpals: axial or appendicular?", "options": ["Appendicular", "Axial"], "explain": "The challenge slide marks the carpals as appendicular."},
+    {"id": "AX03", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Lumbar vertebrae: axial or appendicular?", "options": ["Axial", "Appendicular"], "explain": "The challenge slide marks the lumbar vertebrae as axial."},
+    {"id": "AX04", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Scapula: axial or appendicular?", "options": ["Appendicular", "Axial"], "explain": "The challenge slide marks the scapula as appendicular."},
+    {"id": "AX05", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Radius: axial or appendicular?", "options": ["Appendicular", "Axial"], "explain": "The challenge slide marks the radius as appendicular."},
+    {"id": "AX06", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Femur: axial or appendicular?", "options": ["Appendicular", "Axial"], "explain": "The challenge slide marks the femur as appendicular."},
+    {"id": "AX07", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Pelvis: axial or appendicular?", "options": ["Appendicular", "Axial"], "explain": "The challenge slide marks the pelvis as appendicular."},
+    {"id": "AX08", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Sternum: axial or appendicular?", "options": ["Axial", "Appendicular"], "explain": "The challenge slide marks the sternum as axial."},
+    {"id": "AX09", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Ribs: axial or appendicular?", "options": ["Axial", "Appendicular"], "explain": "The challenge slide marks the ribs as axial."},
+    {"id": "AX10", "topic": "extra", "format": "mc", "src": "SL Axial vs. Appendicular Challenge", "prompt": "Skull: axial or appendicular?", "options": ["Axial", "Appendicular"], "explain": "The challenge slide marks the skull as axial."}
+  ]
+};
+
+// ---------- skull diagrams (original SVG, schematic) ----------
+// skullSVG(view, opts): view = 'front' | 'side' | 'base'
+// opts.hi    = bone key to highlight (all visible parts of it, both sides)
+// opts.arrow = part key; draws a pointer arrow to that part
+// opts.tint  = true: cranial bones light blue, facial bones light yellow (explore mode)
+// Bones are layered back-to-front; later shapes cover the hidden edges of earlier ones.
+const SKULL = (function () {
+  const BONE = '#efe2cc', WALL = '#dcc7a6', EDGE = '#5f4c38', HOLE = '#3a2f28', TOOTH = '#fbf8f2', DEEP = '#8a7966';
+  const HI = '#f0663a', HI_EDGE = '#7e2a10', HI_WALL = '#d9542b';
+  const CRANIAL = { frontal: 1, parietal: 1, temporal: 1, occipital: 1, sphenoid: 1, ethmoid: 1 };
+  const TINT_C = '#bfe0f5', TINT_C_WALL = '#a3cde9', TINT_F = '#fbeaa6', TINT_F_WALL = '#efd987';
+  let uid = 0;
+
+  // Closed smooth path through points; a point [x, y, 1] is a sharp corner.
+  function sm(pts) {
+    const n = pts.length, P = i => pts[(i + n) % n];
+    let d = `M${P(0)[0]} ${P(0)[1]}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+      const c1 = p1[2] ? p1 : [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = p2[2] ? p2 : [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${r(c1[0])} ${r(c1[1])} ${r(c2[0])} ${r(c2[1])} ${p2[0]} ${p2[1]}`;
+    }
+    return d + 'Z';
+  }
+  const r = v => Math.round(v * 10) / 10;
+  const poly = pts => 'M' + pts.map(p => p[0] + ' ' + p[1]).join(' L') + 'Z';
+  const mirror = (pts, W) => pts.map(p => [W - p[0], p[1], p[2]]);
+
+  function fills(bone, o, wall) {
+    if (o.hi === bone) return [wall ? HI_WALL : HI, HI_EDGE];
+    if (o.tint && bone) return CRANIAL[bone] ? [wall ? TINT_C_WALL : TINT_C, EDGE] : [wall ? TINT_F_WALL : TINT_F, EDGE];
+    return [wall ? WALL : BONE, EDGE];
+  }
+  function shape(bone, d, o, extra) {
+    const wall = extra && extra.wall;
+    const [f, s] = fills(bone, o, wall);
+    const sw = (o.hi === bone) ? 1.8 : 1.3;
+    return `<path d="${d}" fill="${f}" stroke="${s}" stroke-width="${sw}" stroke-linejoin="round"${bone ? ` data-bone="${bone}"` : ''}/>`;
+  }
+  const hole = (d, extra) => `<path d="${d}" fill="${HOLE}" stroke="${EDGE}" stroke-width="1.1"${extra || ''}/>`;
+  const ell = (cx, cy, rx, ry, rot) => {
+    const k = 0.5523;
+    const pts = [[cx + rx, cy], [cx, cy + ry], [cx - rx, cy], [cx, cy - ry]];
+    let d = `M${cx + rx} ${cy} C${cx + rx} ${cy + ry * k} ${cx + rx * k} ${cy + ry} ${cx} ${cy + ry} C${cx - rx * k} ${cy + ry} ${cx - rx} ${cy + ry * k} ${cx - rx} ${cy} C${cx - rx} ${cy - ry * k} ${cx - rx * k} ${cy - ry} ${cx} ${cy - ry} C${cx + rx * k} ${cy - ry} ${cx + rx} ${cy - ry * k} ${cx + rx} ${cy}Z`;
+    return { d, t: rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : '' };
+  };
+  const tooth = (x, y, w, hgt, up) => {
+    // rounded crown edge on the biting side
+    const rr = Math.min(3.5, w / 2.5);
+    return up
+      ? `<path d="M${x} ${y + hgt} V${y + rr} Q${x} ${y} ${x + rr} ${y} H${x + w - rr} Q${x + w} ${y} ${x + w} ${y + rr} V${y + hgt}Z" fill="${TOOTH}" stroke="#8f816f" stroke-width="1"/>`
+      : `<path d="M${x} ${y} V${y + hgt - rr} Q${x} ${y + hgt} ${x + rr} ${y + hgt} H${x + w - rr} Q${x + w} ${y + hgt} ${x + w} ${y + hgt - rr} V${y}Z" fill="${TOOTH}" stroke="#8f816f" stroke-width="1"/>`;
+  };
+
+  // ---------------- FRONT VIEW (viewBox 300 x 345) ----------------
+  function front(o) {
+    const W = 300, out = [], id = 'sk' + (++uid);
+    const both = (bone, pts, extra) => { out.push(shape(bone, sm(pts), o, extra)); out.push(shape(bone, sm(mirror(pts, W)), o, extra)); };
+
+    out.push(shape('parietal', sm([[150, 8], [214, 16], [256, 50], [271, 100], [267, 150], [240, 168], [150, 168], [60, 168], [33, 150], [29, 100], [44, 50], [86, 16]]), o));
+    both('temporal', [[29, 124], [44, 128], [48, 170], [48, 212], [42, 228], [35, 214], [30, 180]]);
+    both('sphenoid', [[42, 126], [56, 132], [64, 168], [68, 192], [50, 196], [41, 168]]);
+    out.push(shape('frontal', sm([[64, 172, 1], [52, 142], [44, 108], [50, 62], [90, 26], [150, 16], [210, 26], [250, 62], [256, 108], [248, 142], [236, 172, 1]]), o));
+    out.push(`<path d="${poly([[62, 200], [238, 200], [238, 292], [62, 292]])}" fill="${DEEP}"/>`);
+    out.push(shape('mandible', sm([[62, 234, 1], [72, 232, 1], [78, 258], [96, 286, 1], [204, 286, 1], [222, 258], [228, 232, 1], [238, 234, 1], [243, 272], [231, 302], [207, 324], [150, 337], [93, 324], [69, 302], [57, 272]]), o));
+    both('maxilla', [[94, 210, 1], [112, 200], [133, 196, 1], [133, 150, 1], [146, 146, 1], [144, 190, 1], [137, 198], [128, 218], [126, 238], [133, 250], [146, 255, 1], [150, 255, 1], [150, 274, 1], [97, 274, 1], [90, 256], [94, 232]]);
+    both('zygomatic', [[60, 156, 1], [76, 153, 1], [78, 205], [99, 210], [105, 226], [93, 244], [70, 241], [51, 227], [43, 204], [49, 180]]);
+    both('nasal', [[144, 146, 1], [150, 144, 1], [150, 190, 1], [139, 197, 1], [142, 170]]);
+
+    // orbits: rim opening, inner walls converging on the back wall (sphenoid)
+    const orbit = [[86, 146], [116, 146], [132, 160], [132, 192], [118, 206], [84, 206], [70, 192], [70, 160]];
+    [false, true].forEach(m => {
+      const M = pts => m ? mirror(pts, W) : pts;
+      const cid = id + (m ? 'oR' : 'oL');
+      out.push(`<clipPath id="${cid}"><path d="${sm(M(orbit))}"/></clipPath><g clip-path="url(#${cid})">`);
+      out.push(shape('frontal', poly(M([[60, 134], [142, 134], [116, 166], [92, 166]])), o, { wall: 1 }));
+      out.push(shape('zygomatic', poly(M([[60, 134], [92, 166], [92, 190], [60, 218]])), o, { wall: 1 }));
+      out.push(shape('maxilla', poly(M([[60, 218], [92, 190], [116, 190], [142, 218]])), o, { wall: 1 }));
+      out.push(shape('ethmoid', poly(M([[142, 134], [116, 166], [116, 190], [142, 218]])), o, { wall: 1 }));
+      out.push(shape('lacrimal', sm(M([[120, 178, 1], [134, 175, 1], [134, 202, 1], [119, 197]])), o, { wall: 1 }));
+      out.push(shape('sphenoid', sm(M([[94, 166], [114, 166], [117, 178], [114, 190], [94, 190], [91, 178]])), o, { wall: 1 }));
+      out.push(hole(sm(M([[95, 171], [103, 176], [107, 182], [104, 184], [97, 178]]))));
+      const oc = ell(m ? W - 110 : 110, 173, 3.2, 3.2);
+      out.push(hole(oc.d));
+      out.push('</g>');
+      out.push(`<path d="${sm(M(orbit))}" fill="none" stroke="${EDGE}" stroke-width="1.8"/>`);
+    });
+
+    // nasal cavity: septum (ethmoid above, vomer below) and conchae on the side walls
+    const ap = [[150, 189, 1], [161, 197, 1], [172, 214], [175, 236], [167, 250], [150, 256, 1], [133, 250], [125, 236], [128, 214], [139, 197, 1]];
+    out.push(`<clipPath id="${id}n"><path d="${sm(ap)}"/></clipPath>`);
+    out.push(hole(sm(ap)));
+    out.push(`<g clip-path="url(#${id}n)">`);
+    out.push(shape('ethmoid', poly([[147, 186], [153, 186], [153, 219], [147, 223]]), o, { wall: 1 }));
+    out.push(shape('vomer', poly([[147, 223], [153, 219], [155, 258], [145, 258]]), o, { wall: 1 }));
+    both('ethmoid', [[128, 205], [141, 208], [142, 217], [135, 220], [129, 215]], { wall: 1 });
+    both('inferior-concha', [[124, 226], [140, 228], [143, 239], [137, 246], [126, 243]], { wall: 1 });
+    out.push('</g>');
+    out.push(`<path d="${sm(ap)}" fill="none" stroke="${EDGE}" stroke-width="1.6"/>`);
+
+    // teeth
+    const up = [[12, 18], [10, 17], [10, 18], [9, 15], [8, 14], [7, 13]];
+    const lo = [[10, 16], [9, 15], [10, 16], [9, 14], [8, 13], [7, 12]];
+    let x = 150; up.forEach(([w, hgt]) => { x -= w; out.push(tooth(x, 273, w, hgt, false)); out.push(tooth(W - x - w, 273, w, hgt, false)); });
+    x = 150; lo.forEach(([w, hgt]) => { x -= w; out.push(tooth(x, 307 - hgt, w, hgt, true)); out.push(tooth(W - x - w, 307 - hgt, w, hgt, true)); });
+    return { vb: '0 0 300 345', body: out.join('') };
+  }
+
+  // ---------------- SIDE VIEW (viewBox 400 x 345), face to the left ----------------
+  function side(o) {
+    const out = [], id = 'sk' + (++uid);
+    const E = deg => { const a = deg * Math.PI / 180; return [r(222 + 162 * Math.cos(a)), r(140 - 128 * Math.sin(a))]; };
+    const arc = (a0, a1, step) => { const p = []; for (let a = a0; step > 0 ? a <= a1 : a >= a1; a += step) p.push(E(a)); return p; };
+
+    // parietal: vertex between coronal and lambdoid sutures
+    out.push(shape('parietal', sm([...arc(100, 40, -15).map((p, i, a) => (i === 0 || i === a.length - 1) ? [...p, 1] : p), [336, 110], [318, 165], [306, 192, 1], [220, 202], [150, 172, 1], [136, 138, 1], [148, 100], [166, 56]]), o));
+    // occipital: back and bottom
+    out.push(shape('occipital', sm([[...E(40), 1], ...arc(25, -35, -15), [344, 232], [318, 246], [300, 242, 1], [304, 200], [318, 165], [336, 110]]), o));
+    // sphenoid: greater wing at the temple
+    out.push(shape('sphenoid', sm([[122, 146], [136, 138, 1], [166, 150, 1], [168, 200, 1], [124, 200, 1], [120, 172]]), o));
+    // frontal: forehead down to the brow and the orbit's upper rim
+    out.push(shape('frontal', sm([[...E(100), 1], ...arc(115, 175, 15), [56, 146], [54, 153, 1], [66, 143], [92, 136], [114, 142, 1], [118, 152, 1], [124, 150], [136, 138, 1], [148, 100], [166, 56]]), o));
+    out.push(`<path d="${poly([[116, 204], [232, 204], [262, 212], [280, 240], [282, 258], [262, 264], [242, 266], [233, 296], [118, 296]])}" fill="${DEEP}"/>`);
+    // mandible (drawn before the arch so the coronoid process tucks under it)
+    out.push(shape('mandible', sm([[34, 292, 1], [126, 292, 1], [144, 278], [164, 256], [178, 232], [186, 204, 1], [198, 230], [216, 234], [228, 222], [233, 213, 1], [246, 212], [251, 222], [246, 240], [241, 262], [239, 288], [228, 306, 1], [196, 316], [130, 327], [64, 333], [44, 325], [35, 308]]), o));
+    // temporal: squama, zygomatic process (back half of the arch), mastoid process
+    out.push(shape('temporal', sm([[166, 150, 1], [190, 126], [230, 114], [272, 126], [300, 156], [308, 190], [307, 222], [305, 244], [298, 260], [288, 266], [279, 258], [274, 240], [268, 225], [258, 216], [248, 214], [238, 211], [226, 212, 1], [174, 212, 1], [174, 197, 1], [166, 197, 1]]), o));
+    out.push(hole(ell(262, 204, 7.5, 9.5).d));
+    // zygomatic: cheekbone + front half of the arch
+    out.push(shape('zygomatic', sm([[110, 150, 1], [122, 148, 1], [121, 170], [128, 190], [146, 196], [176, 196, 1], [176, 212, 1], [146, 216], [124, 230], [106, 218], [100, 198], [106, 190]]), o));
+    out.push(`<path d="M146 196 L176 196 C196 196 214 198 230 204" fill="none" stroke="${EDGE}" stroke-width="1.3"/>`);
+    // maxilla
+    out.push(shape('maxilla', sm([[56, 152, 1], [68, 148, 1], [70, 192], [102, 196], [108, 216], [124, 230], [129, 250], [123, 265, 1], [36, 265, 1], [28, 252], [24, 232, 1], [40, 222], [46, 209], [43, 199], [50, 195, 1]]), o));
+    // nasal bone
+    out.push(shape('nasal', sm([[52, 151, 1], [60, 153, 1], [52, 196, 1], [36, 194, 1]]), o));
+    // nasal opening
+    out.push(hole(sm([[36, 194, 1], [43, 199], [47, 209], [41, 221], [24, 232, 1]])));
+
+    // orbit, looking at the medial wall: lacrimal (front), ethmoid (middle), sphenoid (back)
+    const orbit = [[74, 139], [104, 137], [114, 149], [115, 180], [105, 192], [75, 192], [66, 182], [66, 150]];
+    out.push(`<clipPath id="${id}o"><path d="${sm(orbit)}"/></clipPath><g clip-path="url(#${id}o)">`);
+    out.push(shape('lacrimal', poly([[60, 148], [81, 148], [81, 184], [60, 184]]), o, { wall: 1 }));
+    out.push(shape('ethmoid', poly([[81, 148], [101, 148], [101, 184], [81, 184]]), o, { wall: 1 }));
+    out.push(shape('sphenoid', poly([[101, 148], [122, 148], [122, 184], [101, 184]]), o, { wall: 1 }));
+    out.push(shape('frontal', poly([[58, 128], [124, 128], [110, 150], [70, 150]]), o, { wall: 1 }));
+    out.push(shape('maxilla', poly([[58, 198], [124, 198], [110, 182], [70, 182]]), o, { wall: 1 }));
+    out.push(hole(ell(73, 168, 2.6, 7.5).d, ' opacity=".55"'));
+    out.push(hole(ell(108, 165, 3.4, 3.4).d));
+    out.push('</g>');
+    out.push(`<path d="${sm(orbit)}" fill="none" stroke="${EDGE}" stroke-width="1.8"/>`);
+
+    // teeth
+    let x = 32;
+    [[8, 18], [8, 18], [9, 19], [10, 16], [11, 15], [13, 15], [14, 14], [13, 13]].forEach(([w, hgt]) => { out.push(tooth(x, 265, w, hgt, false)); x += w; });
+    x = 36;
+    [[8, 16], [8, 16], [9, 17], [10, 15], [11, 14], [13, 14], [14, 13], [13, 12]].forEach(([w, hgt]) => { out.push(tooth(x, 300 - hgt, w, hgt, true)); x += w; });
+    return { vb: '0 0 400 345', body: out.join('') };
+  }
+
+  // ---------------- BASE VIEW (from below; viewBox 300 x 360), teeth at the top ----------------
+  function base(o) {
+    const W = 300, out = [];
+    const both = (bone, pts, extra) => { out.push(shape(bone, sm(pts), o, extra)); out.push(shape(bone, sm(mirror(pts, W)), o, extra)); };
+    out.push(shape('occipital', sm([[136, 206, 1], [164, 206, 1], [172, 228], [190, 240], [244, 256], [260, 282, 1], [266, 302], [250, 327], [206, 346], [150, 352], [94, 346], [50, 327], [34, 302], [40, 282, 1], [56, 256], [110, 240], [128, 228]]), o));
+    both('temporal', [[40, 166, 1], [58, 164, 1], [66, 194], [100, 210], [128, 222], [131, 240], [110, 246], [80, 256], [56, 270], [40, 282, 1], [33, 256], [31, 212]]);
+    [[47, 250, -8], [253, 250, 8]].forEach(([x, y, rot]) => { const e = ell(x, y, 8, 13, rot); out.push(shape('temporal', e.d, o, { wall: 1 }).replace('/>', e.t + '/>')); });
+    out.push(shape('sphenoid', sm([[92, 146], [118, 148, 1], [120, 178, 1], [180, 178, 1], [182, 148, 1], [208, 146], [222, 178], [214, 206], [182, 212], [164, 206, 1], [136, 206, 1], [118, 212], [86, 206], [78, 178]]), o));
+    // open space inside the cheek arches
+    const fossa = [[84, 128], [94, 148], [82, 178], [86, 204], [66, 194], [58, 166], [66, 148]];
+    out.push(hole(sm(fossa), ' opacity=".8"')); out.push(hole(sm(mirror(fossa, W)), ' opacity=".8"'));
+    both('zygomatic', [[62, 96], [80, 98], [86, 128], [68, 150], [60, 168, 1], [46, 168, 1], [47, 140], [53, 112]]);
+    both('maxilla', [[150, 20, 1], [150, 118, 1], [100, 118, 1], [100, 150, 1], [88, 150, 1], [80, 130], [75, 92], [86, 52], [112, 27]]);
+    both('palatine', [[100, 118, 1], [150, 118, 1], [150, 141, 1], [146, 146], [124, 148], [100, 150, 1]]);
+    // back openings of the nose (choanae) with the vomer between them
+    const ch = [[121, 151], [145, 151], [145, 182], [123, 182], [117, 166]];
+    out.push(hole(sm(ch))); out.push(hole(sm(mirror(ch, W))));
+    out.push(shape('vomer', sm([[146, 145, 1], [154, 145, 1], [154, 184, 1], [146, 184, 1]]), o));
+    // foramen magnum + occipital condyles
+    const c1 = ell(127, 255, 7, 15, -18), c2 = ell(173, 255, 7, 15, 18);
+    out.push(shape('occipital', c1.d, o, { wall: 1 }).replace('/>', c1.t + '/>'));
+    out.push(shape('occipital', c2.d, o, { wall: 1 }).replace('/>', c2.t + '/>'));
+    out.push(hole(ell(150, 262, 18, 25).d));
+    // teeth around the dental arch (quadratic curve from the front middle back to the molars)
+    const Q = t => [(1 - t) * (1 - t) * 150 + 2 * (1 - t) * t * 204 + t * t * 202, (1 - t) * (1 - t) * 30 + 2 * (1 - t) * t * 34 + t * t * 140];
+    const ts = [0.05, 0.15, 0.26, 0.38, 0.5, 0.63, 0.78, 0.93], sz = [5, 5, 5.5, 5.5, 6, 7, 7.5, 7.5];
+    ts.forEach((t, i) => {
+      const [x, y] = Q(t);
+      [x, W - x].forEach(xx => { const e = ell(r(xx), r(y), sz[i], sz[i] * 0.9); out.push(`<path d="${e.d}" fill="${TOOTH}" stroke="#8f816f" stroke-width="1"/>`); });
+    });
+    return { vb: '0 0 300 360', body: out.join('') };
+  }
+
+  // pointer arrows for "important parts"
+  const ARROWS = {
+    'supraorbital': { view: 'front', from: [54, 96], to: [92, 145] },
+    'nasal-septum': { view: 'front', from: [236, 282], to: [154, 226] },
+    'zyg-process': { view: 'side', from: [212, 160], to: [204, 202] },
+    'tmj': { view: 'side', from: [292, 300], to: [244, 222] },
+    'mastoid': { view: 'side', from: [342, 300], to: [296, 260] },
+    'lacrimal-fossa': { view: 'side', from: [30, 112], to: [71, 165] },
+    'foramen-magnum': { view: 'base', from: [228, 320], to: [163, 280] },
+    'occ-condyles': { view: 'base', from: [70, 306], to: [124, 262] }
+  };
+  function arrow(a) {
+    const [x1, y1] = a.from, [x2, y2] = a.to;
+    const ang = Math.atan2(y2 - y1, x2 - x1), L = 13, sp = 0.42;
+    const p1 = [x2 - L * Math.cos(ang - sp), y2 - L * Math.sin(ang - sp)], p2 = [x2 - L * Math.cos(ang + sp), y2 - L * Math.sin(ang + sp)];
+    const bx = x2 - (L - 2) * Math.cos(ang), by = y2 - (L - 2) * Math.sin(ang);
+    const head = `M${x2} ${y2} L${r(p1[0])} ${r(p1[1])} L${r(p2[0])} ${r(p2[1])}Z`;
+    return `<g><line x1="${x1}" y1="${y1}" x2="${r(bx)}" y2="${r(by)}" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="${head}" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>` +
+      `<line x1="${x1}" y1="${y1}" x2="${r(bx)}" y2="${r(by)}" stroke="#111" stroke-width="2.6" stroke-linecap="round"/><path d="${head}" fill="#111"/>` +
+      `<circle cx="${x1}" cy="${y1}" r="4" fill="#111" stroke="#fff" stroke-width="1.5"/></g>`;
+  }
+
+  const VIEWS = { front, side, base };
+  const VIEW_NAMES = { front: 'Front view', side: 'Side view', base: 'View from below (teeth at top)' };
+  function svg(view, opts) {
+    const o = opts || {};
+    const v = VIEWS[view](o);
+    const a = o.arrow ? ARROWS[o.arrow] : null;
+    const label = VIEW_NAMES[view] + (o.hi ? ', one bone highlighted' : '') + (a ? ', with an arrow' : '');
+    return `<svg viewBox="${v.vb}" role="img" aria-label="Skull diagram: ${label}" xmlns="http://www.w3.org/2000/svg">${v.body}${a ? arrow(a) : ''}</svg>`;
+  }
+  return { svg, ARROWS, VIEW_NAMES };
+})();
+
+
+// ============================================================
+// APP
+// ============================================================
+(function () {
+  'use strict';
+
+  const STORE_KEY = 'skull-quiz-study-v1';
+  const SET_SIZE = 10;
+  const TEST_SIZE = 25;
+  const TOPICS = BANK.topics;
+  const ITEMS = BANK.items;
+  const byId = {};
+  ITEMS.forEach(it => { byId[it.id] = it; });
+  const topicName = key => (TOPICS.find(t => t.key === key) || {}).name || key;
+
+  // ---------- persistence (localStorage, best effort) ----------
+  function freshProgress() { return { scores: {}, test: null, missed: [] }; }
+  let progress = freshProgress();
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        progress = Object.assign(freshProgress(), p);
+        progress.missed = (progress.missed || []).filter(id => byId[id]);
+      }
+    } catch (e) { progress = freshProgress(); }
+  }
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch (e) { /* storage unavailable: keep in memory */ }
+  }
+  function addMissed(id) { if (!progress.missed.includes(id)) { progress.missed.push(id); save(); } }
+  function removeMissed(id) { const i = progress.missed.indexOf(id); if (i >= 0) { progress.missed.splice(i, 1); save(); } }
+
+  // ---------- helpers ----------
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function h(tag, attrs, ...children) {
+    const el = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === 'class') el.className = attrs[k];
+      else if (k === 'onclick') el.addEventListener('click', attrs[k]);
+      else if (k === 'html') el.innerHTML = attrs[k];
+      else if (k === 'disabled') { if (attrs[k]) el.setAttribute('disabled', ''); }
+      else el.setAttribute(k, attrs[k]);
+    }
+    for (const c of children) {
+      if (c == null || c === false) continue;
+      if (Array.isArray(c)) c.forEach(x => x != null && el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+      else el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+  function sameSet(a, b) { if (a.length !== b.length) return false; const s = new Set(a); return b.every(x => s.has(x)); }
+
+  // Draw n items from a topic in mixed formats: round-robin across formats so every set mixes them.
+  // "Name this bone" items (skill: identify) are capped so a set mostly tests the topic itself.
+  function drawFromTopic(topicKey, n, idCap) {
+    const cap = (idCap == null || (TOPICS.find(t => t.key === topicKey) || {}).noCap) ? Infinity : idCap;
+    const groups = {};
+    ITEMS.filter(it => it.topic === topicKey).forEach(it => { (groups[it.format] = groups[it.format] || []).push(it); });
+    const order = shuffle(Object.keys(groups));
+    const queues = {}; order.forEach(f => { queues[f] = shuffle(groups[f]); });
+    const out = [];
+    let ids = 0, guard = 0;
+    const take = f => {
+      while (queues[f].length) {
+        const it = queues[f].shift();
+        if (it.skill === 'identify') { if (ids >= cap) continue; ids++; }
+        out.push(it); return true;
+      }
+      return false;
+    };
+    while (out.length < n && guard++ < 1000) {
+      let any = false;
+      for (const f of order) { if (out.length < n && take(f)) any = true; }
+      if (!any) break;
+    }
+    return shuffle(out);
+  }
+
+  // ---------- skull diagram for an item ----------
+  function diagramEl(item) {
+    const view = item.img.view || SKULL.ARROWS[item.img.arrow].view;
+    const fig = h('figure', { class: 'diagram' });
+    fig.innerHTML = SKULL.svg(view, { hi: item.img.hi, arrow: item.img.arrow });
+    fig.appendChild(h('figcaption', null, SKULL.VIEW_NAMES[view]));
+    return fig;
+  }
+
+  // ---------- grading ----------
+  function grade(item, answer) {
+    if (item.format === 'mc') return answer === item.options[0];
+    if (item.format === 'sata') return sameSet(answer, item.answer);
+    if (item.format === 'match') return item.pairs.every(([t, d]) => answer[t] === d);
+    if (item.format === 'sort') return item.tiles.every(([tile, box]) => answer[tile] === box);
+    return false;
+  }
+  function correctText(item) {
+    if (item.format === 'mc') return item.options[0];
+    if (item.format === 'sata') return item.answer.join('; ');
+    if (item.format === 'match') return item.pairs.map(([t, d]) => `${t} → ${d}`).join('; ');
+    if (item.format === 'sort') return item.boxes.map(b => `${b}: ${item.tiles.filter(t => t[1] === b).map(t => t[0]).join(', ')}`).join(' | ');
+    return '';
+  }
+  function answerText(item, answer) {
+    if (answer == null) return '(no answer)';
+    if (item.format === 'mc') return answer;
+    if (item.format === 'sata') return answer.length ? answer.join('; ') : '(nothing selected)';
+    if (item.format === 'match') return item.pairs.map(([t]) => `${t} → ${answer[t] || '?'}`).join('; ');
+    if (item.format === 'sort') return item.tiles.map(([tile]) => `${tile} → ${answer[tile] || '?'}`).join('; ');
+    return '';
+  }
+
+  // ---------- DOM refs ----------
+  const $ = id => document.getElementById(id);
+  const screens = { home: $('home'), quiz: $('quiz'), results: $('results'), explore: $('explore') };
+  function show(name) {
+    for (const k in screens) screens[k].hidden = (k !== name);
+    $('modeTag').textContent = name === 'home' ? '' : name === 'explore' ? 'Explore the Skull' : (session ? modeLabel() : '');
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- session ----------
+  let session = null;
+  function modeLabel() {
+    if (!session) return '';
+    if (session.mode === 'topic') return topicName(session.topic);
+    if (session.mode === 'missed') return 'Missed Questions';
+    return 'Practice Test';
+  }
+
+  function startTopic(key) {
+    const queue = drawFromTopic(key, SET_SIZE, BANK.identifyCap.set);
+    session = { mode: 'topic', topic: key, queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+  function startMissed() {
+    const ids = shuffle(progress.missed);
+    const queue = ids.map(id => byId[id]);
+    if (!queue.length) return;
+    session = { mode: 'missed', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+  function startTest() {
+    let queue = [];
+    for (const key in BANK.testAllocation) queue = queue.concat(drawFromTopic(key, BANK.testAllocation[key], BANK.identifyCap.test));
+    queue = shuffle(queue).slice(0, TEST_SIZE);
+    session = { mode: 'test', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+
+  // ---------- question rendering ----------
+  const INSTR = {
+    mc: 'Tap one answer.',
+    sata: 'Select all that apply. Then tap Check.',
+    match: 'Tap a term, then tap its match. When all are paired, tap Check.',
+    sort: 'Tap a tile, then tap a box. When all tiles are placed, tap Check.'
+  };
+
+  function renderQuestion() {
+    const item = session.queue[session.index];
+    const isRetry = session.index >= session.firstCount;
+    const root = screens.quiz; clear(root);
+    const total = session.queue.length;
+    root.appendChild(h('div', { class: 'qhead' },
+      h('span', null, h('span', { class: 'n' }, `Question ${session.index + 1} of ${total}`), session.mode === 'topic' ? ` · ${topicName(item.topic)}` : ` · ${topicName(item.topic)}`),
+      h('span', null, `${item.format === 'mc' ? 'Multiple choice' : item.format === 'sata' ? 'Select all' : item.format === 'match' ? 'Matching' : 'Sort'}`)
+    ));
+    root.appendChild(h('div', { class: 'progress' }, h('div', { style: `width:${(session.index / total) * 100}%` })));
+    if (isRetry) root.appendChild(h('span', { class: 'retry-note' }, 'Try again — you missed this one earlier in this set'));
+    const instr = h('p', { class: 'instruction' }, INSTR[item.format] + (session.mode === 'test' && item.format === 'mc' ? ' Then tap Next.' : ''));
+    root.appendChild(instr);
+    root.appendChild(h('p', { class: 'prompt' }, item.prompt));
+    if (item.img) root.appendChild(diagramEl(item));
+
+    const area = h('div');
+    root.appendChild(area);
+    const actions = h('div', { class: 'actions' });
+    root.appendChild(actions);
+    const fbHolder = h('div');
+    root.appendChild(fbHolder);
+
+    const ctl = { getAnswer: () => null, complete: () => false, markFeedback: () => {} };
+    const checkBtn = h('button', { class: 'primary', disabled: true, onclick: () => submit() }, session.mode === 'test' ? 'Next' : 'Check');
+    const refresh = () => { checkBtn.disabled = !ctl.complete(); };
+
+    if (item.format === 'mc') renderMC(item, area, ctl, refresh, () => submit());
+    else if (item.format === 'sata') renderSATA(item, area, ctl, refresh);
+    else if (item.format === 'match') renderMatch(item, area, ctl, refresh);
+    else renderSort(item, area, ctl, refresh);
+
+    // MC in practice mode submits on tap; everything else uses the Check/Next button.
+    if (!(item.format === 'mc' && session.mode !== 'test')) actions.appendChild(checkBtn);
+
+    let submitted = false;
+    function submit() {
+      if (submitted) return; submitted = true;
+      const answer = ctl.getAnswer();
+      const correct = grade(item, answer);
+      checkBtn.remove();
+      ctl.lock();
+      if (session.mode === 'test') { record(item, correct, answer, isRetry); next(); return; }
+      record(item, correct, answer, isRetry);
+      ctl.markFeedback(answer);
+      const legendMine = () => {
+        clear(instr);
+        if (item.format === 'mc') instr.append(h('span', { class: 'ok' }, 'Green = correct answer'), ' · ', h('span', { class: 'no' }, 'Red = your pick'));
+        else if (correct) instr.append(h('span', { class: 'ok' }, 'All correct'));
+        else instr.append('Your answers: ', h('span', { class: 'ok' }, 'green = right'), ' · ', h('span', { class: 'no' }, 'red = wrong'));
+      };
+      const legendKey = () => { clear(instr); instr.append(h('span', { class: 'ok' }, 'Showing the correct answers')); };
+      legendMine();
+      // Wrong answer on a multi-part question: offer a toggle between the answer key and the student's own answers.
+      if (!correct && ctl.showCorrect) {
+        let showingKey = false;
+        const keyBtn = h('button', { class: 'ghost key-btn', 'aria-pressed': 'false', onclick: () => {
+          showingKey = !showingKey;
+          if (showingKey) ctl.showCorrect(); else ctl.showMine();
+          keyBtn.textContent = showingKey ? 'Show my answers' : 'Show correct answers';
+          keyBtn.setAttribute('aria-pressed', String(showingKey));
+          if (showingKey) legendKey(); else legendMine();
+        } }, 'Show correct answers');
+        actions.appendChild(keyBtn);
+      }
+      const fb = h('div', { class: 'feedback ' + (correct ? 'good' : 'bad') },
+        h('p', { class: 'verdict' }, correct ? 'Correct!' : 'Not quite.'),
+        correct ? null : h('p', null, 'Correct answer: ', h('span', { class: 'ans' }, correctText(item))),
+        h('p', null, item.explain));
+      const detail = ctl.feedbackDetail ? ctl.feedbackDetail(answer) : null;
+      if (detail) fb.appendChild(detail);
+      fbHolder.appendChild(fb);
+      const nextBtn = h('button', { class: 'primary', onclick: next }, 'Next');
+      actions.appendChild(nextBtn);
+      nextBtn.focus({ preventScroll: true });
+      nextBtn.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function record(item, correct, answer, isRetry) {
+    if (!isRetry) {
+      session.results.push({ item, correct, answer });
+      if (!correct) {
+        addMissed(item.id);
+        if (session.mode !== 'test') session.retry.push(item);
+      } else if (session.mode === 'missed') {
+        removeMissed(item.id);
+      }
+    }
+  }
+
+  function next() {
+    session.index++;
+    if (session.index >= session.queue.length) {
+      if (session.retry.length && session.mode !== 'test') {
+        session.queue = session.queue.concat(shuffle(session.retry));
+        session.retry = [];
+        renderQuestion();
+        return;
+      }
+      finish();
+      return;
+    }
+    renderQuestion();
+  }
+
+  // ----- Multiple choice -----
+  function renderMC(item, area, ctl, refresh, onTap) {
+    const opts = shuffle(item.options);
+    const list = h('div', { class: 'options' });
+    let chosen = null, locked = false;
+    const btns = opts.map(o => {
+      const b = h('button', { class: 'opt radio', onclick: () => {
+        if (locked) return;
+        chosen = o;
+        btns.forEach(x => x.classList.toggle('selected', x.dataset.v === o));
+        refresh();
+        if (session.mode !== 'test') onTap();
+      } }, h('span', { class: 'box' }), h('span', { class: 'lbl' }, o));
+      b.dataset.v = o; return b;
+    });
+    btns.forEach(b => list.appendChild(b));
+    area.appendChild(list);
+    ctl.getAnswer = () => chosen;
+    ctl.complete = () => chosen != null;
+    ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    ctl.markFeedback = () => {
+      btns.forEach(b => {
+        b.classList.remove('selected');
+        if (b.dataset.v === item.options[0]) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ correct')); }
+        else if (b.dataset.v === chosen) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ your pick')); }
+      });
+    };
+  }
+
+  // ----- Select all that apply -----
+  function renderSATA(item, area, ctl, refresh) {
+    const opts = shuffle(item.options);
+    const list = h('div', { class: 'options' });
+    const picked = new Set(); let locked = false;
+    const btns = opts.map(o => {
+      const b = h('button', { class: 'opt', 'aria-pressed': 'false', onclick: () => {
+        if (locked) return;
+        if (picked.has(o)) picked.delete(o); else picked.add(o);
+        b.classList.toggle('selected', picked.has(o)); b.setAttribute('aria-pressed', String(picked.has(o)));
+        b.querySelector('.box').textContent = picked.has(o) ? '✓' : '';
+        refresh();
+      } }, h('span', { class: 'box' }), h('span', { class: 'lbl' }, o));
+      b.dataset.v = o; return b;
+    });
+    btns.forEach(b => list.appendChild(b));
+    area.appendChild(list);
+    ctl.getAnswer = () => Array.from(picked);
+    ctl.complete = () => picked.size > 0;
+    ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    const resetOpts = () => btns.forEach(b => {
+      b.classList.remove('selected', 'right', 'wrong', 'missed-opt');
+      b.querySelectorAll('.note').forEach(n => n.remove());
+      b.querySelector('.box').textContent = '';
+    });
+    ctl.markFeedback = () => {
+      resetOpts();
+      btns.forEach(b => {
+        const v = b.dataset.v, shouldBe = item.answer.includes(v), was = picked.has(v);
+        if (was) b.querySelector('.box').textContent = '✓';
+        if (shouldBe && was) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ right')); }
+        else if (!shouldBe && was) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ should not be selected')); }
+        else if (shouldBe && !was) { b.classList.add('missed-opt'); b.querySelector('.box').textContent = '✓'; b.appendChild(h('span', { class: 'note' }, '✓ you missed this one')); }
+        else { b.appendChild(h('span', { class: 'note' }, '✓ right (left blank)')); b.querySelector('.note').classList.add('ok'); }
+      });
+    };
+    // Answer key: only the correct options are checked, all in green.
+    ctl.showCorrect = () => {
+      resetOpts();
+      btns.forEach(b => {
+        if (item.answer.includes(b.dataset.v)) {
+          b.classList.add('right'); b.querySelector('.box').textContent = '✓';
+          b.appendChild(h('span', { class: 'note' }, '✓ select'));
+        } else {
+          b.appendChild(h('span', { class: 'note muted' }, 'leave blank'));
+        }
+      });
+    };
+    ctl.showMine = () => ctl.markFeedback();
+  }
+
+  // ----- Matching -----
+  function renderMatch(item, area, ctl, refresh) {
+    const terms = shuffle(item.pairs.map(p => p[0]));
+    const defs = shuffle(item.pairs.map(p => p[1]));
+    const pairs = {};       // term -> def
+    let selTerm = null, selDef = null, locked = false;
+    const termBtns = {}, defBtns = {};
+    const wrap = h('div', { class: 'match' });
+    const colT = h('div', { class: 'col' }, h('div', { class: 'col-title' }, 'Terms'));
+    const colD = h('div', { class: 'col' }, h('div', { class: 'col-title' }, 'Matches'));
+    terms.forEach(t => {
+      const b = h('button', { class: 'chip', onclick: () => { if (locked) return; selTerm = (selTerm === t) ? null : t; tryPair(); paint(); } },
+        h('span', { class: 'badge' }, ''), h('span', { class: 'lbl' }, t));
+      termBtns[t] = b; colT.appendChild(b);
+    });
+    defs.forEach(d => {
+      const b = h('button', { class: 'chip', onclick: () => { if (locked) return; selDef = (selDef === d) ? null : d; tryPair(); paint(); } },
+        h('span', { class: 'badge' }, ''), h('span', { class: 'lbl' }, d));
+      defBtns[d] = b; colD.appendChild(b);
+    });
+    wrap.appendChild(colT); wrap.appendChild(colD);
+    area.appendChild(wrap);
+    const tools = h('div', { class: 'tools' },
+      h('button', { class: 'small-btn', onclick: () => { if (locked) return; for (const k in pairs) delete pairs[k]; selTerm = selDef = null; paint(); } }, 'Clear pairs'),
+      h('span', { class: 'hint' }, 'Paired items share the same number.'));
+    area.appendChild(tools);
+
+    function tryPair() {
+      if (selTerm != null && selDef != null) {
+        for (const k in pairs) if (pairs[k] === selDef) delete pairs[k];   // a match can belong to one term only
+        pairs[selTerm] = selDef;
+        selTerm = selDef = null;
+      }
+      refresh();
+    }
+    function paint() {
+      const order = Object.keys(pairs); // numbering in pairing order
+      for (const t in termBtns) {
+        const b = termBtns[t]; const idx = order.indexOf(t);
+        b.classList.toggle('selected', selTerm === t);
+        b.classList.toggle('paired', idx >= 0);
+        b.querySelector('.badge').textContent = idx >= 0 ? String(idx + 1) : '';
+      }
+      for (const d in defBtns) {
+        const b = defBtns[d]; const t = order.find(k => pairs[k] === d); const idx = t ? order.indexOf(t) : -1;
+        b.classList.toggle('selected', selDef === d);
+        b.classList.toggle('paired', idx >= 0);
+        b.querySelector('.badge').textContent = idx >= 0 ? String(idx + 1) : '';
+      }
+    }
+    ctl.getAnswer = () => Object.assign({}, pairs);
+    ctl.complete = () => item.pairs.every(([t]) => pairs[t] != null);
+    ctl.lock = () => { locked = true; Object.values(termBtns).concat(Object.values(defBtns)).forEach(b => b.setAttribute('disabled', '')); tools.remove(); };
+    const allChips = () => Object.values(termBtns).concat(Object.values(defBtns));
+    ctl.markFeedback = () => {
+      allChips().forEach(b => { b.classList.remove('right', 'wrong'); b.style.minHeight = ''; });
+      defs.forEach(d => colD.appendChild(defBtns[d]));   // back to the original order
+      paint();
+      item.pairs.forEach(([t, d]) => {
+        const ok = pairs[t] === d;
+        termBtns[t].classList.add(ok ? 'right' : 'wrong');
+        if (pairs[t] != null) defBtns[pairs[t]].classList.add(ok ? 'right' : 'wrong');
+      });
+    };
+    // Answer key: each correct match moves directly across from its term, numbered and green.
+    ctl.showCorrect = () => {
+      const key = Object.fromEntries(item.pairs);
+      terms.forEach((t, i) => {
+        const d = defBtns[key[t]];
+        colD.appendChild(d);
+        [termBtns[t], d].forEach(b => {
+          b.classList.remove('wrong', 'selected'); b.classList.add('right', 'paired');
+          b.querySelector('.badge').textContent = String(i + 1);
+        });
+      });
+      // Line each term up with its match so the pairs read across as rows.
+      terms.forEach(t => {
+        const a = termBtns[t], d = defBtns[key[t]];
+        a.style.minHeight = d.style.minHeight = '';
+        const hgt = Math.max(a.offsetHeight, d.offsetHeight) + 'px';
+        a.style.minHeight = d.style.minHeight = hgt;
+      });
+    };
+    ctl.showMine = () => ctl.markFeedback();
+    ctl.feedbackDetail = () => h('ul', null, item.pairs.map(([t, d]) => {
+      const ok = pairs[t] === d;
+      return h('li', null, h('span', { class: ok ? 'ok' : 'no' }, ok ? '✓ ' : '✗ '), `${t} → ${pairs[t] || '?'}`, ok ? '' : h('span', null, ' — should be: ', h('b', null, d)));
+    }));
+  }
+
+  // ----- Sort into boxes -----
+  function renderSort(item, area, ctl, refresh) {
+    const tiles = shuffle(item.tiles.map(t => t[0]));
+    const placed = {};  // tile -> box
+    let sel = null, locked = false;
+    const pool = h('div', { class: 'pool', role: 'group', 'aria-label': 'Tiles to sort', onclick: e => {
+      if (locked) return;
+      if (e.target === pool && sel && placed[sel]) { delete placed[sel]; sel = null; paint(); }
+    } });
+    const boxesEl = h('div', { class: 'boxes' + (item.boxes.length === 2 ? ' two' : '') });
+    const boxEls = {};
+    item.boxes.forEach(b => {
+      const el = h('div', { class: 'dropbox', role: 'button', tabindex: '0', onclick: () => place(b) },
+        h('div', { class: 'box-title' }, b), h('div', { class: 'box-tiles' }));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); place(b); } });
+      boxEls[b] = el; boxesEl.appendChild(el);
+    });
+    const tileEls = {};
+    tiles.forEach(t => {
+      const el = h('button', { class: 'tile', onclick: e => {
+        e.stopPropagation(); if (locked) return;
+        // A selected tile tapped onto a tile already sitting in a box goes into that box.
+        if (sel && sel !== t && placed[t]) { place(placed[t]); return; }
+        sel = (sel === t) ? null : t; paint();
+      } }, t);
+      tileEls[t] = el;
+    });
+    const poolLabel = h('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Tiles');
+    area.appendChild(poolLabel);
+    area.appendChild(pool);
+    area.appendChild(boxesEl);
+
+    function place(box) {
+      if (locked || !sel) return;
+      placed[sel] = box; sel = null; paint(); refresh();
+    }
+    function paint() {
+      clear(pool);
+      for (const b in boxEls) clear(boxEls[b].querySelector('.box-tiles'));
+      tiles.forEach(t => {
+        const el = tileEls[t];
+        el.classList.toggle('selected', sel === t);
+        if (placed[t]) boxEls[placed[t]].querySelector('.box-tiles').appendChild(el); else pool.appendChild(el);
+      });
+      pool.classList.toggle('empty', tiles.every(t => placed[t]));
+      for (const b in boxEls) boxEls[b].classList.toggle('target', !!sel);
+    }
+    paint();
+    ctl.getAnswer = () => Object.assign({}, placed);
+    ctl.complete = () => tiles.every(t => placed[t]);
+    ctl.lock = () => {
+      locked = true; poolLabel.hidden = true; pool.hidden = true;
+      tiles.forEach(t => tileEls[t].setAttribute('disabled', ''));
+      for (const b in boxEls) { boxEls[b].classList.remove('target'); boxEls[b].removeAttribute('tabindex'); }
+    };
+    const layout = map => {
+      for (const b in boxEls) clear(boxEls[b].querySelector('.box-tiles'));
+      tiles.forEach(t => {
+        const el = tileEls[t];
+        el.classList.remove('right', 'wrong', 'selected');
+        el.querySelectorAll('.fix').forEach(f => f.remove());
+        boxEls[map[t]].querySelector('.box-tiles').appendChild(el);
+      });
+    };
+    ctl.markFeedback = () => {
+      layout(placed);
+      item.tiles.forEach(([t, box]) => {
+        const ok = placed[t] === box;
+        tileEls[t].classList.add(ok ? 'right' : 'wrong');
+        if (!ok) tileEls[t].appendChild(h('span', { class: 'fix' }, `→ ${box}`));
+      });
+    };
+    // Answer key: every tile moves into its correct box, all green.
+    ctl.showCorrect = () => {
+      layout(Object.fromEntries(item.tiles));
+      tiles.forEach(t => tileEls[t].classList.add('right'));
+    };
+    ctl.showMine = () => ctl.markFeedback();
+  }
+
+  // ---------- finishing ----------
+  function finish() {
+    const r = session.results;
+    const correct = r.filter(x => x.correct).length;
+    const total = r.length;
+    if (session.mode === 'topic') { progress.scores[session.topic] = { correct, total }; save(); }
+    if (session.mode === 'test') { progress.test = { correct, total }; save(); }
+    const root = screens.results; clear(root);
+    const pct = total ? Math.round((correct / total) * 100) : 0;
+    root.appendChild(h('h1', null, session.mode === 'test' ? 'Practice Test results' : session.mode === 'missed' ? 'Missed Questions round done' : `${topicName(session.topic)}: set complete`));
+    root.appendChild(h('div', { class: 'score-card' },
+      h('div', { class: 'big' }, `${correct} / ${total}`),
+      h('div', { class: 'sub' }, `${pct}% on first try` + (session.mode === 'missed' ? ` · ${progress.missed.length} still in Missed Questions` : ''))));
+
+    if (session.mode === 'test') {
+      const perTopic = {};
+      r.forEach(x => { const k = x.item.topic; perTopic[k] = perTopic[k] || { c: 0, t: 0 }; perTopic[k].t++; if (x.correct) perTopic[k].c++; });
+      const table = h('table', { class: 'per-topic' }, h('thead', null, h('tr', null, h('th', null, 'Topic'), h('th', null, 'Score'))),
+        h('tbody', null, TOPICS.filter(t => perTopic[t.key]).map(t => h('tr', null, h('td', null, t.name), h('td', null, `${perTopic[t.key].c} / ${perTopic[t.key].t}`)))));
+      root.appendChild(h('h2', null, 'Score by topic'));
+      root.appendChild(table);
+      const wrong = r.filter(x => !x.correct);
+      root.appendChild(h('h2', null, wrong.length ? `Review your ${wrong.length} wrong answer${wrong.length === 1 ? '' : 's'}` : 'No wrong answers. Nice work.'));
+      if (wrong.length) root.appendChild(h('p', { class: 'lead' }, 'These were added to Missed Questions.'));
+      const list = h('div', { class: 'review' });
+      wrong.forEach(x => {
+        list.appendChild(h('div', { class: 'review-item' },
+          h('div', { class: 'tp' }, topicName(x.item.topic)),
+          h('div', { class: 'q' }, x.item.prompt),
+          x.item.img ? diagramEl(x.item) : null,
+          h('p', null, h('span', { class: 'no' }, 'Your answer: '), answerText(x.item, x.answer)),
+          h('p', null, h('span', { class: 'ok' }, 'Correct answer: '), correctText(x.item)),
+          h('p', null, x.item.explain)));
+      });
+      root.appendChild(list);
+    }
+
+    const actions = h('div', { class: 'actions' });
+    if (session.mode === 'topic') actions.appendChild(h('button', { class: 'primary', onclick: () => startTopic(session.topic) }, 'Practice again'));
+    if (session.mode === 'missed') actions.appendChild(h('button', { class: 'primary', disabled: progress.missed.length === 0, onclick: startMissed }, 'Practice again'));
+    if (session.mode === 'test') actions.appendChild(h('button', { class: 'primary', onclick: startTest }, 'Take another test'));
+    actions.appendChild(h('button', { class: 'ghost', onclick: goHome }, 'Home'));
+    root.appendChild(actions);
+    show('results');
+  }
+
+
+  // ---------- explore ----------
+  const VIEWS = ['front', 'side', 'base'];
+  let exploreSel = null;
+  function startExplore() { session = null; exploreSel = null; renderExplore(); show('explore'); }
+  function renderExplore() {
+    const root = screens.explore; clear(root);
+    root.appendChild(h('h1', null, 'Explore the Skull'));
+    root.appendChild(h('p', { class: 'lead' }, 'Tap a bone name or tap a bone in a picture. Cranial bones are blue and facial bones are yellow. The one you pick turns orange. (Teeth are not bone.)'));
+    const chips = h('div', { class: 'bone-groups' });
+    const chipEls = {};
+    [['Cranial', '8 cranial bones'], ['Facial', '14 facial bones']].forEach(([grp, title]) => {
+      const row = h('div', { class: 'bone-chips' });
+      Object.entries(BANK.bones).filter(([, b]) => b.group === grp).forEach(([key, b]) => {
+        const el = h('button', { class: 'bone-chip ' + grp.toLowerCase(), 'aria-pressed': 'false', onclick: () => select(key) },
+          b.name + (b.count === 'Pair' ? ' (2)' : ''));
+        chipEls[key] = el; row.appendChild(el);
+      });
+      chips.appendChild(h('div', { class: 'bone-group' }, h('div', { class: 'col-title' }, title), row));
+    });
+    root.appendChild(chips);
+    const card = h('div', { class: 'bone-card', 'aria-live': 'polite' });
+    root.appendChild(card);
+    const views = h('div', { class: 'views' });
+    const figs = {};
+    VIEWS.forEach(v => {
+      const fig = h('figure', { class: 'diagram explore-fig' });
+      fig.addEventListener('click', e => { const t = e.target.closest('[data-bone]'); if (t) select(t.getAttribute('data-bone')); });
+      figs[v] = fig; views.appendChild(fig);
+    });
+    root.appendChild(views);
+    root.appendChild(h('div', { class: 'actions' }, h('button', { class: 'ghost', onclick: goHome }, 'Home')));
+
+    function paint() {
+      for (const k in chipEls) {
+        chipEls[k].classList.toggle('on', k === exploreSel);
+        chipEls[k].setAttribute('aria-pressed', String(k === exploreSel));
+      }
+      VIEWS.forEach(v => {
+        figs[v].innerHTML = SKULL.svg(v, { tint: true, hi: exploreSel });
+        figs[v].appendChild(h('figcaption', null, SKULL.VIEW_NAMES[v]));
+      });
+      clear(card);
+      if (!exploreSel) { card.appendChild(h('p', { class: 'hint', style: 'margin:0' }, 'No bone picked yet.')); return; }
+      const b = BANK.bones[exploreSel];
+      const seen = VIEWS.filter(v => BANK.visible[v].includes(exploreSel)).map(v => SKULL.VIEW_NAMES[v].replace(/ \(.*\)/, '').toLowerCase());
+      card.appendChild(h('div', { class: 'bone-card-head' }, h('span', { class: 'bone-name' }, b.name),
+        h('span', { class: 'pill ' + (b.group === 'Cranial' ? 'cranial' : 'facial') }, b.group),
+        h('span', { class: 'pill extra' }, b.count === 'Pair' ? 'Pair (2)' : 'Single')));
+      card.appendChild(h('p', null, b.where));
+      if (b.parts) card.appendChild(h('p', null, h('b', null, 'Important parts: '), b.parts));
+      card.appendChild(h('p', { class: 'hint' }, 'Shown in: ' + seen.join(', ') + '.'));
+    }
+    function select(key) { exploreSel = key; paint(); }
+    paint();
+  }
+
+  // ---------- home ----------
+  function goHome() { session = null; renderHome(); show('home'); }
+  function renderHome() {
+    const root = screens.home; clear(root);
+    root.appendChild(h('h1', null, 'Skull Quiz Study'));
+    root.appendChild(h('p', { class: 'lead' }, 'Start with Explore the Skull, then pick a topic. Each set is 10 questions with instant feedback. Anything you miss comes back at the end of the set and goes into Missed Questions.'));
+    root.appendChild(h('button', { class: 'big-btn secondary explore-btn', onclick: startExplore },
+      h('span', null, 'Explore the Skull'), h('span', { class: 'meta' }, 'Tap any bone to learn it')));
+    root.appendChild(h('h2', null, 'Practice by topic'));
+    const grid = h('div', { class: 'topics' });
+    TOPICS.forEach(t => {
+      const s = progress.scores[t.key];
+      const missedN = progress.missed.filter(id => byId[id].topic === t.key).length;
+      grid.appendChild(h('button', { class: 'topic-btn', onclick: () => startTopic(t.key) },
+        h('span', { class: 'name' }, t.name),
+        h('span', { class: 'meta' },
+          h('span', { class: 'score' }, s ? `Last score: ${s.correct}/${s.total}` : 'Not started'),
+          missedN ? h('span', { class: 'pill missed' }, `${missedN} missed waiting`) : (s ? h('span', { class: 'pill clear' }, 'No missed questions') : (t.extra ? h('span', { class: 'pill extra' }, 'Optional') : null)))));
+    });
+    root.appendChild(grid);
+    const n = progress.missed.length;
+    const acts = h('div', { class: 'home-actions' },
+      h('button', { class: 'big-btn secondary', disabled: n === 0, onclick: startMissed }, h('span', null, `Missed Questions (${n})`), h('span', { class: 'meta' }, n ? 'Drill only what you got wrong' : 'Nothing missed yet')),
+      h('button', { class: 'big-btn', onclick: startTest }, h('span', null, 'Practice Test'), h('span', { class: 'meta' }, progress.test ? `Last: ${progress.test.correct}/${progress.test.total} · 25 questions, no feedback until the end` : '25 questions, no feedback until the end')));
+    root.appendChild(acts);
+    const resetRow = h('div', { class: 'reset-row' });
+    const confirmBox = h('div', { class: 'confirm' }, h('span', null, 'Erase all scores and the Missed Questions list?'),
+      h('button', { class: 'small-btn danger', onclick: () => { progress = freshProgress(); save(); renderHome(); } }, 'Yes, reset'),
+      h('button', { class: 'small-btn', onclick: () => { confirmBox.hidden = true; } }, 'Cancel'));
+    confirmBox.hidden = true;
+    resetRow.appendChild(h('button', { class: 'link-btn', onclick: () => { confirmBox.hidden = !confirmBox.hidden; } }, 'Reset progress'));
+    resetRow.appendChild(confirmBox);
+    root.appendChild(resetRow);
+    root.appendChild(h('p', { class: 'version' }, 'Version 1'));
+  }
+
+  // ---------- boot ----------
+  $('homeLink').addEventListener('click', goHome);
+  load();
+  renderHome();
+  show('home');
+
+  // exposed for automated testing only
+  window.__sk = { BANK, grade, drawFromTopic, getProgress: () => progress, getSession: () => session };
+})();
+
+</script>
+</body>
+</html>
