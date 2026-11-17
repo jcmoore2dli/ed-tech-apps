@@ -1,0 +1,2350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skeletal System Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one centered column (max 720px), big tap targets, one instruction line above each question.
+   Palette: warm paper + periwinkle accent (echoes the course slides); semantic green/red for grading. */
+:root {
+  --bg: #f6f4ee;
+  --surface: #ffffff;
+  --surface-2: #efece4;
+  --ink: #1e1c19;
+  --muted: #655f56;
+  --line: #d9d3c6;
+  --accent: #5457c0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e4e5f8;
+  --good: #1f7a46;
+  --good-bg: #e3f3e8;
+  --bad: #b2271d;
+  --bad-bg: #fbe7e4;
+  --warn-bg: #fff3d6;
+  --warn: #8a5a00;
+  --bone: #efe2cc;
+  --bone-edge: #8a6d4e;
+  --shadow: 0 1px 2px rgba(30,28,25,.06), 0 4px 14px rgba(30,28,25,.06);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15161b; --surface: #1f2027; --surface-2: #2a2b34; --ink: #ecebf0; --muted: #a7a6b3; --line: #383944;
+    --accent: #8f92f2; --accent-ink: #101120; --accent-soft: #2b2d4d;
+    --good: #6fd198; --good-bg: #17301f; --bad: #ff9a8f; --bad-bg: #3b1f1b; --warn-bg: #3a2f14; --warn: #ffd27a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15161b; --surface: #1f2027; --surface-2: #2a2b34; --ink: #ecebf0; --muted: #a7a6b3; --line: #383944;
+  --accent: #8f92f2; --accent-ink: #101120; --accent-soft: #2b2d4d;
+  --good: #6fd198; --good-bg: #17301f; --bad: #ff9a8f; --bad-bg: #3b1f1b; --warn-bg: #3a2f14; --warn: #ffd27a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+button { font: inherit; color: inherit; }
+.top {
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
+.brand { font-weight: 700; letter-spacing: .01em; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--ink); font-size: 17px; }
+.brand:hover { color: var(--accent); }
+.brand { white-space: nowrap; }
+.tag { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main.wrap { padding-block: 20px 48px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 6px 0 4px; text-wrap: balance; }
+h2 { font-size: 20px; margin: 20px 0 10px; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0 0 18px; }
+
+/* Home */
+.topics { display: grid; gap: 10px; margin: 0 0 18px; }
+.topic-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.topic-btn:hover { border-color: var(--accent); }
+.topic-btn .name { font-weight: 700; font-size: 18px; }
+.topic-btn .meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 14px; color: var(--muted); white-space: nowrap; }
+.topic-btn .score { font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.pill.missed { background: var(--bad-bg); color: var(--bad); }
+.pill.clear { background: var(--good-bg); color: var(--good); }
+.pill.extra { background: var(--surface-2); color: var(--muted); }
+.big-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left;
+  padding: 16px 18px; border-radius: 12px; border: 0; cursor: pointer; font-size: 18px; font-weight: 700;
+  background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow);
+}
+.big-btn.secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.big-btn:disabled { opacity: .55; cursor: default; }
+.big-btn .meta { font-size: 14px; font-weight: 500; opacity: .85; white-space: nowrap; }
+.home-actions { display: grid; gap: 10px; }
+.reset-row { margin-top: 28px; font-size: 14px; color: var(--muted); }
+.link-btn { background: none; border: 0; padding: 4px 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 14px; }
+.link-btn:hover { color: var(--bad); }
+.confirm { margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.small-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 600; font-size: 15px; }
+.small-btn.danger { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+/* Quiz */
+.qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.qhead .n { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); }
+.progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
+.progress > div { height: 100%; background: var(--accent); transition: width .25s; }
+.instruction { font-size: 14px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; }
+.prompt { font-size: 20px; font-weight: 600; line-height: 1.35; margin: 0 0 16px; text-wrap: pretty; }
+.retry-note { display: inline-block; margin-bottom: 8px; padding: 3px 10px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); font-size: 13px; font-weight: 700; }
+.diagram { background: #fffdf8; border: 1px solid var(--line); border-radius: 12px; padding: 8px; margin: 0 0 16px; }
+.diagram svg { display: block; width: 100%; height: auto; max-width: 100%; }
+
+.options { display: grid; gap: 10px; }
+.opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 13px 14px; min-height: 52px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 12px; cursor: pointer; line-height: 1.3;
+}
+.opt:hover { border-color: var(--accent); }
+.opt .box { flex: none; width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 6px; display: grid; place-items: center; font-size: 14px; font-weight: 700; }
+.opt.radio .box { border-radius: 50%; }
+.opt.selected { border-color: var(--accent); background: var(--accent-soft); }
+.opt.selected .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.right .box { background: var(--good); border-color: var(--good); color: #fff; }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt.wrong .box { background: var(--bad); border-color: var(--bad); color: #fff; }
+.opt.missed-opt { border-color: var(--good); border-style: dashed; }
+.opt.missed-opt .box { border-color: var(--good); color: var(--good); }
+.opt[disabled] { cursor: default; }
+.opt .lbl { flex: 1; min-width: 0; }
+.opt .note { flex: none; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.opt.right .note { color: var(--good); } .opt.wrong .note { color: var(--bad); } .opt.missed-opt .note { color: var(--good); }
+.opt .note.muted { color: var(--muted); font-weight: 600; }
+.instruction .ok, .instruction .no { font-weight: 800; }
+.key-btn[aria-pressed="true"] { border-color: var(--good); color: var(--good); }
+
+/* Matching */
+.match { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 10px; }
+.match .col { display: grid; gap: 8px; align-content: start; }
+.match .col-title { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.chip {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 10px; min-height: 48px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 15px; line-height: 1.25;
+}
+.chip .lbl { flex: 1; min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.chip .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--surface-2); color: var(--muted); }
+.chip.selected { border-color: var(--accent); background: var(--accent-soft); }
+.chip.paired .badge { background: var(--accent); color: var(--accent-ink); }
+.chip.right { border-color: var(--good); background: var(--good-bg); }
+.chip.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.chip[disabled] { cursor: default; }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.hint { font-size: 14px; color: var(--muted); }
+
+/* Sorting */
+.pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; min-height: 60px; border: 2px dashed var(--line); border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+.pool.empty::after { content: "All tiles placed. Tap a tile in a box to move it back here."; color: var(--muted); font-size: 14px; }
+.tile { padding: 9px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font-size: 15px; line-height: 1.25; text-align: left; }
+.tile.selected { border-color: var(--accent); background: var(--accent-soft); }
+.tile.right { border-color: var(--good); background: var(--good-bg); }
+.tile.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.tile[disabled] { cursor: default; }
+.boxes { display: grid; gap: 10px; margin-top: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.boxes.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dropbox { border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 10px; min-height: 110px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.dropbox.target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.dropbox .box-title { font-weight: 700; font-size: 15px; color: var(--accent); }
+.dropbox .box-tiles { display: flex; flex-wrap: wrap; gap: 6px; }
+.dropbox .box-tiles .tile { font-size: 14px; padding: 7px 10px; }
+.tile .fix { display: block; font-size: 12px; color: var(--bad); font-weight: 600; }
+
+/* Buttons + feedback */
+.actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.primary { padding: 14px 24px; border-radius: 12px; border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px; cursor: pointer; min-width: 140px; }
+.primary:disabled { opacity: .45; cursor: default; }
+.ghost { padding: 14px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 17px; cursor: pointer; }
+.feedback { margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.feedback.good { border-color: var(--good); background: var(--good-bg); }
+.feedback.bad { border-color: var(--bad); background: var(--bad-bg); }
+.feedback .verdict { font-weight: 800; font-size: 18px; margin: 0 0 6px; }
+.feedback.good .verdict { color: var(--good); } .feedback.bad .verdict { color: var(--bad); }
+.feedback p { margin: 4px 0; }
+.feedback .ans { font-weight: 600; }
+.feedback ul { margin: 6px 0 0; padding-left: 18px; }
+.feedback li { margin: 3px 0; }
+.ok { color: var(--good); font-weight: 700; } .no { color: var(--bad); font-weight: 700; }
+
+/* Results */
+.score-card { text-align: center; padding: 24px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 16px; }
+.score-card .big { font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.score-card .sub { color: var(--muted); margin-top: 6px; }
+.per-topic { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font-size: 15px; }
+.per-topic th, .per-topic td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.per-topic td:last-child, .per-topic th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.review { display: grid; gap: 12px; }
+.review-item { padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.review-item .tp { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.review-item .q { font-weight: 600; margin: 4px 0 8px; }
+.review-item p { margin: 4px 0; font-size: 15px; }
+.review-item .diagram { margin-top: 8px; }
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .progress > div { transition: none; } }
+@media (max-width: 420px) {
+  body { font-size: 16px; }
+  .prompt { font-size: 18px; }
+  .topic-btn { flex-direction: column; align-items: flex-start; }
+  .topic-btn .meta { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+  .big-btn { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+
+/* Skull app additions */
+.diagram { margin: 0 0 16px; text-align: center; }
+.diagram svg { max-width: 460px; margin: 0 auto; }
+.diagram figcaption { font-size: 13px; color: #6b6255; margin-top: 2px; }
+figure.diagram { margin-left: 0; margin-right: 0; }
+.explore-btn { margin-bottom: 4px; }
+.version { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.bone-groups { display: grid; gap: 12px; margin-bottom: 14px; }
+.bone-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.bone-chip { padding: 8px 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font-size: 15px; font-weight: 600; }
+.bone-chip.cranial { border-color: #8cc3e6; }
+.bone-chip.facial { border-color: #e6cf6a; }
+.bone-chip.on { background: #f0663a; border-color: #f0663a; color: #fff; }
+.bone-card { padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 14px; min-height: 52px; }
+.bone-card p { margin: 6px 0; }
+.bone-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bone-name { font-weight: 800; font-size: 19px; margin-right: 4px; }
+.pill.cranial { background: #d6ecfa; color: #1d5a82; }
+.pill.facial { background: #fbf0bf; color: #6d5600; }
+.views { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.explore-fig { margin: 0; }
+.explore-fig [data-bone] { cursor: pointer; }
+.explore-fig svg *:not([data-bone]):not(svg):not(g) { pointer-events: none; }
+
+
+/* Skeletal app additions */
+.hnum { font-weight: 700; color: var(--accent); margin-right: 4px; }
+.fill-input { width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); box-sizing: border-box; }
+.fill-input:focus { outline: none; border-color: var(--accent); }
+.fill-input.right { border-color: var(--good); background: var(--good-bg); }
+.fill-input.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.short-input { width: 100%; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); box-sizing: border-box; resize: vertical; }
+.feedback.model { border: 1px solid var(--line); background: var(--surface); }
+.feedback.model ul { margin: 4px 0 8px; padding-left: 20px; }
+.diagram svg { max-height: 56vh; width: auto; max-width: 100%; display: block; margin: 0 auto; }
+.fig-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.fig-tab { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.fig-tab.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.views.one { grid-template-columns: 1fr; }
+.views.one .diagram svg { max-height: 78vh; }
+.bone-chip { color: var(--ink); }
+.big-btn .meta { white-space: normal; text-align: left; }
+.big-btn { min-width: 0; }
+
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <button id="homeLink" class="brand" type="button">Skeletal System Study</button>
+  <span id="modeTag" class="tag"></span>
+</div></header>
+<main class="wrap">
+  <section id="home" aria-label="Home"></section>
+  <section id="explore" aria-label="Explore the bones" hidden></section>
+  <section id="quiz" aria-label="Question" hidden></section>
+  <section id="results" aria-label="Results" hidden></section>
+</main>
+<script>
+// ============================================================
+// ITEM BANK, generated by bank.py. "num" = question number on the Skeletal System Test handout.
+// Formats: mc (options[0] correct, shuffled at play time), sata, match, sort, fill (typed; "answers" =
+// accepted spellings), short (model answer + self-check). Diagrams are original drawings.
+// ============================================================
+const BANK = {
+ "topics": [
+  {
+   "key": "types",
+   "name": "Bone Types"
+  },
+  {
+   "key": "axial",
+   "name": "Axial vs. Appendicular"
+  },
+  {
+   "key": "skull",
+   "name": "The Skull"
+  },
+  {
+   "key": "spine",
+   "name": "Vertebral Column"
+  },
+  {
+   "key": "thorax",
+   "name": "Ribs & Sternum"
+  },
+  {
+   "key": "girdles",
+   "name": "Shoulder & Hip Girdles"
+  },
+  {
+   "key": "arm",
+   "name": "Arm & Hand"
+  },
+  {
+   "key": "leg",
+   "name": "Leg & Foot"
+  },
+  {
+   "key": "short",
+   "name": "Short Answers (83–90)",
+   "noTest": true
+  },
+  {
+   "key": "lab-major",
+   "name": "Label: Major Bones",
+   "label": true
+  },
+  {
+   "key": "lab-skull",
+   "name": "Label: Skull",
+   "label": true
+  },
+  {
+   "key": "lab-hand",
+   "name": "Label: Wrist, Hand, Fingers",
+   "label": true
+  },
+  {
+   "key": "lab-foot",
+   "name": "Label: Ankle, Foot, Toes",
+   "label": true
+  }
+ ],
+ "testAllocation": {
+  "types": 3,
+  "axial": 2,
+  "skull": 4,
+  "spine": 3,
+  "thorax": 2,
+  "girdles": 2,
+  "arm": 2,
+  "leg": 2,
+  "lab-major": 4,
+  "lab-skull": 2,
+  "lab-hand": 2,
+  "lab-foot": 2
+ },
+ "info": {
+  "front": [
+   [
+    "cranium",
+    "Cranium",
+    "The skull above the jaw; protects the brain. Axial."
+   ],
+   [
+    "mandible",
+    "Mandible",
+    "Lower jaw; the only movable skull bone. Axial."
+   ],
+   [
+    "clavicle",
+    "Clavicle",
+    "Collarbone; attaches the scapula to the sternum. Most commonly broken bone. Appendicular (pectoral girdle). Long bone."
+   ],
+   [
+    "sternum",
+    "Sternum",
+    "Breastbone: manubrium, body, xiphoid process. Axial. Flat bone."
+   ],
+   [
+    "ribs",
+    "Ribs",
+    "12 pairs (24). True 1–7, false 8–12, floating 11–12. Axial."
+   ],
+   [
+    "humerus",
+    "Humerus",
+    "Upper arm; longest and strongest bone of the upper extremity. Forms joints with the scapula, radius, and ulna."
+   ],
+   [
+    "radius",
+    "Radius",
+    "Forearm, thumb side; rotates; most of the wrist joint."
+   ],
+   [
+    "ulna",
+    "Ulna",
+    "Forearm, pinky side; most of the elbow; olecranon process = elbow bump."
+   ],
+   [
+    "carpals",
+    "Carpals",
+    "8 wrist bones per hand. Short bones."
+   ],
+   [
+    "metacarpals",
+    "Metacarpals",
+    "5 palm bones per hand; their heads are the knuckles."
+   ],
+   [
+    "phalanges-hand",
+    "Phalanges (hand)",
+    "14 finger bones per hand: proximal, intermediate, distal (thumb has no intermediate). Long bones."
+   ],
+   [
+    "pelvis",
+    "Pelvis (hip bones)",
+    "Two hip (coxal) bones: ilium, ischium, pubis. Held together by the sacrum in back and the pubic symphysis in front. Appendicular."
+   ],
+   [
+    "femur",
+    "Femur",
+    "Thigh bone; longest and strongest bone in the body. Its head fits in the acetabulum."
+   ],
+   [
+    "patella",
+    "Patella",
+    "Kneecap; a sesamoid bone."
+   ],
+   [
+    "tibia",
+    "Tibia",
+    "Shin bone; medial; weight-bearing; second largest bone."
+   ],
+   [
+    "fibula",
+    "Fibula",
+    "Thin, lateral lower-leg bone; not weight-bearing; helps with balance."
+   ],
+   [
+    "tarsals",
+    "Tarsals",
+    "7 ankle bones per foot (14 total). Short bones."
+   ],
+   [
+    "metatarsals",
+    "Metatarsals",
+    "5 long foot bones per foot."
+   ],
+   [
+    "phalanges-foot",
+    "Phalanges (foot)",
+    "14 toe bones per foot."
+   ]
+  ],
+  "back": [
+   [
+    "cervical",
+    "Cervical vertebrae",
+    "7 neck vertebrae. C1 = atlas, C2 = axis (with the dens)."
+   ],
+   [
+    "thoracic",
+    "Thoracic vertebrae",
+    "12 vertebrae; the ribs attach to them."
+   ],
+   [
+    "lumbar",
+    "Lumbar vertebrae",
+    "5 lower-back vertebrae; the biggest ones (they carry the most weight)."
+   ],
+   [
+    "sacrum",
+    "Sacrum",
+    "5 fused pieces; holds the hip bones together in back."
+   ],
+   [
+    "coccyx",
+    "Coccyx",
+    "Tailbone; 4 fused pieces."
+   ],
+   [
+    "scapula",
+    "Scapula",
+    "Shoulder blade; not attached directly to the spine, so the shoulder can move freely. Appendicular."
+   ],
+   [
+    "ribs",
+    "Ribs",
+    "12 pairs; attach to the thoracic vertebrae in back."
+   ]
+  ],
+  "hand": [
+   [
+    "phal-dist",
+    "Distal phalanges",
+    "Distal phalanges: the fingertip bones (farthest from the body)."
+   ],
+   [
+    "phal-inter",
+    "Intermediate phalanges",
+    "Intermediate phalanges: the middle finger bones. The thumb doesn't have one."
+   ],
+   [
+    "phal-prox",
+    "Proximal phalanges",
+    "Proximal phalanges: the finger bones closest to the palm."
+   ],
+   [
+    "metacarpals",
+    "Metacarpals",
+    "Metacarpals: the 5 palm bones; their heads are your knuckles."
+   ],
+   [
+    "hamate",
+    "Hamate",
+    "Hamate: distal row, pinky side (it has a little hook)."
+   ],
+   [
+    "pisiform",
+    "Pisiform",
+    "Pisiform: the small pea-shaped bone on the pinky side, sitting on the triquetrum."
+   ],
+   [
+    "triquetrum",
+    "Triquetrum",
+    "Triquetrum: proximal row, pinky side, under the pisiform."
+   ],
+   [
+    "trapezium",
+    "Trapezium",
+    "Trapezium: distal row at the base of the thumb. (Trapezi-UM = thUMb.)"
+   ],
+   [
+    "trapezoid",
+    "Trapezoid",
+    "Trapezoid: distal row, between the trapezium and the capitate."
+   ],
+   [
+    "scaphoid",
+    "Scaphoid",
+    "Scaphoid: proximal row, thumb side, right above the radius."
+   ],
+   [
+    "capitate",
+    "Capitate",
+    "Capitate: the biggest carpal, in the middle of the distal row."
+   ],
+   [
+    "lunate",
+    "Lunate",
+    "Lunate: proximal row, in the middle, next to the scaphoid."
+   ],
+   [
+    "ulna",
+    "Ulna",
+    "Ulna: the forearm bone on the pinky side."
+   ],
+   [
+    "radius",
+    "Radius",
+    "Radius: the forearm bone on the thumb side; it makes up most of the wrist joint."
+   ]
+  ],
+  "foot": [
+   [
+    "fibula",
+    "Fibula",
+    "Fibula: the thin lower-leg bone on the little-toe side."
+   ],
+   [
+    "tibia",
+    "Tibia",
+    "Tibia: the big shin bone on the big-toe side."
+   ],
+   [
+    "talus",
+    "Talus",
+    "Talus: the ankle bone right under the tibia."
+   ],
+   [
+    "calcaneus",
+    "Calcaneus",
+    "Calcaneus: the heel bone (the biggest tarsal)."
+   ],
+   [
+    "cuboid",
+    "Cuboid",
+    "Cuboid: the cube-shaped tarsal on the little-toe side, in front of the calcaneus."
+   ],
+   [
+    "navicular",
+    "Navicular",
+    "Navicular: the boat-shaped tarsal on the big-toe side, in front of the talus."
+   ],
+   [
+    "cun-lat",
+    "Lateral cuneiform",
+    "Lateral cuneiform: the cuneiform closest to the cuboid (little-toe side)."
+   ],
+   [
+    "cun-int",
+    "Intermediate cuneiform",
+    "Intermediate cuneiform: the middle of the three cuneiforms."
+   ],
+   [
+    "cun-med",
+    "Medial cuneiform",
+    "Medial cuneiform: the biggest cuneiform, behind the big toe."
+   ],
+   [
+    "metatarsals",
+    "Metatarsals",
+    "Metatarsals: the 5 long bones of the foot."
+   ],
+   [
+    "phal-prox",
+    "Proximal phalanges",
+    "Proximal phalanges: the toe bones that join the metatarsals."
+   ],
+   [
+    "phal-inter",
+    "Intermediate phalanges",
+    "Intermediate phalanges: the middle toe bones. The big toe doesn't have one."
+   ],
+   [
+    "phal-dist",
+    "Distal phalanges",
+    "Distal phalanges: the toe-tip bones."
+   ]
+  ],
+  "spine": [
+   [
+    "cervical",
+    "Cervical vertebrae",
+    "7 (neck)."
+   ],
+   [
+    "thoracic",
+    "Thoracic vertebrae",
+    "12 (ribs attach). Too much curve here = kyphosis."
+   ],
+   [
+    "lumbar",
+    "Lumbar vertebrae",
+    "5 (lower back). Too much inward curve here = lordosis."
+   ],
+   [
+    "sacrum",
+    "Sacrum",
+    "1 bone (5 fused)."
+   ],
+   [
+    "coccyx",
+    "Coccyx",
+    "1 bone (4 fused); tailbone."
+   ],
+   [
+    "discs",
+    "Intervertebral disks",
+    "Fibrocartilage cushions between the vertebrae."
+   ]
+  ],
+  "sternum": [
+   [
+    "manubrium",
+    "Manubrium",
+    "Top part of the sternum."
+   ],
+   [
+    "body",
+    "Body",
+    "Middle, longest part."
+   ],
+   [
+    "xiphoid",
+    "Xiphoid process",
+    "Small bottom tip."
+   ]
+  ],
+  "skull": [
+   [
+    "ethmoid",
+    "Ethmoid bone",
+    "The ethmoid is mostly inside the cranium; you see bits of it inside the eye socket and nasal cavity."
+   ],
+   [
+    "frontal",
+    "Frontal bone",
+    "The frontal bone is the forehead."
+   ],
+   [
+    "maxilla",
+    "Maxillae",
+    "The maxillae form the upper jaw."
+   ],
+   [
+    "nasal",
+    "Nasal bones",
+    "The nasal bones form the bridge of the nose."
+   ],
+   [
+    "sphenoid",
+    "Sphenoid bone",
+    "The butterfly-shaped sphenoid shows at the temple and the back of the eye socket."
+   ],
+   [
+    "zygomatic",
+    "Zygomatic bones",
+    "The zygomatic bones are the cheekbones."
+   ],
+   [
+    "lacrimal",
+    "Lacrimal bones",
+    "The tiny lacrimal bones are in the inner corner of the eye socket."
+   ],
+   [
+    "mandible",
+    "Mandible",
+    "The mandible is the lower jaw."
+   ],
+   [
+    "temporal",
+    "Temporal bones",
+    "The temporal bone is around the ear."
+   ],
+   [
+    "occipital",
+    "Occipital bone",
+    "The occipital bone is the back and bottom of the skull."
+   ],
+   [
+    "parietal",
+    "Parietal bones",
+    "The parietal bones are the top and sides of the skull."
+   ]
+  ]
+ },
+  "items": [
+    {"id": "Q01", "topic": "types", "format": "mc", "prompt": "Which type of bones are typically found embedded in tendons?", "options": ["Sesamoid bones", "Long bones", "Short bones", "Flat bones"], "explain": "Sesamoid bones are buried within tendons. The patella (kneecap) is one.", "num": 1},
+    {"id": "Q02", "topic": "types", "format": "mc", "prompt": "What is the primary function of flat bones?", "options": ["Protect internal organs", "Enable movement", "Support tendons", "Aid in bearing weight"], "explain": "Flat bones (skull, sternum, ribs) protect internal organs like the brain, heart, and lungs.", "num": 2},
+    {"id": "Q03", "topic": "types", "format": "mc", "prompt": "Which type of bone has two epiphyses and a hollow medullary cavity?", "options": ["Long bones", "Short bones", "Flat bones", "Irregular bones"], "explain": "A long bone has a long diaphysis (shaft), 2 epiphyses (ends), and a hollow medullary cavity inside.", "num": 3},
+    {"id": "Q04", "topic": "types", "format": "mc", "prompt": "What type of bones are the clavicles classified as?", "options": ["Long bones", "Short bones", "Flat bones", "Irregular bones"], "explain": "The clavicle is a long bone: its length is greater than its width.", "num": 4},
+    {"id": "Q05", "topic": "types", "format": "mc", "prompt": "The carpals are an example of which type of bone?", "options": ["Short bones", "Long bones", "Flat bones", "Sesamoid bones"], "explain": "Carpals (wrist) and tarsals (ankle) are short bones: roughly cube-shaped and grouped together.", "num": 5},
+    {"id": "Q06", "topic": "types", "format": "mc", "prompt": "Which type of bones are roughly cube-shaped and grouped together?", "options": ["Short bones", "Irregular bones", "Long bones", "Sesamoid bones"], "explain": "Short bones are roughly cube-shaped and sit together in a group, like the carpals and tarsals.", "num": 6},
+    {"id": "Q07", "topic": "types", "format": "mc", "prompt": "Which type of bone provides a lot of surface area for muscle attachment?", "options": ["Flat bones", "Long bones", "Irregular bones", "Short bones"], "explain": "Besides protecting organs, flat bones give muscles a large surface to attach to.", "num": 7},
+    {"id": "Q08", "topic": "types", "format": "mc", "prompt": "The mandible is an example of which type of bone?", "options": ["Irregular", "Flat", "Long", "Sesamoid"], "explain": "The mandible has a complicated shape that doesn't fit the other categories, so it's an irregular bone (like the vertebrae).", "num": 8},
+    {"id": "Q09", "topic": "types", "format": "mc", "prompt": "The patella is an example of which type of bone?", "options": ["Sesamoid", "Irregular", "Short", "Flat"], "explain": "The patella (kneecap) is a sesamoid bone: it forms inside a tendon.", "num": 9},
+    {"id": "Q10", "topic": "types", "format": "mc", "prompt": "The phalanges are an example of which type of bone?", "options": ["Long", "Short", "Sesamoid", "Irregular"], "explain": "Phalanges are small, but each one is longer than it is wide, so they're long bones.", "num": 10},
+    {"id": "TY-M1", "topic": "types", "format": "match", "prompt": "Match each bone type to its description.", "pairs": [["Long", "Length greater than width; 2 epiphyses"], ["Short", "Roughly cube-shaped; grouped together"], ["Flat", "Thin; protects organs; muscle attachment"], ["Irregular", "Complicated shape (vertebrae, mandible)"], ["Sesamoid", "Embedded in a tendon"]], "explain": "Long, short, flat, irregular, sesamoid: the 5 bone types."},
+    {"id": "TY-M2", "topic": "types", "format": "match", "prompt": "Match each bone to its type.", "pairs": [["Clavicle", "Long"], ["Carpals", "Short"], ["Sternum", "Flat"], ["Mandible", "Irregular"], ["Patella", "Sesamoid"]], "explain": "Clavicle = long, carpals = short, sternum = flat, mandible = irregular, patella = sesamoid."},
+    {"id": "TY-S1", "topic": "types", "format": "sort", "prompt": "Sort each bone into its type.", "boxes": ["Long", "Short", "Flat", "Irregular", "Sesamoid"], "tiles": [["Phalanges", "Long"], ["Femur", "Long"], ["Tarsals", "Short"], ["Ribs", "Flat"], ["Vertebrae", "Irregular"], ["Patella", "Sesamoid"]], "explain": "Phalanges and femur are long; tarsals are short; ribs are flat; vertebrae are irregular; the patella is sesamoid."},
+    {"id": "Q11", "topic": "axial", "format": "mc", "prompt": "Which division of the skeleton includes bones near or on the midline?", "options": ["Axial skeleton", "Appendicular skeleton", "Peripheral skeleton", "Central skeleton"], "explain": "The axial skeleton is the bones on or near the midline: skull, vertebral column, ribcage (plus sternum and hyoid).", "num": 11},
+    {"id": "Q12", "topic": "axial", "format": "mc", "prompt": "Which bones are considered part of the appendicular skeleton?", "options": ["Limbs & girdles", "Skull & vertebrae", "Sternum & pelvis", "Facial & cranial bones"], "explain": "The appendicular skeleton is the limbs plus the girdles that attach them to the trunk.", "num": 12},
+    {"id": "Q13", "topic": "axial", "format": "mc", "prompt": "Which division of the skeleton includes the ribs?", "options": ["Axial skeleton", "Peripheral skeleton", "Central skeleton", "Appendicular skeleton"], "explain": "The ribs are part of the axial skeleton (with the sternum, they form the ribcage).", "num": 13},
+    {"id": "Q14", "topic": "axial", "format": "mc", "prompt": "Which division of the skeleton includes the metatarsals?", "options": ["Appendicular skeleton", "Peripheral skeleton", "Central skeleton", "Axial skeleton"], "explain": "Metatarsals are foot bones, part of a limb, so they're appendicular.", "num": 14},
+    {"id": "Q15", "topic": "axial", "format": "mc", "prompt": "Which division of the skeleton includes the pelvis?", "options": ["Appendicular skeleton", "Peripheral skeleton", "Central skeleton", "Axial skeleton"], "explain": "The pelvis (hip bones) is the pelvic girdle, which attaches the legs, so it's appendicular.", "num": 15},
+    {"id": "Q16", "topic": "axial", "format": "mc", "prompt": "Which division of the skeleton includes the hyoid bone?", "options": ["Axial skeleton", "Peripheral skeleton", "Central skeleton", "Appendicular skeleton"], "explain": "The hyoid bone sits in the neck on the midline, so it's axial.", "num": 16},
+    {"id": "AX-S1", "topic": "axial", "format": "sort", "prompt": "Sort each bone: axial or appendicular?", "boxes": ["Axial", "Appendicular"], "tiles": [["Ribs", "Axial"], ["Hyoid bone", "Axial"], ["Sternum", "Axial"], ["Sacrum", "Axial"], ["Metatarsals", "Appendicular"], ["Pelvis", "Appendicular"], ["Clavicle", "Appendicular"], ["Scapula", "Appendicular"]], "explain": "Midline bones are axial. Limbs and girdles (clavicle, scapula, pelvis) are appendicular."},
+    {"id": "AX-S2", "topic": "axial", "format": "sort", "prompt": "Sort each bone: axial or appendicular?", "boxes": ["Axial", "Appendicular"], "tiles": [["Cranium", "Axial"], ["Mandible", "Axial"], ["Cervical vertebrae", "Axial"], ["Coccyx", "Axial"], ["Humerus", "Appendicular"], ["Carpals", "Appendicular"], ["Femur", "Appendicular"], ["Patella", "Appendicular"]], "explain": "The skull and spine are axial; arm and leg bones are appendicular."},
+    {"id": "AX-1", "topic": "axial", "format": "mc", "prompt": "In the front-view skeleton, which bone is highlighted, and which division is it in?", "options": ["Sternum: axial", "Sternum: appendicular", "Clavicle: axial", "Clavicle: appendicular"], "explain": "The sternum (breastbone) is on the midline, so it's axial.", "img": {"fig": "front", "hi": "sternum", "crop": "upper"}},
+    {"id": "AX-2", "topic": "axial", "format": "mc", "prompt": "In the front-view skeleton, which bone is highlighted, and which division is it in?", "options": ["Clavicle: appendicular", "Clavicle: axial", "Sternum: axial", "Scapula: appendicular"], "explain": "The clavicle is part of the pectoral (shoulder) girdle, which attaches the arm, so it's appendicular.", "img": {"fig": "front", "hi": "clavicle", "crop": "upper"}},
+    {"id": "Q17", "topic": "skull", "format": "mc", "prompt": "How many bones are there in the human skull?", "options": ["22", "20", "24", "27"], "explain": "The skull has 22 bones: 8 cranial + 14 facial.", "num": 17},
+    {"id": "Q18", "topic": "skull", "format": "mc", "prompt": "Which type of skull bones provide openings for food and air to enter?", "options": ["Facial bones", "Cranial bones", "Temporal bones", "Parietal bones"], "explain": "Facial bones make up the face, provide openings for air and food, and anchor the muscles of facial expression.", "num": 18},
+    {"id": "Q19", "topic": "skull", "format": "mc", "prompt": "Which type of skull bones provide a protective casing for the brain?", "options": ["Cranial bones", "Facial bones", "Maxillae & mandible", "Appendicular bones"], "explain": "Cranial bones surround and protect the brain.", "num": 19},
+    {"id": "Q20", "topic": "skull", "format": "mc", "prompt": "How many cranial bones are in the skull total (counting each bone separately)?", "options": ["8", "5", "10", "12"], "explain": "8 cranial bones: frontal, occipital, sphenoid, ethmoid (1 each) + parietal and temporal (2 each).", "num": 20},
+    {"id": "Q21", "topic": "skull", "format": "mc", "prompt": "Which cranial bones occur in pairs?", "options": ["Temporal & parietal", "Ethmoid & sphenoid", "Mandible & vomer", "Frontal & occipital"], "explain": "Only the temporal and parietal bones come in pairs.", "num": 21},
+    {"id": "Q22", "topic": "skull", "format": "mc", "prompt": "Which bone is a facial bone?", "options": ["Vomer bone", "Ethmoid bone", "Sphenoid bone", "Temporal bone"], "explain": "The vomer is a facial bone. Ethmoid, sphenoid, and temporal are cranial.", "num": 22},
+    {"id": "Q23", "topic": "skull", "format": "mc", "prompt": "Which facial bones do you only have one of?", "options": ["Vomer bone & mandible", "Palatine bone & inferior nasal conchae", "Lacrimal bone & maxillae", "Nasal bone & zygomatic bone"], "explain": "The vomer and mandible are the only single facial bones; the other facial bones come in pairs.", "num": 23},
+    {"id": "Q24", "topic": "skull", "format": "mc", "prompt": "What is the common name for the zygomatic bone?", "options": ["Cheekbone", "Jawbone", "Nose bridge", "Eye socket"], "explain": "The zygomatic bones are the cheekbones.", "num": 24},
+    {"id": "Q25", "topic": "skull", "format": "mc", "prompt": "Which cranial bone/bones have condyles that form a joint with the atlas?", "options": ["Occipital bone", "Parietal bones", "Frontal bone", "Temporal bones"], "explain": "The occipital condyles (beside the foramen magnum) form a joint with the atlas, the first vertebra.", "num": 25},
+    {"id": "Q26", "topic": "skull", "format": "mc", "prompt": "Which cranial bone is shaped like a butterfly?", "options": ["Sphenoid bone", "Palatine bone", "Ethmoid bone", "Temporal bone"], "explain": "The sphenoid is the butterfly-shaped \"keystone\" bone.", "num": 26},
+    {"id": "Q27", "topic": "skull", "format": "mc", "prompt": "Which cranial bone makes up the top and side walls of the cranium?", "options": ["Parietal bones", "Frontal bone", "Temporal bones", "Occipital bone"], "explain": "Parietal = top and side walls. Temporal = bottom and side walls.", "num": 27},
+    {"id": "Q28", "topic": "skull", "format": "mc", "prompt": "Which cranial bone is a deep bone that makes up a significant portion of the nasal cavity?", "options": ["Ethmoid bone", "Vomer bone", "Maxilla", "Sphenoid bone"], "explain": "The ethmoid is deep in the cranium and makes up much of the nasal cavity.", "num": 28},
+    {"id": "Q29", "topic": "skull", "format": "mc", "prompt": "Which facial bone is originally two separate bones, but fuse by age 1?", "options": ["Mandible", "Vomer bone", "Nasal bone", "Palatine bone"], "explain": "The mandible is 2 separate bones at birth that fuse by age 1.", "num": 29},
+    {"id": "Q30", "topic": "skull", "format": "mc", "prompt": "Which facial bone/bones form much of the upper jaw?", "options": ["Maxillae", "Mandible", "Zygomatic bones", "Temporal bones"], "explain": "The maxillae form much of the upper jaw. The mandible is the lower jaw.", "num": 30},
+    {"id": "Q31", "topic": "skull", "format": "mc", "prompt": "Which nasal bone/bones form the posterior and inferior portion of the nasal septum?", "options": ["Vomer bone", "Palatine bone", "Ethmoid bone", "Zygomatic bones"], "explain": "The vomer forms the back and bottom of the nasal septum; the ethmoid forms the upper part.", "num": 31},
+    {"id": "Q32", "topic": "skull", "format": "mc", "prompt": "Which bone/bones are the largest and strongest facial bone?", "options": ["Mandible", "Maxillae", "Zygomatic bones", "Lacrimal bones"], "explain": "The mandible is the largest and strongest facial bone.", "num": 32},
+    {"id": "Q33", "topic": "skull", "format": "mc", "prompt": "The smallest facial bone/bones are the _____.", "options": ["Lacrimal bones", "Inferior nasal conchae", "Nasal bones", "Zygomatic bones"], "explain": "The lacrimal bones are the smallest facial bones, in the inner corner of each eye socket.", "num": 33},
+    {"id": "Q34", "topic": "skull", "format": "mc", "prompt": "The temporal bone and mandible meet at the _____.", "options": ["Temporomandibular joint", "Mastoid process", "Orbit", "Occipital condyles"], "explain": "Temporo + mandibular: the TMJ is where the temporal bone and mandible meet.", "num": 34},
+    {"id": "Q58", "topic": "skull", "format": "fill", "prompt": "The eye socket is also referred to as the _____.", "answers": ["orbit", "orbits"], "explain": "The eye socket is the orbit.", "num": 58},
+    {"id": "Q59", "topic": "skull", "format": "fill", "prompt": "The _____ bone makes up the back and bottom walls of the cranium.", "answers": ["occipital"], "explain": "The occipital bone is the back and bottom wall of the cranium.", "num": 59},
+    {"id": "Q60", "topic": "skull", "format": "fill", "prompt": "The _____ is the hole in the occipital bone that the spinal cord comes through.", "answers": ["foramen magnum"], "explain": "The foramen magnum is the hole for the spinal cord.", "num": 60},
+    {"id": "Q61", "topic": "skull", "format": "fill", "prompt": "The _____ bone includes the tear duct, allowing tears to leave the eye.", "answers": ["lacrimal"], "explain": "The lacrimal bone's lacrimal fossa holds the tear duct.", "num": 61},
+    {"id": "Q62", "topic": "skull", "format": "fill", "prompt": "The _____ is the only bone of the skull that can move.", "answers": ["mandible"], "explain": "The mandible (lower jaw) is the only movable skull bone.", "common": ["lower jaw", "jaw", "jawbone", "jaw bone"], "num": 62},
+    {"id": "Q35", "topic": "spine", "format": "mc", "prompt": "What is the name of the second cervical vertebra?", "options": ["Axis", "Atlas", "Dens", "Sacrum"], "explain": "C1 is the atlas; C2 is the axis.", "num": 35},
+    {"id": "Q36", "topic": "spine", "format": "mc", "prompt": "Which vertebra allows the head to rotate from side to side?", "options": ["Axis", "Atlas", "Thoracic", "Sacral"], "explain": "The axis (C2) has the dens, a peg the atlas pivots around, so you can turn your head side to side (\"no\"). The atlas holds up the skull and lets you nod (\"yes\").", "num": 36},
+    {"id": "Q37", "topic": "spine", "format": "mc", "prompt": "Which structure in the vertebral column provides cushioning between vertebrae?", "options": ["Intervertebral disks", "Costal cartilage", "Sacral cartilage", "Fibrous layer"], "explain": "Intervertebral disks (made of fibrocartilage) cushion the vertebrae.", "num": 37},
+    {"id": "Q38", "topic": "spine", "format": "mc", "prompt": "The vertebral column has a natural curvature to:", "options": ["Distribute pressure and support the body", "Provide a base for muscle attachment", "Make room for nerves in the spinal cord", "Allow for maximum head mobility"], "explain": "The S-shaped curves spread out pressure (weight) and help the spine support the body.", "num": 38},
+    {"id": "Q39", "topic": "spine", "format": "mc", "prompt": "Which condition is characterized by an excessive inward curvature of the lumbar spine?", "options": ["Lordosis", "Kyphosis", "Scoliosis", "Text neck"], "explain": "Lordosis = too much inward (swayback) lumbar curve. Kyphosis = too much thoracic curve (hunchback). Scoliosis = sideways curve.", "num": 39},
+    {"id": "Q63", "topic": "spine", "format": "fill", "prompt": "The _____ is the tailbone.", "answers": ["coccyx"], "explain": "The coccyx is the tailbone (originally 4 parts that fuse).", "common": ["tailbone", "tail bone"], "num": 63},
+    {"id": "Q64", "topic": "spine", "format": "fill", "prompt": "The part of the axis that sticks up into the atlas is known as the _____.", "answers": ["dens", "odontoid process", "odontoid"], "explain": "The dens (odontoid process) is the peg on the axis that the atlas turns around.", "num": 64},
+    {"id": "Q65", "topic": "spine", "format": "fill", "prompt": "Prior to ossification, the sacrum was _____ separate pieces.", "answers": ["5", "five", "5 pieces", "five pieces"], "explain": "The sacrum starts as 5 separate pieces that fuse into 1 bone.", "num": 65},
+    {"id": "Q66", "topic": "spine", "format": "fill", "prompt": "The intervertebral disks are made of _____ (be specific).", "answers": ["fibrocartilage", "fibrous cartilage", "fibro cartilage"], "explain": "Intervertebral disks are made of fibrocartilage, a tough cartilage that absorbs shock.", "num": 66},
+    {"id": "Q67", "topic": "spine", "format": "fill", "prompt": "_____ is a condition of the vertebral column in which the thoracic curvature is extreme.", "answers": ["kyphosis"], "explain": "Kyphosis is an extreme thoracic curve (hunchback). Lordosis is the lumbar one.", "num": 67},
+    {"id": "SP-M1", "topic": "spine", "format": "match", "prompt": "Match each section of the vertebral column to how many bones it has.", "pairs": [["Cervical vertebrae", "7"], ["Thoracic vertebrae", "12"], ["Lumbar vertebrae", "5"], ["Sacrum", "1 (5 fused)"], ["Coccyx", "1 (4 fused)"]], "explain": "7 + 12 + 5 + 1 + 1 = 26 bones in the vertebral column."},
+    {"id": "SP-M2", "topic": "spine", "format": "match", "prompt": "Match each term to its meaning.", "pairs": [["Atlas", "C1; holds up the skull"], ["Axis", "C2; lets the head turn side to side"], ["Dens", "Peg on the axis that sticks up into the atlas"], ["Kyphosis", "Extreme thoracic curve"], ["Lordosis", "Extreme inward lumbar curve"]], "explain": "Atlas = C1, axis = C2 with its dens. Kyphosis is thoracic; lordosis is lumbar."},
+    {"id": "SP-1", "topic": "spine", "format": "mc", "prompt": "How many bones make up the entire (adult) vertebral column?", "options": ["26", "33", "24", "22"], "explain": "26: 7 cervical + 12 thoracic + 5 lumbar + 1 sacrum + 1 coccyx. (Before the sacrum and coccyx fuse, it's 33 pieces.)"},
+    {"id": "SP-2", "topic": "spine", "format": "mc", "prompt": "As you go down the vertebral column, the vertebrae get…", "options": ["Bigger, because they carry more body weight", "Smaller, because they carry less weight", "Bigger, because the spinal cord gets thicker", "They all stay the same size"], "explain": "The vertebrae get larger toward the bottom because the lower ones support more of the body's weight."},
+    {"id": "SP-D1", "topic": "spine", "format": "mc", "prompt": "Which part of the vertebral column is highlighted?", "options": ["Cervical vertebrae", "Thoracic vertebrae", "Lumbar vertebrae", "Sacrum"], "explain": "7 cervical vertebrae in the neck.", "img": {"fig": "spine", "hi": "cervical"}},
+    {"id": "SP-D2", "topic": "spine", "format": "mc", "prompt": "Which part of the vertebral column is highlighted?", "options": ["Thoracic vertebrae", "Cervical vertebrae", "Lumbar vertebrae", "Sacrum"], "explain": "12 thoracic vertebrae; the ribs attach to them.", "img": {"fig": "spine", "hi": "thoracic"}},
+    {"id": "SP-D3", "topic": "spine", "format": "mc", "prompt": "Which part of the vertebral column is highlighted?", "options": ["Lumbar vertebrae", "Thoracic vertebrae", "Sacrum", "Cervical vertebrae"], "explain": "5 lumbar vertebrae in the lower back: the biggest vertebrae.", "img": {"fig": "spine", "hi": "lumbar"}},
+    {"id": "SP-D4", "topic": "spine", "format": "mc", "prompt": "Which part of the vertebral column is highlighted?", "options": ["Sacrum", "Coccyx", "Lumbar vertebrae", "Thoracic vertebrae"], "explain": "The sacrum: 5 fused pieces; it holds the hip bones together in back.", "img": {"fig": "spine", "hi": "sacrum"}},
+    {"id": "SP-D5", "topic": "spine", "format": "mc", "prompt": "Which part of the vertebral column is highlighted?", "options": ["Coccyx", "Sacrum", "Lumbar vertebrae", "Cervical vertebrae"], "explain": "The coccyx is the tailbone: 4 fused pieces.", "img": {"fig": "spine", "hi": "coccyx"}},
+    {"id": "SP-D6", "topic": "spine", "format": "mc", "prompt": "Which part of the vertebral column is highlighted?", "options": ["Intervertebral disks", "Costal cartilage", "Lumbar vertebrae", "Sacrum"], "explain": "The intervertebral disks (fibrocartilage) cushion the vertebrae.", "img": {"fig": "spine", "hi": "discs"}},
+    {"id": "Q40", "topic": "thorax", "format": "mc", "prompt": "Which bones make up the thorax?", "options": ["Thoracic vertebrae, ribs, sternum", "Cervical vertebrae, humerus, clavicle", "Thoracic vertebrae, scapula, clavicle", "Lumbar vertebrae, sternum, ribs"], "explain": "The thorax (ribcage) = thoracic vertebrae in back, ribs on the sides, sternum in front.", "num": 40},
+    {"id": "Q41", "topic": "thorax", "format": "mc", "prompt": "What is the primary purpose of the rib cage?", "options": ["To protect internal organs", "To attach the upper limbs to the body", "To provide support to the heavy skull", "To assist with mobility of the shoulder joint"], "explain": "The rib cage protects the heart and lungs.", "num": 41},
+    {"id": "Q42", "topic": "thorax", "format": "mc", "prompt": "How many pairs of ribs are classified as true ribs?", "options": ["7", "8", "12", "5"], "explain": "Pairs 1–7 are true ribs: they attach straight to the sternum.", "num": 42},
+    {"id": "Q43", "topic": "thorax", "format": "mc", "prompt": "Which ribs are referred to as \"floating ribs\"?", "options": ["Pairs 11 – 12", "Pairs 1 – 7", "Pairs 8 – 10", "All ribs"], "explain": "Pairs 11–12 float: they don't attach to the sternum at all.", "num": 43},
+    {"id": "Q44", "topic": "thorax", "format": "mc", "prompt": "What is the cartilage that connects the ribs to the sternum?", "options": ["Costal cartilage", "Fibrocartilage", "Articular cartilage", "Intervertebral cartilage"], "explain": "Costal cartilage connects the ribs to the sternum. (\"Costal\" means rib.)", "num": 44},
+    {"id": "Q68", "topic": "thorax", "format": "fill", "prompt": "The breastbone is also known as the _____.", "answers": ["sternum"], "explain": "The breastbone is the sternum (3 parts: manubrium, body, xiphoid process).", "num": 68},
+    {"id": "Q69", "topic": "thorax", "format": "fill", "prompt": "You have _____ pairs of ribs.", "answers": ["12", "twelve", "12 pairs", "twelve pairs"], "explain": "12 pairs = 24 ribs.", "num": 69},
+    {"id": "TH-S1", "topic": "thorax", "format": "sort", "prompt": "Sort the rib pairs.", "boxes": ["True ribs", "False ribs (attach to cartilage above)", "Floating ribs"], "tiles": [["Pairs 1–7", "True ribs"], ["Attach directly to the sternum", "True ribs"], ["Pairs 8–10", "False ribs (attach to cartilage above)"], ["Pairs 11–12", "Floating ribs"], ["Don't attach to the sternum at all", "Floating ribs"]], "explain": "True ribs 1–7 attach directly. False ribs 8–12 don't: 8–10 join the cartilage above, and 11–12 float. (Floating ribs are also false ribs.)"},
+    {"id": "TH-1", "topic": "thorax", "format": "mc", "prompt": "How many ribs do you have in total?", "options": ["24", "12", "26", "22"], "explain": "12 pairs × 2 = 24 ribs."},
+    {"id": "TH-D1", "topic": "thorax", "format": "mc", "prompt": "Which part of the sternum is highlighted?", "options": ["Manubrium", "Body", "Xiphoid process", "Costal cartilage"], "explain": "The manubrium is the top part of the sternum; the clavicles attach to it.", "img": {"fig": "sternum", "hi": "manubrium"}},
+    {"id": "TH-D2", "topic": "thorax", "format": "mc", "prompt": "Which part of the sternum is highlighted?", "options": ["Body", "Manubrium", "Xiphoid process", "Costal cartilage"], "explain": "The body is the long middle part of the sternum.", "img": {"fig": "sternum", "hi": "body"}},
+    {"id": "TH-D3", "topic": "thorax", "format": "mc", "prompt": "Which part of the sternum is highlighted?", "options": ["Xiphoid process", "Body", "Manubrium", "Costal cartilage"], "explain": "The xiphoid process is the small tip at the bottom of the sternum.", "img": {"fig": "sternum", "hi": "xiphoid"}},
+    {"id": "TH-M1", "topic": "thorax", "format": "match", "prompt": "Match each part of the sternum to where it is.", "pairs": [["Manubrium", "Top"], ["Body", "Middle (longest part)"], ["Xiphoid process", "Bottom tip"]], "explain": "Sternum, top to bottom: manubrium, body, xiphoid process."},
+    {"id": "Q45", "topic": "girdles", "format": "mc", "prompt": "What is the primary function of the clavicle?", "options": ["To attach the scapula to the sternum", "To protect the heart", "To provide stability for the skull", "To protect the spine"], "explain": "The clavicle (collarbone) braces the shoulder by connecting the scapula to the sternum.", "num": 45},
+    {"id": "Q46", "topic": "girdles", "format": "mc", "prompt": "Does the scapula attach to the vertebral column?", "options": ["No; it is not attached directly so that there is maximum mobility of the shoulder joint", "Yes; it stabilizes the shoulder joint by attaching to the spine", "Yes; it is bound by the scapular ligament to the vertebral column", "No; it is connected directly to the ribcage, not the vertebral column"], "explain": "The scapula isn't attached directly to the spine (it's held by muscles), which gives the shoulder lots of mobility.", "num": 46},
+    {"id": "Q47", "topic": "girdles", "format": "mc", "prompt": "What is the name of the hip bone part that you sit on?", "options": ["Ischium", "Ilium", "Pubis", "Sacrum"], "explain": "Each hip bone has 3 parts: ilium (top wing), ischium (the part you sit on), pubis (front).", "num": 47},
+    {"id": "Q48", "topic": "girdles", "format": "mc", "prompt": "The pectoral girdle is more _____ than the pelvic girdle.", "options": ["Flexible", "Stable", "Fragile", "Strong"], "explain": "The pectoral (shoulder) girdle is built for movement, so it's more flexible. The pelvic girdle is built for strength and stability.", "num": 48},
+    {"id": "Q49", "topic": "girdles", "format": "mc", "prompt": "Which bone holds the hip bones together posteriorly?", "options": ["Sacrum", "Coccyx", "Lumbar vertebrae", "Pubis"], "explain": "In back, the sacrum sits between the two hip bones and holds them together. In front, they meet at the pubic symphysis.", "num": 49},
+    {"id": "Q70", "topic": "girdles", "format": "fill", "prompt": "The _____ is the shoulder blade.", "answers": ["scapula"], "explain": "The scapula is the shoulder blade.", "common": ["shoulder blade", "shoulder blades"], "num": 70},
+    {"id": "Q71", "topic": "girdles", "format": "fill", "prompt": "The pectoral girdle is also known as the _____ girdle.", "answers": ["shoulder", "shoulder girdle"], "explain": "Pectoral girdle = shoulder girdle (clavicles + scapulae).", "num": 71},
+    {"id": "Q72", "topic": "girdles", "format": "fill", "prompt": "Your hip bones are also known as your _____ bones.", "answers": ["coxal", "coxal bones", "os coxae", "coxae", "innominate"], "explain": "Hip bones = coxal bones. Each is made of the ilium, ischium, and pubis.", "num": 72},
+    {"id": "Q73", "topic": "girdles", "format": "fill", "prompt": "The most commonly broken bone in the body is the _____.", "answers": ["clavicle"], "explain": "The clavicle (collarbone) is the most commonly fractured bone in the body.", "common": ["collarbone", "collar bone"], "num": 73},
+    {"id": "Q74", "topic": "girdles", "format": "fill", "prompt": "The cartilage that joins the two pubic bones together at the front is known as the _____.", "answers": ["pubic symphysis", "symphysis pubis"], "explain": "The pubic symphysis joins the two pubic bones in front.", "num": 74},
+    {"id": "Q75", "topic": "girdles", "format": "fill", "prompt": "The femur articulates in a socket in your hip bones called the _____.", "answers": ["acetabulum"], "explain": "The head of the femur fits into the acetabulum, the hip socket.", "num": 75},
+    {"id": "GI-M1", "topic": "girdles", "format": "match", "prompt": "Match each part of the hip bone to its description.", "pairs": [["Ilium", "Top wing of the hip bone"], ["Ischium", "The part you sit on"], ["Pubis", "Front part; meets the other side at the pubic symphysis"], ["Acetabulum", "Socket for the femur"]], "explain": "Ilium, ischium, and pubis fuse into one hip (coxal) bone; the acetabulum is its socket."},
+    {"id": "GI-S1", "topic": "girdles", "format": "sort", "prompt": "Sort each fact: pectoral girdle or pelvic girdle?", "boxes": ["Pectoral (shoulder) girdle", "Pelvic (hip) girdle"], "tiles": [["Clavicles and scapulae", "Pectoral (shoulder) girdle"], ["Attaches the arms", "Pectoral (shoulder) girdle"], ["More flexible", "Pectoral (shoulder) girdle"], ["Hip (coxal) bones", "Pelvic (hip) girdle"], ["Attaches the legs", "Pelvic (hip) girdle"], ["More stable; bears weight", "Pelvic (hip) girdle"]], "explain": "Pectoral girdle: clavicles + scapulae, attaches the arms, built for mobility. Pelvic girdle: hip bones, attaches the legs, built for stability."},
+    {"id": "Q50", "topic": "arm", "format": "mc", "prompt": "Your arm is broken into the following sections:", "options": ["Arm, forearm, hand", "Proximal segment, intermediate segment, distal segment", "Upper arm, arm, hand", "Arm, wrist, hand", "Arm, forearm, fingers"], "explain": "In anatomy, the \"arm\" is just the humerus part. Then comes the forearm (radius and ulna), then the hand.", "num": 50},
+    {"id": "Q51", "topic": "arm", "format": "mc", "prompt": "Which bone does your humerus NOT form a joint with?", "options": ["Clavicle", "Radius", "Ulna", "Scapula"], "explain": "The humerus joins the scapula at the shoulder and the radius and ulna at the elbow. It doesn't touch the clavicle.", "num": 51},
+    {"id": "Q52", "topic": "arm", "format": "mc", "prompt": "What is the name of the bump on your elbow, and which bone is it part of?", "options": ["Olecranon process; ulna", "Acromion process; scapula", "Coracoid process; humerus", "Trochlear notch; radius"], "explain": "The elbow bump is the olecranon process of the ulna.", "num": 52},
+    {"id": "Q53", "topic": "arm", "format": "mc", "prompt": "How many phalanges do you have per hand?", "options": ["14", "10", "12", "15", "20"], "explain": "14 per hand: 3 in each finger (proximal, intermediate, distal) × 4 = 12, plus 2 in the thumb.", "num": 53},
+    {"id": "Q76", "topic": "arm", "format": "fill", "prompt": "The longest and strongest bone of the upper extremity is the _____.", "answers": ["humerus"], "explain": "The humerus is the longest and strongest bone of the upper extremity.", "num": 76},
+    {"id": "Q77", "topic": "arm", "format": "fill", "prompt": "The forearm bone that rotates is known as the _____.", "answers": ["radius"], "explain": "The radius rotates around the ulna when you turn your palm over.", "num": 77},
+    {"id": "Q80", "topic": "arm", "format": "fill", "prompt": "The bones of your wrist are known as your _____.", "answers": ["carpals", "carpal bones", "carpal"], "explain": "The wrist bones are the carpals: 8 per wrist.", "num": 80},
+    {"id": "Q81", "topic": "arm", "format": "fill", "prompt": "Your _____ are visible as your knuckles.", "answers": ["metacarpals", "metacarpal", "metacarpal heads"], "explain": "The knuckles are the ends (heads) of the metacarpals.", "num": 81},
+    {"id": "AR-S1", "topic": "arm", "format": "sort", "prompt": "Sort each fact: radius or ulna?", "boxes": ["Radius", "Ulna"], "tiles": [["Thumb side (lateral)", "Radius"], ["Rotates", "Radius"], ["Makes up most of the wrist joint", "Radius"], ["Pinky side (medial)", "Ulna"], ["Makes up most of the elbow", "Ulna"], ["Has the olecranon process", "Ulna"]], "explain": "Radius: thumb side, rotates, most of the wrist joint. Ulna: pinky side, most of the elbow, olecranon process."},
+    {"id": "AR-M1", "topic": "arm", "format": "match", "prompt": "Match each hand bone group to its count per hand.", "pairs": [["Carpals", "8"], ["Metacarpals", "5"], ["Phalanges", "14"]], "explain": "8 carpals, 5 metacarpals, 14 phalanges = 27 bones per hand."},
+    {"id": "Q54", "topic": "leg", "format": "mc", "prompt": "Your leg is broken into the following sections:", "options": ["Thigh, leg, foot", "Proximal segment, intermediate segment, distal segment", "Thigh, knee, foot", "Thigh, ankle, toes", "Thigh, leg, toes"], "explain": "Thigh (femur), leg (tibia and fibula), foot.", "num": 54},
+    {"id": "Q55", "topic": "leg", "format": "mc", "prompt": "The _____ phalanges of the foot form a joint with the metatarsals.", "options": ["Proximal", "Primary", "Secondary", "Intermediate", "Distal"], "explain": "Proximal = closest to the body, so the proximal phalanges join the metatarsals.", "num": 55},
+    {"id": "Q56", "topic": "leg", "format": "mc", "prompt": "How many tarsal bones do you have total?", "options": ["14", "6", "8", "16", "28"], "explain": "7 tarsals per ankle × 2 ankles = 14 total.", "num": 56},
+    {"id": "Q57", "topic": "leg", "format": "mc", "prompt": "What is the second largest bone in the body?", "options": ["Tibia", "Femur", "Humerus", "Radius", "Vertebral column"], "explain": "The femur is the largest bone; the tibia (shin bone) is second.", "num": 57},
+    {"id": "Q78", "topic": "leg", "format": "fill", "prompt": "The thigh bone is the _____.", "answers": ["femur"], "explain": "The femur is the thigh bone: the longest and strongest bone in the body.", "num": 78},
+    {"id": "Q79", "topic": "leg", "format": "fill", "prompt": "In each foot, you have _____ metatarsals.", "answers": ["5", "five", "5 metatarsals", "five metatarsals"], "explain": "5 metatarsals per foot.", "num": 79},
+    {"id": "Q82", "topic": "leg", "format": "fill", "prompt": "The _____ is also known as the shin bone.", "answers": ["tibia"], "explain": "The tibia is the shin bone.", "num": 82},
+    {"id": "LG-S1", "topic": "leg", "format": "sort", "prompt": "Sort each fact: tibia or fibula?", "boxes": ["Tibia", "Fibula"], "tiles": [["Shin bone", "Tibia"], ["Weight-bearing", "Tibia"], ["Medial (big-toe side)", "Tibia"], ["Second largest bone", "Tibia"], ["Thin", "Fibula"], ["Not weight-bearing; helps with balance", "Fibula"], ["Lateral (little-toe side)", "Fibula"]], "explain": "Tibia: big, medial, weight-bearing shin bone. Fibula: thin, lateral, not weight-bearing, helps with balance."},
+    {"id": "LG-M1", "topic": "leg", "format": "match", "prompt": "Match each foot bone group to its count per foot.", "pairs": [["Tarsals", "7"], ["Metatarsals", "5"], ["Phalanges", "14"]], "explain": "7 tarsals, 5 metatarsals, 14 phalanges = 26 bones per foot."},
+    {"id": "LG-1", "topic": "leg", "format": "mc", "prompt": "Which bone is the largest bone in the body?", "options": ["Femur", "Tibia", "Humerus", "Pelvis"], "explain": "The femur is the longest and strongest bone in the body."},
+    {"id": "Q83", "topic": "short", "format": "short", "prompt": "What are 2 functions of your vertebral column? (2 points)", "model": "1) It protects the spinal cord. 2) It supports the body and holds the head up (keeps you upright).", "points": ["Protects the spinal cord", "Supports the body / head; keeps you upright", "Also OK: attachment for ribs and muscles; allows bending and twisting"], "explain": "Any 2 real functions earn the points. Protecting the spinal cord and supporting the body are the safest pair.", "num": 83},
+    {"id": "Q84", "topic": "short", "format": "short", "prompt": "What happens to the size of the vertebrae as you work your way down the column? Why? (2 points)", "model": "The vertebrae get bigger as you go down the column, because the lower vertebrae have to support more of the body's weight.", "points": ["What: they get bigger (larger, thicker)", "Why: lower vertebrae carry more body weight"], "explain": "Both parts are needed: what happens (bigger) and why (more weight).", "num": 84},
+    {"id": "Q85", "topic": "short", "format": "short", "prompt": "How many bones is the entire vertebral column made of? Break it down into the individual sections and how many bones belong in each section. (4 points)", "model": "26 bones: 7 cervical + 12 thoracic + 5 lumbar + 1 sacrum + 1 coccyx.", "points": ["Total: 26", "Cervical: 7", "Thoracic: 12", "Lumbar: 5", "Sacrum: 1 (5 fused pieces) and coccyx: 1 (4 fused pieces)"], "explain": "Tip: breakfast at 7, lunch at 12, dinner at 5. Before fusing, the sacrum is 5 pieces and the coccyx is 4, so the column starts as 33 pieces.", "num": 85, "img": {"fig": "spine"}},
+    {"id": "Q86", "topic": "short", "format": "short", "prompt": "What is the difference between the true and false ribs? (2 points)", "model": "True ribs (pairs 1–7) attach directly to the sternum by their own costal cartilage. False ribs (pairs 8–12) don't attach directly: pairs 8–10 attach to the cartilage of the rib above, and pairs 11–12 (floating ribs) don't attach to the sternum at all.", "points": ["True ribs: pairs 1–7, attach directly to the sternum", "False ribs: pairs 8–12, do not attach directly (8–10 join cartilage above; 11–12 float)"], "explain": "Key word: directly.", "num": 86},
+    {"id": "Q87", "topic": "short", "format": "short", "prompt": "What are the separate parts of the sternum called? Draw a diagram of the sternum to show these separate parts. Label each part. (3 points)", "model": "Manubrium (top), body (middle, the longest part), and xiphoid process (small tip at the bottom). Draw it like the picture: a wide top piece, a long middle piece, and a small pointed tip.", "points": ["Manubrium: top", "Body: middle", "Xiphoid process: bottom tip"], "explain": "Practice drawing it: 3 pieces stacked top to bottom, each labeled.", "num": 87, "img": {"fig": "sternum", "labels": true}},
+    {"id": "Q88", "topic": "short", "format": "short", "prompt": "What are the human girdles called? What is the purpose of each girdle? (3 points)", "model": "The pectoral (shoulder) girdle and the pelvic (hip) girdle. The pectoral girdle (clavicles + scapulae) attaches the arms to the axial skeleton and is loosely attached so the shoulder can move freely. The pelvic girdle (hip bones) attaches the legs to the axial skeleton and is strong and stable so it can support the body's weight (and it protects the pelvic organs).", "points": ["Names: pectoral (shoulder) girdle and pelvic (hip) girdle", "Pectoral: attaches the arms; built for mobility", "Pelvic: attaches the legs; supports body weight (stability)"], "explain": "Both girdles connect limbs to the axial skeleton; one is built for movement, the other for strength.", "num": 88},
+    {"id": "Q89", "topic": "short", "format": "short", "prompt": "What is the difference between the function and structure of the tibia and the fibula? (2 points)", "model": "Structure: the tibia is the large, thick shin bone on the medial (big-toe) side; the fibula is thin and on the lateral side. Function: the tibia bears the body's weight; the fibula does not bear weight but helps with balance (and gives muscles a place to attach).", "points": ["Tibia: big/thick, medial, weight-bearing (shin bone)", "Fibula: thin, lateral, not weight-bearing, helps with balance"], "explain": "Hit both words in the question: structure (size/position) and function (weight vs. balance).", "num": 89},
+    {"id": "Q90", "topic": "short", "format": "short", "prompt": "What is the difference between the structure, location, and function of the radius and ulna? (2 points)", "model": "Location: the radius is on the thumb (lateral) side of the forearm; the ulna is on the pinky (medial) side. Structure/function: the radius rotates around the ulna (so you can turn your palm over) and makes up most of the wrist joint; the ulna is longer, stays still, and makes up most of the elbow (its olecranon process is the elbow bump).", "points": ["Radius: thumb side, rotates, most of the wrist joint", "Ulna: pinky side, makes up most of the elbow (olecranon)"], "explain": "Cover all three: where each is, what it's shaped like, and what it does.", "num": 90},
+    {"id": "L-lab-major-front-cranium", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Cranium", "Mandible", "Cervical vertebrae", "Clavicle"], "explain": "The cranium is the skull above the jaw.", "img": {"fig": "front", "hi": "cranium", "crop": "upper"}},
+    {"id": "F-lab-major-front-cranium", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["cranium"], "explain": "The cranium is the skull above the jaw.", "img": {"fig": "front", "hi": "cranium", "crop": "upper"}},
+    {"id": "L-lab-major-front-mandible", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Mandible", "Cranium", "Clavicle", "Cervical vertebrae"], "explain": "The mandible is the lower jaw.", "img": {"fig": "front", "hi": "mandible", "crop": "upper"}},
+    {"id": "F-lab-major-front-mandible", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["mandible"], "explain": "The mandible is the lower jaw.", "common": ["lower jaw", "jaw", "jawbone", "jaw bone"], "img": {"fig": "front", "hi": "mandible", "crop": "upper"}},
+    {"id": "L-lab-major-front-clavicle", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Clavicle", "Scapula", "Sternum", "Humerus"], "explain": "The clavicle (collarbone) runs from the sternum to the shoulder.", "img": {"fig": "front", "hi": "clavicle", "crop": "upper"}},
+    {"id": "F-lab-major-front-clavicle", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["clavicle", "clavicles"], "explain": "The clavicle (collarbone) runs from the sternum to the shoulder.", "common": ["collarbone", "collar bone"], "img": {"fig": "front", "hi": "clavicle", "crop": "upper"}},
+    {"id": "L-lab-major-front-sternum", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Sternum", "Clavicle", "Ribs", "Scapula"], "explain": "The sternum (breastbone) is in the middle of the chest.", "img": {"fig": "front", "hi": "sternum", "crop": "upper"}},
+    {"id": "F-lab-major-front-sternum", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["sternum"], "explain": "The sternum (breastbone) is in the middle of the chest.", "img": {"fig": "front", "hi": "sternum", "crop": "upper"}},
+    {"id": "L-lab-major-front-humerus", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Humerus", "Femur", "Radius", "Ulna"], "explain": "The humerus is the upper arm bone.", "img": {"fig": "front", "hi": "humerus", "crop": "upper"}},
+    {"id": "F-lab-major-front-humerus", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["humerus"], "explain": "The humerus is the upper arm bone.", "img": {"fig": "front", "hi": "humerus", "crop": "upper"}},
+    {"id": "L-lab-major-front-radius", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Radius", "Ulna", "Humerus", "Fibula"], "explain": "In this front view the palms face forward, so the radius is on the outer (thumb) side of the forearm.", "img": {"fig": "front", "hi": "radius", "crop": "upper"}},
+    {"id": "F-lab-major-front-radius", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["radius"], "explain": "In this front view the palms face forward, so the radius is on the outer (thumb) side of the forearm.", "img": {"fig": "front", "hi": "radius", "crop": "upper"}},
+    {"id": "L-lab-major-front-ulna", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Ulna", "Radius", "Humerus", "Tibia"], "explain": "The ulna is on the inner (pinky) side of the forearm.", "img": {"fig": "front", "hi": "ulna", "crop": "upper"}},
+    {"id": "F-lab-major-front-ulna", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["ulna"], "explain": "The ulna is on the inner (pinky) side of the forearm.", "img": {"fig": "front", "hi": "ulna", "crop": "upper"}},
+    {"id": "L-lab-major-front-carpals", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Carpals", "Metacarpals", "Tarsals", "Phalanges"], "explain": "The carpals are the 8 wrist bones.", "img": {"fig": "front", "hi": "carpals", "crop": "upper"}},
+    {"id": "F-lab-major-front-carpals", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["carpals", "carpal", "carpal bones"], "explain": "The carpals are the 8 wrist bones.", "img": {"fig": "front", "hi": "carpals", "crop": "upper"}},
+    {"id": "L-lab-major-front-metacarpals", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Metacarpals", "Carpals", "Metatarsals", "Phalanges"], "explain": "The metacarpals are the 5 palm bones.", "img": {"fig": "front", "hi": "metacarpals", "crop": "upper"}},
+    {"id": "F-lab-major-front-metacarpals", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["metacarpals", "metacarpal", "metacarpal bones"], "explain": "The metacarpals are the 5 palm bones.", "img": {"fig": "front", "hi": "metacarpals", "crop": "upper"}},
+    {"id": "L-lab-major-front-phalanges-hand", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Phalanges", "Metacarpals", "Carpals", "Metatarsals"], "explain": "Phalanges are the finger bones (14 per hand).", "img": {"fig": "front", "hi": "phalanges-hand", "crop": "upper"}},
+    {"id": "F-lab-major-front-phalanges-hand", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["phalanges", "phalanx", "phalange"], "explain": "Phalanges are the finger bones (14 per hand).", "img": {"fig": "front", "hi": "phalanges-hand", "crop": "upper"}},
+    {"id": "L-lab-major-front-pelvis", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Pelvis", "Sacrum", "Femur", "Lumbar vertebrae"], "explain": "The pelvis is made of the two hip (coxal) bones.", "img": {"fig": "front", "hi": "pelvis", "crop": "lower"}},
+    {"id": "F-lab-major-front-pelvis", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["pelvis", "coxal bones", "coxal", "os coxae", "pelvic girdle"], "explain": "The pelvis is made of the two hip (coxal) bones.", "common": ["hip bones", "hip bone", "hips"], "img": {"fig": "front", "hi": "pelvis", "crop": "lower"}},
+    {"id": "L-lab-major-front-femur", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Femur", "Humerus", "Tibia", "Fibula"], "explain": "The femur is the thigh bone.", "img": {"fig": "front", "hi": "femur", "crop": "lower"}},
+    {"id": "F-lab-major-front-femur", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["femur"], "explain": "The femur is the thigh bone.", "img": {"fig": "front", "hi": "femur", "crop": "lower"}},
+    {"id": "L-lab-major-front-patella", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Patella", "Tibia", "Femur", "Tarsals"], "explain": "The patella is the kneecap.", "img": {"fig": "front", "hi": "patella", "crop": "lower"}},
+    {"id": "F-lab-major-front-patella", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["patella"], "explain": "The patella is the kneecap.", "common": ["kneecap", "knee cap"], "img": {"fig": "front", "hi": "patella", "crop": "lower"}},
+    {"id": "L-lab-major-front-tibia", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Tibia", "Fibula", "Femur", "Radius"], "explain": "The tibia is the big shin bone on the inner side of the leg.", "img": {"fig": "front", "hi": "tibia", "crop": "lower"}},
+    {"id": "F-lab-major-front-tibia", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["tibia"], "explain": "The tibia is the big shin bone on the inner side of the leg.", "img": {"fig": "front", "hi": "tibia", "crop": "lower"}},
+    {"id": "L-lab-major-front-fibula", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Fibula", "Tibia", "Ulna", "Radius"], "explain": "The fibula is the thin bone on the outer side of the leg.", "img": {"fig": "front", "hi": "fibula", "crop": "lower"}},
+    {"id": "F-lab-major-front-fibula", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["fibula"], "explain": "The fibula is the thin bone on the outer side of the leg.", "img": {"fig": "front", "hi": "fibula", "crop": "lower"}},
+    {"id": "L-lab-major-front-tarsals", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Tarsals", "Metatarsals", "Carpals", "Phalanges"], "explain": "The tarsals are the 7 ankle bones.", "img": {"fig": "front", "hi": "tarsals", "crop": "lower"}},
+    {"id": "F-lab-major-front-tarsals", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["tarsals", "tarsal", "tarsal bones"], "explain": "The tarsals are the 7 ankle bones.", "img": {"fig": "front", "hi": "tarsals", "crop": "lower"}},
+    {"id": "L-lab-major-front-metatarsals", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Metatarsals", "Metacarpals", "Tarsals", "Phalanges"], "explain": "The metatarsals are the 5 long foot bones.", "img": {"fig": "front", "hi": "metatarsals", "crop": "lower"}},
+    {"id": "F-lab-major-front-metatarsals", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["metatarsals", "metatarsal", "metatarsal bones"], "explain": "The metatarsals are the 5 long foot bones.", "img": {"fig": "front", "hi": "metatarsals", "crop": "lower"}},
+    {"id": "L-lab-major-front-phalanges-foot", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Phalanges", "Metatarsals", "Tarsals", "Metacarpals"], "explain": "Phalanges are the toe bones (14 per foot).", "img": {"fig": "front", "hi": "phalanges-foot", "crop": "lower"}},
+    {"id": "F-lab-major-front-phalanges-foot", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["phalanges", "phalanx", "phalange"], "explain": "Phalanges are the toe bones (14 per foot).", "img": {"fig": "front", "hi": "phalanges-foot", "crop": "lower"}},
+    {"id": "L-lab-major-back-cervical", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Cervical vertebrae", "Thoracic vertebrae", "Lumbar vertebrae", "Sacrum"], "explain": "Cervical vertebrae: the 7 neck vertebrae.", "img": {"fig": "back", "hi": "cervical", "crop": "upper"}},
+    {"id": "F-lab-major-back-cervical", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (back view)", "answers": ["cervical vertebrae", "cervical vertebra", "cervical"], "explain": "Cervical vertebrae: the 7 neck vertebrae.", "img": {"fig": "back", "hi": "cervical", "crop": "upper"}},
+    {"id": "L-lab-major-back-scapula", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Scapula", "Clavicle", "Sternum", "Pelvis"], "explain": "The scapula is the shoulder blade.", "img": {"fig": "back", "hi": "scapula", "crop": "upper"}},
+    {"id": "F-lab-major-back-scapula", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (back view)", "answers": ["scapula", "scapulae"], "explain": "The scapula is the shoulder blade.", "common": ["shoulder blade", "shoulder blades"], "img": {"fig": "back", "hi": "scapula", "crop": "upper"}},
+    {"id": "L-lab-major-back-thoracic", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Thoracic vertebrae", "Cervical vertebrae", "Lumbar vertebrae", "Ribs"], "explain": "Thoracic vertebrae: the 12 vertebrae the ribs attach to.", "img": {"fig": "back", "hi": "thoracic", "crop": "upper"}},
+    {"id": "F-lab-major-back-thoracic", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (back view)", "answers": ["thoracic vertebrae", "thoracic vertebra", "thoracic"], "explain": "Thoracic vertebrae: the 12 vertebrae the ribs attach to.", "img": {"fig": "back", "hi": "thoracic", "crop": "upper"}},
+    {"id": "L-lab-major-back-lumbar", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Lumbar vertebrae", "Thoracic vertebrae", "Sacrum", "Cervical vertebrae"], "explain": "Lumbar vertebrae: the 5 lower-back vertebrae.", "img": {"fig": "back", "hi": "lumbar", "crop": "mid"}},
+    {"id": "F-lab-major-back-lumbar", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (back view)", "answers": ["lumbar vertebrae", "lumbar vertebra", "lumbar"], "explain": "Lumbar vertebrae: the 5 lower-back vertebrae.", "img": {"fig": "back", "hi": "lumbar", "crop": "mid"}},
+    {"id": "L-lab-major-back-sacrum", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Sacrum", "Coccyx", "Lumbar vertebrae", "Pelvis"], "explain": "The sacrum sits between the hip bones at the base of the spine.", "img": {"fig": "back", "hi": "sacrum", "crop": "mid"}},
+    {"id": "F-lab-major-back-sacrum", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (back view)", "answers": ["sacrum"], "explain": "The sacrum sits between the hip bones at the base of the spine.", "img": {"fig": "back", "hi": "sacrum", "crop": "mid"}},
+    {"id": "L-lab-major-back-coccyx", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Coccyx", "Sacrum", "Lumbar vertebrae", "Pelvis"], "explain": "The coccyx is the tailbone, below the sacrum.", "img": {"fig": "back", "hi": "coccyx", "crop": "mid"}},
+    {"id": "F-lab-major-back-coccyx", "topic": "lab-major", "format": "fill", "prompt": "Type the name of the highlighted bone. (back view)", "answers": ["coccyx"], "explain": "The coccyx is the tailbone, below the sacrum.", "common": ["tailbone", "tail bone"], "img": {"fig": "back", "hi": "coccyx", "crop": "mid"}},
+    {"id": "L-lab-major-back-ribs", "topic": "lab-major", "format": "mc", "prompt": "Which bone is highlighted? (back view)", "options": ["Ribs", "Thoracic vertebrae", "Scapula", "Sternum"], "explain": "12 pairs of ribs (24 total) form the walls of the thoracic cavity.", "img": {"fig": "back", "hi": "ribs", "crop": "upper"}},
+    {"id": "L-skull-front-ethmoid", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Ethmoid bone", "Sphenoid bone", "Lacrimal bones", "Vomer bone"], "explain": "The ethmoid is mostly inside the cranium; you see bits of it inside the eye socket and nasal cavity.", "img": {"fig": "skull-front", "hi": "ethmoid"}},
+    {"id": "F-skull-front-ethmoid", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["ethmoid bone", "ethmoid"], "explain": "The ethmoid is mostly inside the cranium; you see bits of it inside the eye socket and nasal cavity.", "img": {"fig": "skull-front", "hi": "ethmoid"}},
+    {"id": "L-skull-front-frontal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Frontal bone", "Parietal bones", "Sphenoid bone", "Occipital bone"], "explain": "The frontal bone is the forehead.", "img": {"fig": "skull-front", "hi": "frontal"}},
+    {"id": "F-skull-front-frontal", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["frontal bone", "frontal"], "explain": "The frontal bone is the forehead.", "img": {"fig": "skull-front", "hi": "frontal"}},
+    {"id": "L-skull-side-frontal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Frontal bone", "Parietal bones", "Sphenoid bone", "Occipital bone"], "explain": "The frontal bone is the forehead.", "img": {"fig": "skull-side", "hi": "frontal"}},
+    {"id": "L-skull-front-maxilla", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Maxillae", "Mandible", "Zygomatic bones", "Nasal bones"], "explain": "The maxillae form the upper jaw.", "img": {"fig": "skull-front", "hi": "maxilla"}},
+    {"id": "F-skull-front-maxilla", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["maxillae", "maxilla", "maxillary"], "explain": "The maxillae form the upper jaw.", "img": {"fig": "skull-front", "hi": "maxilla"}},
+    {"id": "L-skull-side-maxilla", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Maxillae", "Mandible", "Zygomatic bones", "Nasal bones"], "explain": "The maxillae form the upper jaw.", "img": {"fig": "skull-side", "hi": "maxilla"}},
+    {"id": "L-skull-front-nasal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Nasal bones", "Lacrimal bones", "Maxillae", "Ethmoid bone"], "explain": "The nasal bones form the bridge of the nose.", "img": {"fig": "skull-front", "hi": "nasal"}},
+    {"id": "F-skull-front-nasal", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (front view)", "answers": ["nasal bones", "nasal bone", "nasal"], "explain": "The nasal bones form the bridge of the nose.", "img": {"fig": "skull-front", "hi": "nasal"}},
+    {"id": "L-skull-side-nasal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Nasal bones", "Lacrimal bones", "Maxillae", "Ethmoid bone"], "explain": "The nasal bones form the bridge of the nose.", "img": {"fig": "skull-side", "hi": "nasal"}},
+    {"id": "L-skull-side-sphenoid", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Sphenoid bone", "Ethmoid bone", "Temporal bones", "Zygomatic bones"], "explain": "The butterfly-shaped sphenoid shows at the temple and the back of the eye socket.", "img": {"fig": "skull-side", "hi": "sphenoid"}},
+    {"id": "F-skull-side-sphenoid", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["sphenoid bone", "sphenoid"], "explain": "The butterfly-shaped sphenoid shows at the temple and the back of the eye socket.", "img": {"fig": "skull-side", "hi": "sphenoid"}},
+    {"id": "L-skull-front-sphenoid", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Sphenoid bone", "Ethmoid bone", "Temporal bones", "Zygomatic bones"], "explain": "The butterfly-shaped sphenoid shows at the temple and the back of the eye socket.", "img": {"fig": "skull-front", "hi": "sphenoid"}},
+    {"id": "L-skull-side-zygomatic", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Zygomatic bones", "Maxillae", "Temporal bones", "Sphenoid bone"], "explain": "The zygomatic bones are the cheekbones.", "img": {"fig": "skull-side", "hi": "zygomatic"}},
+    {"id": "F-skull-side-zygomatic", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["zygomatic bones", "zygomatic bone", "zygomatic"], "explain": "The zygomatic bones are the cheekbones.", "common": ["cheekbone", "cheekbones", "cheek bone", "cheek bones"], "img": {"fig": "skull-side", "hi": "zygomatic"}},
+    {"id": "L-skull-front-zygomatic", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Zygomatic bones", "Maxillae", "Temporal bones", "Sphenoid bone"], "explain": "The zygomatic bones are the cheekbones.", "img": {"fig": "skull-front", "hi": "zygomatic"}},
+    {"id": "L-skull-side-lacrimal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Lacrimal bones", "Nasal bones", "Ethmoid bone", "Sphenoid bone"], "explain": "The tiny lacrimal bones are in the inner corner of the eye socket.", "img": {"fig": "skull-side", "hi": "lacrimal"}},
+    {"id": "F-skull-side-lacrimal", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["lacrimal bones", "lacrimal bone", "lacrimal"], "explain": "The tiny lacrimal bones are in the inner corner of the eye socket.", "img": {"fig": "skull-side", "hi": "lacrimal"}},
+    {"id": "L-skull-front-lacrimal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Lacrimal bones", "Nasal bones", "Ethmoid bone", "Sphenoid bone"], "explain": "The tiny lacrimal bones are in the inner corner of the eye socket.", "img": {"fig": "skull-front", "hi": "lacrimal"}},
+    {"id": "L-skull-side-mandible", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Mandible", "Maxillae", "Zygomatic bones", "Temporal bones"], "explain": "The mandible is the lower jaw.", "img": {"fig": "skull-side", "hi": "mandible"}},
+    {"id": "F-skull-side-mandible", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["mandible"], "explain": "The mandible is the lower jaw.", "common": ["lower jaw", "jaw", "jawbone", "jaw bone"], "img": {"fig": "skull-side", "hi": "mandible"}},
+    {"id": "L-skull-front-mandible", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Mandible", "Maxillae", "Zygomatic bones", "Temporal bones"], "explain": "The mandible is the lower jaw.", "img": {"fig": "skull-front", "hi": "mandible"}},
+    {"id": "L-skull-side-temporal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Temporal bones", "Parietal bones", "Sphenoid bone", "Occipital bone"], "explain": "The temporal bone is around the ear.", "img": {"fig": "skull-side", "hi": "temporal"}},
+    {"id": "F-skull-side-temporal", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["temporal bones", "temporal bone", "temporal"], "explain": "The temporal bone is around the ear.", "img": {"fig": "skull-side", "hi": "temporal"}},
+    {"id": "L-skull-side-occipital", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Occipital bone", "Parietal bones", "Temporal bones", "Sphenoid bone"], "explain": "The occipital bone is the back and bottom of the skull.", "img": {"fig": "skull-side", "hi": "occipital"}},
+    {"id": "F-skull-side-occipital", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["occipital bone", "occipital"], "explain": "The occipital bone is the back and bottom of the skull.", "img": {"fig": "skull-side", "hi": "occipital"}},
+    {"id": "L-skull-side-parietal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (side view)", "options": ["Parietal bones", "Frontal bone", "Temporal bones", "Occipital bone"], "explain": "The parietal bones are the top and sides of the skull.", "img": {"fig": "skull-side", "hi": "parietal"}},
+    {"id": "F-skull-side-parietal", "topic": "lab-skull", "format": "fill", "prompt": "Type the name of the highlighted bone. (side view)", "answers": ["parietal bones", "parietal bone", "parietal"], "explain": "The parietal bones are the top and sides of the skull.", "img": {"fig": "skull-side", "hi": "parietal"}},
+    {"id": "L-skull-front-parietal", "topic": "lab-skull", "format": "mc", "prompt": "Which bone is highlighted? (front view)", "options": ["Parietal bones", "Frontal bone", "Temporal bones", "Occipital bone"], "explain": "The parietal bones are the top and sides of the skull.", "img": {"fig": "skull-front", "hi": "parietal"}},
+    {"id": "L-lab-hand-hand-phal-dist", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Distal phalanges", "Intermediate phalanges", "Proximal phalanges", "Metacarpals"], "explain": "Distal phalanges: the fingertip bones (farthest from the body).", "img": {"fig": "hand", "hi": "phal-dist"}},
+    {"id": "F-lab-hand-hand-phal-dist", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["distal phalanges", "distal phalanx"], "explain": "Distal phalanges: the fingertip bones (farthest from the body).", "img": {"fig": "hand", "hi": "phal-dist"}},
+    {"id": "L-lab-hand-hand-phal-inter", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Intermediate phalanges", "Proximal phalanges", "Distal phalanges", "Metacarpals"], "explain": "Intermediate phalanges: the middle finger bones. The thumb doesn't have one.", "img": {"fig": "hand", "hi": "phal-inter"}},
+    {"id": "F-lab-hand-hand-phal-inter", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["intermediate phalanges", "intermediate phalanx", "middle phalanges"], "explain": "Intermediate phalanges: the middle finger bones. The thumb doesn't have one.", "img": {"fig": "hand", "hi": "phal-inter"}},
+    {"id": "L-lab-hand-hand-phal-prox", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Proximal phalanges", "Intermediate phalanges", "Metacarpals", "Distal phalanges"], "explain": "Proximal phalanges: the finger bones closest to the palm.", "img": {"fig": "hand", "hi": "phal-prox"}},
+    {"id": "F-lab-hand-hand-phal-prox", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["proximal phalanges", "proximal phalanx"], "explain": "Proximal phalanges: the finger bones closest to the palm.", "img": {"fig": "hand", "hi": "phal-prox"}},
+    {"id": "L-lab-hand-hand-metacarpals", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Metacarpals", "Proximal phalanges", "Carpals", "Metatarsals"], "explain": "Metacarpals: the 5 palm bones; their heads are your knuckles.", "img": {"fig": "hand", "hi": "metacarpals"}},
+    {"id": "F-lab-hand-hand-metacarpals", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["metacarpals", "metacarpal"], "explain": "Metacarpals: the 5 palm bones; their heads are your knuckles.", "img": {"fig": "hand", "hi": "metacarpals"}},
+    {"id": "L-lab-hand-hand-hamate", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Hamate", "Capitate", "Triquetrum", "Pisiform"], "explain": "Hamate: distal row, pinky side (it has a little hook).", "img": {"fig": "hand", "hi": "hamate"}},
+    {"id": "F-lab-hand-hand-hamate", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["hamate"], "explain": "Hamate: distal row, pinky side (it has a little hook).", "img": {"fig": "hand", "hi": "hamate"}},
+    {"id": "L-lab-hand-hand-pisiform", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Pisiform", "Triquetrum", "Hamate", "Lunate"], "explain": "Pisiform: the small pea-shaped bone on the pinky side, sitting on the triquetrum.", "img": {"fig": "hand", "hi": "pisiform"}},
+    {"id": "F-lab-hand-hand-pisiform", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["pisiform"], "explain": "Pisiform: the small pea-shaped bone on the pinky side, sitting on the triquetrum.", "img": {"fig": "hand", "hi": "pisiform"}},
+    {"id": "L-lab-hand-hand-triquetrum", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Triquetrum", "Pisiform", "Lunate", "Hamate"], "explain": "Triquetrum: proximal row, pinky side, under the pisiform.", "img": {"fig": "hand", "hi": "triquetrum"}},
+    {"id": "F-lab-hand-hand-triquetrum", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["triquetrum"], "explain": "Triquetrum: proximal row, pinky side, under the pisiform.", "img": {"fig": "hand", "hi": "triquetrum"}},
+    {"id": "L-lab-hand-hand-trapezium", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Trapezium", "Trapezoid", "Scaphoid", "Capitate"], "explain": "Trapezium: distal row at the base of the thumb. (Trapezi-UM = thUMb.)", "img": {"fig": "hand", "hi": "trapezium"}},
+    {"id": "F-lab-hand-hand-trapezium", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["trapezium"], "explain": "Trapezium: distal row at the base of the thumb. (Trapezi-UM = thUMb.)", "img": {"fig": "hand", "hi": "trapezium"}},
+    {"id": "L-lab-hand-hand-trapezoid", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Trapezoid", "Trapezium", "Capitate", "Scaphoid"], "explain": "Trapezoid: distal row, between the trapezium and the capitate.", "img": {"fig": "hand", "hi": "trapezoid"}},
+    {"id": "F-lab-hand-hand-trapezoid", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["trapezoid"], "explain": "Trapezoid: distal row, between the trapezium and the capitate.", "img": {"fig": "hand", "hi": "trapezoid"}},
+    {"id": "L-lab-hand-hand-scaphoid", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Scaphoid", "Lunate", "Trapezium", "Trapezoid"], "explain": "Scaphoid: proximal row, thumb side, right above the radius.", "img": {"fig": "hand", "hi": "scaphoid"}},
+    {"id": "F-lab-hand-hand-scaphoid", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["scaphoid"], "explain": "Scaphoid: proximal row, thumb side, right above the radius.", "img": {"fig": "hand", "hi": "scaphoid"}},
+    {"id": "L-lab-hand-hand-capitate", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Capitate", "Hamate", "Trapezoid", "Lunate"], "explain": "Capitate: the biggest carpal, in the middle of the distal row.", "img": {"fig": "hand", "hi": "capitate"}},
+    {"id": "F-lab-hand-hand-capitate", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["capitate"], "explain": "Capitate: the biggest carpal, in the middle of the distal row.", "img": {"fig": "hand", "hi": "capitate"}},
+    {"id": "L-lab-hand-hand-lunate", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Lunate", "Scaphoid", "Triquetrum", "Capitate"], "explain": "Lunate: proximal row, in the middle, next to the scaphoid.", "img": {"fig": "hand", "hi": "lunate"}},
+    {"id": "F-lab-hand-hand-lunate", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["lunate"], "explain": "Lunate: proximal row, in the middle, next to the scaphoid.", "img": {"fig": "hand", "hi": "lunate"}},
+    {"id": "L-lab-hand-hand-ulna", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Ulna", "Radius", "Humerus", "Fibula"], "explain": "Ulna: the forearm bone on the pinky side.", "img": {"fig": "hand", "hi": "ulna"}},
+    {"id": "F-lab-hand-hand-ulna", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["ulna"], "explain": "Ulna: the forearm bone on the pinky side.", "img": {"fig": "hand", "hi": "ulna"}},
+    {"id": "L-lab-hand-hand-radius", "topic": "lab-hand", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Radius", "Ulna", "Humerus", "Tibia"], "explain": "Radius: the forearm bone on the thumb side; it makes up most of the wrist joint.", "img": {"fig": "hand", "hi": "radius"}},
+    {"id": "F-lab-hand-hand-radius", "topic": "lab-hand", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["radius"], "explain": "Radius: the forearm bone on the thumb side; it makes up most of the wrist joint.", "img": {"fig": "hand", "hi": "radius"}},
+    {"id": "HA-1", "topic": "lab-hand", "format": "mc", "prompt": "Which list gives the 8 carpals in order: proximal row from thumb side to pinky side, then distal row from thumb side to pinky side?", "options": ["Scaphoid, lunate, triquetrum, pisiform; trapezium, trapezoid, capitate, hamate", "Lunate, scaphoid, pisiform, triquetrum; trapezoid, trapezium, hamate, capitate", "Scaphoid, lunate, pisiform, triquetrum; capitate, trapezium, trapezoid, hamate", "Trapezium, trapezoid, capitate, hamate; scaphoid, lunate, triquetrum, pisiform"], "explain": "Memory trick: \"Some Lovers Try Positions That They Can't Handle\": Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate."},
+    {"id": "L-lab-foot-foot-fibula", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Fibula", "Tibia", "Talus", "Calcaneus"], "explain": "Fibula: the thin lower-leg bone on the little-toe side.", "img": {"fig": "foot", "hi": "fibula"}},
+    {"id": "F-lab-foot-foot-fibula", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["fibula"], "explain": "Fibula: the thin lower-leg bone on the little-toe side.", "img": {"fig": "foot", "hi": "fibula"}},
+    {"id": "L-lab-foot-foot-tibia", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Tibia", "Fibula", "Talus", "Femur"], "explain": "Tibia: the big shin bone on the big-toe side.", "img": {"fig": "foot", "hi": "tibia"}},
+    {"id": "F-lab-foot-foot-tibia", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["tibia"], "explain": "Tibia: the big shin bone on the big-toe side.", "img": {"fig": "foot", "hi": "tibia"}},
+    {"id": "L-lab-foot-foot-talus", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Talus", "Calcaneus", "Navicular", "Cuboid"], "explain": "Talus: the ankle bone right under the tibia.", "img": {"fig": "foot", "hi": "talus"}},
+    {"id": "F-lab-foot-foot-talus", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["talus"], "explain": "Talus: the ankle bone right under the tibia.", "img": {"fig": "foot", "hi": "talus"}},
+    {"id": "L-lab-foot-foot-calcaneus", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Calcaneus", "Talus", "Cuboid", "Navicular"], "explain": "Calcaneus: the heel bone (the biggest tarsal).", "img": {"fig": "foot", "hi": "calcaneus"}},
+    {"id": "F-lab-foot-foot-calcaneus", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["calcaneus"], "explain": "Calcaneus: the heel bone (the biggest tarsal).", "img": {"fig": "foot", "hi": "calcaneus"}},
+    {"id": "L-lab-foot-foot-cuboid", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Cuboid", "Navicular", "Calcaneus", "Lateral cuneiform"], "explain": "Cuboid: the cube-shaped tarsal on the little-toe side, in front of the calcaneus.", "img": {"fig": "foot", "hi": "cuboid"}},
+    {"id": "F-lab-foot-foot-cuboid", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["cuboid"], "explain": "Cuboid: the cube-shaped tarsal on the little-toe side, in front of the calcaneus.", "img": {"fig": "foot", "hi": "cuboid"}},
+    {"id": "L-lab-foot-foot-navicular", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Navicular", "Cuboid", "Talus", "Medial cuneiform"], "explain": "Navicular: the boat-shaped tarsal on the big-toe side, in front of the talus.", "img": {"fig": "foot", "hi": "navicular"}},
+    {"id": "F-lab-foot-foot-navicular", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["navicular"], "explain": "Navicular: the boat-shaped tarsal on the big-toe side, in front of the talus.", "img": {"fig": "foot", "hi": "navicular"}},
+    {"id": "L-lab-foot-foot-cun-lat", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Lateral cuneiform", "Intermediate cuneiform", "Medial cuneiform", "Cuboid"], "explain": "Lateral cuneiform: the cuneiform closest to the cuboid (little-toe side).", "img": {"fig": "foot", "hi": "cun-lat"}},
+    {"id": "F-lab-foot-foot-cun-lat", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["lateral cuneiform", "lateral cuneiforms"], "explain": "Lateral cuneiform: the cuneiform closest to the cuboid (little-toe side).", "img": {"fig": "foot", "hi": "cun-lat"}},
+    {"id": "L-lab-foot-foot-cun-int", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Intermediate cuneiform", "Medial cuneiform", "Lateral cuneiform", "Navicular"], "explain": "Intermediate cuneiform: the middle of the three cuneiforms.", "img": {"fig": "foot", "hi": "cun-int"}},
+    {"id": "F-lab-foot-foot-cun-int", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["intermediate cuneiform", "intermediate cuneiforms", "middle cuneiform"], "explain": "Intermediate cuneiform: the middle of the three cuneiforms.", "img": {"fig": "foot", "hi": "cun-int"}},
+    {"id": "L-lab-foot-foot-cun-med", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Medial cuneiform", "Intermediate cuneiform", "Lateral cuneiform", "Navicular"], "explain": "Medial cuneiform: the biggest cuneiform, behind the big toe.", "img": {"fig": "foot", "hi": "cun-med"}},
+    {"id": "F-lab-foot-foot-cun-med", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["medial cuneiform", "medial cuneiforms"], "explain": "Medial cuneiform: the biggest cuneiform, behind the big toe.", "img": {"fig": "foot", "hi": "cun-med"}},
+    {"id": "L-lab-foot-foot-metatarsals", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Metatarsals", "Proximal phalanges", "Metacarpals", "Cuboid"], "explain": "Metatarsals: the 5 long bones of the foot.", "img": {"fig": "foot", "hi": "metatarsals"}},
+    {"id": "F-lab-foot-foot-metatarsals", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["metatarsals", "metatarsal"], "explain": "Metatarsals: the 5 long bones of the foot.", "img": {"fig": "foot", "hi": "metatarsals"}},
+    {"id": "L-lab-foot-foot-phal-prox", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Proximal phalanges", "Intermediate phalanges", "Metatarsals", "Distal phalanges"], "explain": "Proximal phalanges: the toe bones that join the metatarsals.", "img": {"fig": "foot", "hi": "phal-prox"}},
+    {"id": "F-lab-foot-foot-phal-prox", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["proximal phalanges", "proximal phalanx"], "explain": "Proximal phalanges: the toe bones that join the metatarsals.", "img": {"fig": "foot", "hi": "phal-prox"}},
+    {"id": "L-lab-foot-foot-phal-inter", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Intermediate phalanges", "Proximal phalanges", "Distal phalanges", "Metatarsals"], "explain": "Intermediate phalanges: the middle toe bones. The big toe doesn't have one.", "img": {"fig": "foot", "hi": "phal-inter"}},
+    {"id": "F-lab-foot-foot-phal-inter", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["intermediate phalanges", "intermediate phalanx", "middle phalanges"], "explain": "Intermediate phalanges: the middle toe bones. The big toe doesn't have one.", "img": {"fig": "foot", "hi": "phal-inter"}},
+    {"id": "L-lab-foot-foot-phal-dist", "topic": "lab-foot", "format": "mc", "prompt": "Which bone is highlighted?", "options": ["Distal phalanges", "Intermediate phalanges", "Proximal phalanges", "Metatarsals"], "explain": "Distal phalanges: the toe-tip bones.", "img": {"fig": "foot", "hi": "phal-dist"}},
+    {"id": "F-lab-foot-foot-phal-dist", "topic": "lab-foot", "format": "fill", "prompt": "Type the name of the highlighted bone.", "answers": ["distal phalanges", "distal phalanx"], "explain": "Distal phalanges: the toe-tip bones.", "img": {"fig": "foot", "hi": "phal-dist"}},
+    {"id": "FO-S1", "topic": "lab-foot", "format": "sort", "prompt": "Sort the 7 tarsals: back of the foot (ankle and heel) or middle of the foot?", "boxes": ["Back of the foot (ankle & heel)", "Middle of the foot"], "tiles": [["Talus", "Back of the foot (ankle & heel)"], ["Calcaneus", "Back of the foot (ankle & heel)"], ["Navicular", "Middle of the foot"], ["Cuboid", "Middle of the foot"], ["Medial cuneiform", "Middle of the foot"], ["Intermediate cuneiform", "Middle of the foot"], ["Lateral cuneiform", "Middle of the foot"]], "explain": "Talus (under the tibia) and calcaneus (heel) are at the back. Navicular, cuboid, and the 3 cuneiforms are in the middle, in front of them."}
+  ]
+};
+
+// ---------- skull diagrams (original SVG, schematic) ----------
+// skullSVG(view, opts): view = 'front' | 'side' | 'base'
+// opts.hi    = bone key to highlight (all visible parts of it, both sides)
+// opts.arrow = part key; draws a pointer arrow to that part
+// opts.tint  = true: cranial bones light blue, facial bones light yellow (explore mode)
+// Bones are layered back-to-front; later shapes cover the hidden edges of earlier ones.
+const SKULL = (function () {
+  const BONE = '#efe2cc', WALL = '#dcc7a6', EDGE = '#5f4c38', HOLE = '#3a2f28', TOOTH = '#fbf8f2', DEEP = '#8a7966';
+  const HI = '#f0663a', HI_EDGE = '#7e2a10', HI_WALL = '#d9542b';
+  const CRANIAL = { frontal: 1, parietal: 1, temporal: 1, occipital: 1, sphenoid: 1, ethmoid: 1 };
+  const TINT_C = '#bfe0f5', TINT_C_WALL = '#a3cde9', TINT_F = '#fbeaa6', TINT_F_WALL = '#efd987';
+  let uid = 0;
+
+  // Closed smooth path through points; a point [x, y, 1] is a sharp corner.
+  function sm(pts) {
+    const n = pts.length, P = i => pts[(i + n) % n];
+    let d = `M${P(0)[0]} ${P(0)[1]}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+      const c1 = p1[2] ? p1 : [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = p2[2] ? p2 : [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${r(c1[0])} ${r(c1[1])} ${r(c2[0])} ${r(c2[1])} ${p2[0]} ${p2[1]}`;
+    }
+    return d + 'Z';
+  }
+  const r = v => Math.round(v * 10) / 10;
+  const poly = pts => 'M' + pts.map(p => p[0] + ' ' + p[1]).join(' L') + 'Z';
+  const mirror = (pts, W) => pts.map(p => [W - p[0], p[1], p[2]]);
+
+  function fills(bone, o, wall) {
+    if (o.hi === bone) return [wall ? HI_WALL : HI, HI_EDGE];
+    if (o.tint && bone) return CRANIAL[bone] ? [wall ? TINT_C_WALL : TINT_C, EDGE] : [wall ? TINT_F_WALL : TINT_F, EDGE];
+    return [wall ? WALL : BONE, EDGE];
+  }
+  function shape(bone, d, o, extra) {
+    const wall = extra && extra.wall;
+    const [f, s] = fills(bone, o, wall);
+    const sw = (o.hi === bone) ? 1.8 : 1.3;
+    return `<path d="${d}" fill="${f}" stroke="${s}" stroke-width="${sw}" stroke-linejoin="round"${bone ? ` data-bone="${bone}"` : ''}/>`;
+  }
+  const hole = (d, extra) => `<path d="${d}" fill="${HOLE}" stroke="${EDGE}" stroke-width="1.1"${extra || ''}/>`;
+  const ell = (cx, cy, rx, ry, rot) => {
+    const k = 0.5523;
+    const pts = [[cx + rx, cy], [cx, cy + ry], [cx - rx, cy], [cx, cy - ry]];
+    let d = `M${cx + rx} ${cy} C${cx + rx} ${cy + ry * k} ${cx + rx * k} ${cy + ry} ${cx} ${cy + ry} C${cx - rx * k} ${cy + ry} ${cx - rx} ${cy + ry * k} ${cx - rx} ${cy} C${cx - rx} ${cy - ry * k} ${cx - rx * k} ${cy - ry} ${cx} ${cy - ry} C${cx + rx * k} ${cy - ry} ${cx + rx} ${cy - ry * k} ${cx + rx} ${cy}Z`;
+    return { d, t: rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : '' };
+  };
+  const tooth = (x, y, w, hgt, up) => {
+    // rounded crown edge on the biting side
+    const rr = Math.min(3.5, w / 2.5);
+    return up
+      ? `<path d="M${x} ${y + hgt} V${y + rr} Q${x} ${y} ${x + rr} ${y} H${x + w - rr} Q${x + w} ${y} ${x + w} ${y + rr} V${y + hgt}Z" fill="${TOOTH}" stroke="#8f816f" stroke-width="1"/>`
+      : `<path d="M${x} ${y} V${y + hgt - rr} Q${x} ${y + hgt} ${x + rr} ${y + hgt} H${x + w - rr} Q${x + w} ${y + hgt} ${x + w} ${y + hgt - rr} V${y}Z" fill="${TOOTH}" stroke="#8f816f" stroke-width="1"/>`;
+  };
+
+  // ---------------- FRONT VIEW (viewBox 300 x 345) ----------------
+  function front(o) {
+    const W = 300, out = [], id = 'sk' + (++uid);
+    const both = (bone, pts, extra) => { out.push(shape(bone, sm(pts), o, extra)); out.push(shape(bone, sm(mirror(pts, W)), o, extra)); };
+
+    out.push(shape('parietal', sm([[150, 8], [214, 16], [256, 50], [271, 100], [267, 150], [240, 168], [150, 168], [60, 168], [33, 150], [29, 100], [44, 50], [86, 16]]), o));
+    both('temporal', [[29, 124], [44, 128], [48, 170], [48, 212], [42, 228], [35, 214], [30, 180]]);
+    both('sphenoid', [[42, 126], [56, 132], [64, 168], [68, 192], [50, 196], [41, 168]]);
+    out.push(shape('frontal', sm([[64, 172, 1], [52, 142], [44, 108], [50, 62], [90, 26], [150, 16], [210, 26], [250, 62], [256, 108], [248, 142], [236, 172, 1]]), o));
+    out.push(`<path d="${poly([[62, 200], [238, 200], [238, 292], [62, 292]])}" fill="${DEEP}"/>`);
+    out.push(shape('mandible', sm([[62, 234, 1], [72, 232, 1], [78, 258], [96, 286, 1], [204, 286, 1], [222, 258], [228, 232, 1], [238, 234, 1], [243, 272], [231, 302], [207, 324], [150, 337], [93, 324], [69, 302], [57, 272]]), o));
+    both('maxilla', [[94, 210, 1], [112, 200], [133, 196, 1], [133, 150, 1], [146, 146, 1], [144, 190, 1], [137, 198], [128, 218], [126, 238], [133, 250], [146, 255, 1], [150, 255, 1], [150, 274, 1], [97, 274, 1], [90, 256], [94, 232]]);
+    both('zygomatic', [[60, 156, 1], [76, 153, 1], [78, 205], [99, 210], [105, 226], [93, 244], [70, 241], [51, 227], [43, 204], [49, 180]]);
+    both('nasal', [[144, 146, 1], [150, 144, 1], [150, 190, 1], [139, 197, 1], [142, 170]]);
+
+    // orbits: rim opening, inner walls converging on the back wall (sphenoid)
+    const orbit = [[86, 146], [116, 146], [132, 160], [132, 192], [118, 206], [84, 206], [70, 192], [70, 160]];
+    [false, true].forEach(m => {
+      const M = pts => m ? mirror(pts, W) : pts;
+      const cid = id + (m ? 'oR' : 'oL');
+      out.push(`<clipPath id="${cid}"><path d="${sm(M(orbit))}"/></clipPath><g clip-path="url(#${cid})">`);
+      out.push(shape('frontal', poly(M([[60, 134], [142, 134], [116, 166], [92, 166]])), o, { wall: 1 }));
+      out.push(shape('zygomatic', poly(M([[60, 134], [92, 166], [92, 190], [60, 218]])), o, { wall: 1 }));
+      out.push(shape('maxilla', poly(M([[60, 218], [92, 190], [116, 190], [142, 218]])), o, { wall: 1 }));
+      out.push(shape('ethmoid', poly(M([[142, 134], [116, 166], [116, 190], [142, 218]])), o, { wall: 1 }));
+      out.push(shape('lacrimal', sm(M([[120, 178, 1], [134, 175, 1], [134, 202, 1], [119, 197]])), o, { wall: 1 }));
+      out.push(shape('sphenoid', sm(M([[94, 166], [114, 166], [117, 178], [114, 190], [94, 190], [91, 178]])), o, { wall: 1 }));
+      out.push(hole(sm(M([[95, 171], [103, 176], [107, 182], [104, 184], [97, 178]]))));
+      const oc = ell(m ? W - 110 : 110, 173, 3.2, 3.2);
+      out.push(hole(oc.d));
+      out.push('</g>');
+      out.push(`<path d="${sm(M(orbit))}" fill="none" stroke="${EDGE}" stroke-width="1.8"/>`);
+    });
+
+    // nasal cavity: septum (ethmoid above, vomer below) and conchae on the side walls
+    const ap = [[150, 189, 1], [161, 197, 1], [172, 214], [175, 236], [167, 250], [150, 256, 1], [133, 250], [125, 236], [128, 214], [139, 197, 1]];
+    out.push(`<clipPath id="${id}n"><path d="${sm(ap)}"/></clipPath>`);
+    out.push(hole(sm(ap)));
+    out.push(`<g clip-path="url(#${id}n)">`);
+    out.push(shape('ethmoid', poly([[147, 186], [153, 186], [153, 219], [147, 223]]), o, { wall: 1 }));
+    out.push(shape('vomer', poly([[147, 223], [153, 219], [155, 258], [145, 258]]), o, { wall: 1 }));
+    both('ethmoid', [[128, 205], [141, 208], [142, 217], [135, 220], [129, 215]], { wall: 1 });
+    both('inferior-concha', [[124, 226], [140, 228], [143, 239], [137, 246], [126, 243]], { wall: 1 });
+    out.push('</g>');
+    out.push(`<path d="${sm(ap)}" fill="none" stroke="${EDGE}" stroke-width="1.6"/>`);
+
+    // teeth
+    const up = [[12, 18], [10, 17], [10, 18], [9, 15], [8, 14], [7, 13]];
+    const lo = [[10, 16], [9, 15], [10, 16], [9, 14], [8, 13], [7, 12]];
+    let x = 150; up.forEach(([w, hgt]) => { x -= w; out.push(tooth(x, 273, w, hgt, false)); out.push(tooth(W - x - w, 273, w, hgt, false)); });
+    x = 150; lo.forEach(([w, hgt]) => { x -= w; out.push(tooth(x, 307 - hgt, w, hgt, true)); out.push(tooth(W - x - w, 307 - hgt, w, hgt, true)); });
+    return { vb: '0 0 300 345', body: out.join('') };
+  }
+
+  // ---------------- SIDE VIEW (viewBox 400 x 345), face to the left ----------------
+  function side(o) {
+    const out = [], id = 'sk' + (++uid);
+    const E = deg => { const a = deg * Math.PI / 180; return [r(222 + 162 * Math.cos(a)), r(140 - 128 * Math.sin(a))]; };
+    const arc = (a0, a1, step) => { const p = []; for (let a = a0; step > 0 ? a <= a1 : a >= a1; a += step) p.push(E(a)); return p; };
+
+    // parietal: vertex between coronal and lambdoid sutures
+    out.push(shape('parietal', sm([...arc(100, 40, -15).map((p, i, a) => (i === 0 || i === a.length - 1) ? [...p, 1] : p), [336, 110], [318, 165], [306, 192, 1], [220, 202], [150, 172, 1], [136, 138, 1], [148, 100], [166, 56]]), o));
+    // occipital: back and bottom
+    out.push(shape('occipital', sm([[...E(40), 1], ...arc(25, -35, -15), [344, 232], [318, 246], [300, 242, 1], [304, 200], [318, 165], [336, 110]]), o));
+    // sphenoid: greater wing at the temple
+    out.push(shape('sphenoid', sm([[122, 146], [136, 138, 1], [166, 150, 1], [168, 200, 1], [124, 200, 1], [120, 172]]), o));
+    // frontal: forehead down to the brow and the orbit's upper rim
+    out.push(shape('frontal', sm([[...E(100), 1], ...arc(115, 175, 15), [56, 146], [54, 153, 1], [66, 143], [92, 136], [114, 142, 1], [118, 152, 1], [124, 150], [136, 138, 1], [148, 100], [166, 56]]), o));
+    out.push(`<path d="${poly([[116, 204], [232, 204], [262, 212], [280, 240], [282, 258], [262, 264], [242, 266], [233, 296], [118, 296]])}" fill="${DEEP}"/>`);
+    // mandible (drawn before the arch so the coronoid process tucks under it)
+    out.push(shape('mandible', sm([[34, 292, 1], [126, 292, 1], [144, 278], [164, 256], [178, 232], [186, 204, 1], [198, 230], [216, 234], [228, 222], [233, 213, 1], [246, 212], [251, 222], [246, 240], [241, 262], [239, 288], [228, 306, 1], [196, 316], [130, 327], [64, 333], [44, 325], [35, 308]]), o));
+    // temporal: squama, zygomatic process (back half of the arch), mastoid process
+    out.push(shape('temporal', sm([[166, 150, 1], [190, 126], [230, 114], [272, 126], [300, 156], [308, 190], [307, 222], [305, 244], [298, 260], [288, 266], [279, 258], [274, 240], [268, 225], [258, 216], [248, 214], [238, 211], [226, 212, 1], [174, 212, 1], [174, 197, 1], [166, 197, 1]]), o));
+    out.push(hole(ell(262, 204, 7.5, 9.5).d));
+    // zygomatic: cheekbone + front half of the arch
+    out.push(shape('zygomatic', sm([[110, 150, 1], [122, 148, 1], [121, 170], [128, 190], [146, 196], [176, 196, 1], [176, 212, 1], [146, 216], [124, 230], [106, 218], [100, 198], [106, 190]]), o));
+    out.push(`<path d="M146 196 L176 196 C196 196 214 198 230 204" fill="none" stroke="${EDGE}" stroke-width="1.3"/>`);
+    // maxilla
+    out.push(shape('maxilla', sm([[56, 152, 1], [68, 148, 1], [70, 192], [102, 196], [108, 216], [124, 230], [129, 250], [123, 265, 1], [36, 265, 1], [28, 252], [24, 232, 1], [40, 222], [46, 209], [43, 199], [50, 195, 1]]), o));
+    // nasal bone
+    out.push(shape('nasal', sm([[52, 151, 1], [60, 153, 1], [52, 196, 1], [36, 194, 1]]), o));
+    // nasal opening
+    out.push(hole(sm([[36, 194, 1], [43, 199], [47, 209], [41, 221], [24, 232, 1]])));
+
+    // orbit, looking at the medial wall: lacrimal (front), ethmoid (middle), sphenoid (back)
+    const orbit = [[74, 139], [104, 137], [114, 149], [115, 180], [105, 192], [75, 192], [66, 182], [66, 150]];
+    out.push(`<clipPath id="${id}o"><path d="${sm(orbit)}"/></clipPath><g clip-path="url(#${id}o)">`);
+    out.push(shape('lacrimal', poly([[60, 148], [81, 148], [81, 184], [60, 184]]), o, { wall: 1 }));
+    out.push(shape('ethmoid', poly([[81, 148], [101, 148], [101, 184], [81, 184]]), o, { wall: 1 }));
+    out.push(shape('sphenoid', poly([[101, 148], [122, 148], [122, 184], [101, 184]]), o, { wall: 1 }));
+    out.push(shape('frontal', poly([[58, 128], [124, 128], [110, 150], [70, 150]]), o, { wall: 1 }));
+    out.push(shape('maxilla', poly([[58, 198], [124, 198], [110, 182], [70, 182]]), o, { wall: 1 }));
+    out.push(hole(ell(73, 168, 2.6, 7.5).d, ' opacity=".55"'));
+    out.push(hole(ell(108, 165, 3.4, 3.4).d));
+    out.push('</g>');
+    out.push(`<path d="${sm(orbit)}" fill="none" stroke="${EDGE}" stroke-width="1.8"/>`);
+
+    // teeth
+    let x = 32;
+    [[8, 18], [8, 18], [9, 19], [10, 16], [11, 15], [13, 15], [14, 14], [13, 13]].forEach(([w, hgt]) => { out.push(tooth(x, 265, w, hgt, false)); x += w; });
+    x = 36;
+    [[8, 16], [8, 16], [9, 17], [10, 15], [11, 14], [13, 14], [14, 13], [13, 12]].forEach(([w, hgt]) => { out.push(tooth(x, 300 - hgt, w, hgt, true)); x += w; });
+    return { vb: '0 0 400 345', body: out.join('') };
+  }
+
+  // ---------------- BASE VIEW (from below; viewBox 300 x 360), teeth at the top ----------------
+  function base(o) {
+    const W = 300, out = [];
+    const both = (bone, pts, extra) => { out.push(shape(bone, sm(pts), o, extra)); out.push(shape(bone, sm(mirror(pts, W)), o, extra)); };
+    out.push(shape('occipital', sm([[136, 206, 1], [164, 206, 1], [172, 228], [190, 240], [244, 256], [260, 282, 1], [266, 302], [250, 327], [206, 346], [150, 352], [94, 346], [50, 327], [34, 302], [40, 282, 1], [56, 256], [110, 240], [128, 228]]), o));
+    both('temporal', [[40, 166, 1], [58, 164, 1], [66, 194], [100, 210], [128, 222], [131, 240], [110, 246], [80, 256], [56, 270], [40, 282, 1], [33, 256], [31, 212]]);
+    [[47, 250, -8], [253, 250, 8]].forEach(([x, y, rot]) => { const e = ell(x, y, 8, 13, rot); out.push(shape('temporal', e.d, o, { wall: 1 }).replace('/>', e.t + '/>')); });
+    out.push(shape('sphenoid', sm([[92, 146], [118, 148, 1], [120, 178, 1], [180, 178, 1], [182, 148, 1], [208, 146], [222, 178], [214, 206], [182, 212], [164, 206, 1], [136, 206, 1], [118, 212], [86, 206], [78, 178]]), o));
+    // open space inside the cheek arches
+    const fossa = [[84, 128], [94, 148], [82, 178], [86, 204], [66, 194], [58, 166], [66, 148]];
+    out.push(hole(sm(fossa), ' opacity=".8"')); out.push(hole(sm(mirror(fossa, W)), ' opacity=".8"'));
+    both('zygomatic', [[62, 96], [80, 98], [86, 128], [68, 150], [60, 168, 1], [46, 168, 1], [47, 140], [53, 112]]);
+    both('maxilla', [[150, 20, 1], [150, 118, 1], [100, 118, 1], [100, 150, 1], [88, 150, 1], [80, 130], [75, 92], [86, 52], [112, 27]]);
+    both('palatine', [[100, 118, 1], [150, 118, 1], [150, 141, 1], [146, 146], [124, 148], [100, 150, 1]]);
+    // back openings of the nose (choanae) with the vomer between them
+    const ch = [[121, 151], [145, 151], [145, 182], [123, 182], [117, 166]];
+    out.push(hole(sm(ch))); out.push(hole(sm(mirror(ch, W))));
+    out.push(shape('vomer', sm([[146, 145, 1], [154, 145, 1], [154, 184, 1], [146, 184, 1]]), o));
+    // foramen magnum + occipital condyles
+    const c1 = ell(127, 255, 7, 15, -18), c2 = ell(173, 255, 7, 15, 18);
+    out.push(shape('occipital', c1.d, o, { wall: 1 }).replace('/>', c1.t + '/>'));
+    out.push(shape('occipital', c2.d, o, { wall: 1 }).replace('/>', c2.t + '/>'));
+    out.push(hole(ell(150, 262, 18, 25).d));
+    // teeth around the dental arch (quadratic curve from the front middle back to the molars)
+    const Q = t => [(1 - t) * (1 - t) * 150 + 2 * (1 - t) * t * 204 + t * t * 202, (1 - t) * (1 - t) * 30 + 2 * (1 - t) * t * 34 + t * t * 140];
+    const ts = [0.05, 0.15, 0.26, 0.38, 0.5, 0.63, 0.78, 0.93], sz = [5, 5, 5.5, 5.5, 6, 7, 7.5, 7.5];
+    ts.forEach((t, i) => {
+      const [x, y] = Q(t);
+      [x, W - x].forEach(xx => { const e = ell(r(xx), r(y), sz[i], sz[i] * 0.9); out.push(`<path d="${e.d}" fill="${TOOTH}" stroke="#8f816f" stroke-width="1"/>`); });
+    });
+    return { vb: '0 0 300 360', body: out.join('') };
+  }
+
+  // pointer arrows for "important parts"
+  const ARROWS = {
+    'supraorbital': { view: 'front', from: [54, 96], to: [92, 145] },
+    'nasal-septum': { view: 'front', from: [236, 282], to: [154, 226] },
+    'zyg-process': { view: 'side', from: [212, 160], to: [204, 202] },
+    'tmj': { view: 'side', from: [292, 300], to: [244, 222] },
+    'mastoid': { view: 'side', from: [342, 300], to: [296, 260] },
+    'lacrimal-fossa': { view: 'side', from: [30, 112], to: [71, 165] },
+    'foramen-magnum': { view: 'base', from: [228, 320], to: [163, 280] },
+    'occ-condyles': { view: 'base', from: [70, 306], to: [124, 262] }
+  };
+  function arrow(a) {
+    const [x1, y1] = a.from, [x2, y2] = a.to;
+    const ang = Math.atan2(y2 - y1, x2 - x1), L = 13, sp = 0.42;
+    const p1 = [x2 - L * Math.cos(ang - sp), y2 - L * Math.sin(ang - sp)], p2 = [x2 - L * Math.cos(ang + sp), y2 - L * Math.sin(ang + sp)];
+    const bx = x2 - (L - 2) * Math.cos(ang), by = y2 - (L - 2) * Math.sin(ang);
+    const head = `M${x2} ${y2} L${r(p1[0])} ${r(p1[1])} L${r(p2[0])} ${r(p2[1])}Z`;
+    return `<g><line x1="${x1}" y1="${y1}" x2="${r(bx)}" y2="${r(by)}" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="${head}" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>` +
+      `<line x1="${x1}" y1="${y1}" x2="${r(bx)}" y2="${r(by)}" stroke="#111" stroke-width="2.6" stroke-linecap="round"/><path d="${head}" fill="#111"/>` +
+      `<circle cx="${x1}" cy="${y1}" r="4" fill="#111" stroke="#fff" stroke-width="1.5"/></g>`;
+  }
+
+  const VIEWS = { front, side, base };
+  const VIEW_NAMES = { front: 'Front view', side: 'Side view', base: 'View from below (teeth at top)' };
+  function svg(view, opts) {
+    const o = opts || {};
+    const v = VIEWS[view](o);
+    const a = o.arrow ? ARROWS[o.arrow] : null;
+    const label = VIEW_NAMES[view] + (o.hi ? ', one bone highlighted' : '') + (a ? ', with an arrow' : '');
+    return `<svg viewBox="${v.vb}" role="img" aria-label="Skull diagram: ${label}" xmlns="http://www.w3.org/2000/svg">${v.body}${a ? arrow(a) : ''}</svg>`;
+  }
+  return { svg, ARROWS, VIEW_NAMES };
+})();
+
+
+// ---------- skeleton, hand, foot, sternum, spine diagrams (original SVG, schematic) ----------
+// BODY.svg(fig, opts): fig = 'front' | 'back' | 'hand' | 'foot' | 'sternum' | 'spine'
+// opts.hi = bone key to highlight; opts.tint = true colors axial (blue) vs appendicular (yellow) on the skeletons.
+const BODY = (function () {
+  const BONE = '#efe2cc', EDGE = '#5f4c38', HOLE = '#3a2f28', DISC = '#bcd3e0';
+  const HI = '#f0663a', HI_EDGE = '#7e2a10';
+  const TINT_AX = '#bfe0f5', TINT_AP = '#fbeaa6';
+  const AXIAL = { cranium: 1, mandible: 1, cervical: 1, thoracic: 1, lumbar: 1, sacrum: 1, coccyx: 1, sternum: 1, ribs: 1 };
+  const r = v => Math.round(v * 10) / 10;
+
+  function sm(pts) {
+    const n = pts.length, P = i => pts[(i + n) % n];
+    let d = `M${r(P(0)[0])} ${r(P(0)[1])}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+      const c1 = p1[2] ? p1 : [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = p2[2] ? p2 : [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${r(c1[0])} ${r(c1[1])} ${r(c2[0])} ${r(c2[1])} ${r(p2[0])} ${r(p2[1])}`;
+    }
+    return d + 'Z';
+  }
+  const ellD = (cx, cy, rx, ry) => `M${cx - rx} ${cy}a${rx} ${ry} 0 1 0 ${2 * rx} 0a${rx} ${ry} 0 1 0 ${-2 * rx} 0Z`;
+
+  // A long bone from (x1,y1) to (x2,y2): shaft half-width s, end half-widths e1, e2.
+  function lb(x1, y1, x2, y2, s, e1, e2) {
+    const L = Math.hypot(x2 - x1, y2 - y1), a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), si = Math.sin(a);
+    const k1 = e1 * 1.3, k2 = e2 * 1.3;
+    let loc;
+    if (L < (k1 + k2) * 1.6) {
+      loc = [[0, -e1], [L / 2, -s], [L, -e2], [L + e2 * 0.7, 0], [L, e2], [L / 2, s], [0, e1], [-e1 * 0.7, 0]];
+    } else {
+      loc = [[0, -e1 * 0.8], [k1 * 0.5, -e1], [k1 * 1.3, -s * 1.08], [L / 2, -s], [L - k2 * 1.3, -s * 1.08], [L - k2 * 0.5, -e2], [L, -e2 * 0.8], [L + e2 * 0.4, 0],
+        [L, e2 * 0.8], [L - k2 * 0.5, e2], [L - k2 * 1.3, s * 1.08], [L / 2, s], [k1 * 1.3, s * 1.08], [k1 * 0.5, e1], [0, e1 * 0.8], [-e1 * 0.4, 0]];
+    }
+    return sm(loc.map(([x, y]) => [x1 + x * c - y * si, y1 + x * si + y * c]));
+  }
+
+  // Bones placed end to end along a ray: returns [[x1,y1,x2,y2,s,e1,e2], ...] for lb().
+  function chain(x, y, deg, specs, gap) {
+    const a = deg * Math.PI / 180, dx = Math.cos(a), dy = Math.sin(a), out = [];
+    let px = x, py = y;
+    specs.forEach(([L, s, e1, e2], i) => {
+      if (i) { const adv = specs[i - 1][3] * 0.4 + gap + e1 * 0.4; px += dx * adv; py += dy * adv; }
+      const qx = px + dx * L, qy = py + dy * L;
+      out.push([r(px), r(py), r(qx), r(qy), s, e1, e2]);
+      px = qx; py = qy;
+    });
+    return out;
+  }
+  function colors(bone, o) {
+    if (bone && o.hi === bone) return [HI, HI_EDGE, 1.8];
+    if (o.tint && bone && o.tintable) return [AXIAL[bone] ? TINT_AX : TINT_AP, EDGE, 1.2];
+    return [BONE, EDGE, 1.2];
+  }
+  const P = (bone, d, o, extra) => { const [f, s, w] = colors(bone, o); return `<path d="${d}" fill="${f}" stroke="${s}" stroke-width="${w}" stroke-linejoin="round"${bone ? ` data-bone="${bone}"` : ''}${extra || ''}/>`; };
+  const hole = d => `<path d="${d}" fill="${HOLE}" stroke="${EDGE}" stroke-width="1"/>`;
+  // a curved band (rib, cartilage) drawn as a thick outlined stroke
+  const band = (bone, d, o, w) => {
+    const [f, s] = colors(bone, o);
+    return `<g data-bone="${bone}"><path d="${d}" fill="none" stroke="${s}" stroke-width="${w + 2.4}" stroke-linecap="round" data-bone="${bone}"/><path d="${d}" fill="none" stroke="${f}" stroke-width="${w}" stroke-linecap="round" data-bone="${bone}"/></g>`;
+  };
+  const mx = (pts, W) => pts.map(p => [W - p[0], p[1], p[2]]);
+
+  // ---------------- whole skeleton (front and back share the limbs) ----------------
+  const W = 300;
+  function limbs(o, back) {
+    const out = [];
+    [false, true].forEach(m => {
+      const X = x => m ? W - x : x;
+      const L = (bone, x1, y1, x2, y2, s, e1, e2) => out.push(P(bone, lb(X(x1), y1, X(x2), y2, s, e1, e2), o));
+      // arm
+      L('humerus', 104, 138, 90, 232, 4.2, 8.5, 7.5);
+      L('radius', 85, 239, 70, 318, 2.8, 4, 6);
+      L('ulna', 96, 236, 84, 320, 3, 6.5, 4);
+      // wrist: 8 small carpals as one group
+      const cg = [];
+      [[68, 324], [74, 323], [80, 324], [86, 325], [67, 331], [73, 331], [79, 331], [85, 332]].forEach(([x, y]) => cg.push([X(x), y]));
+      out.push(`<g data-bone="carpals">` + cg.map(([x, y]) => P('carpals', ellD(x, y, 3.4, 3.4), o)).join('') + `</g>`);
+      // metacarpals (thumb is lateral = outer side)
+      const mc = [[67, 335, 57, 349], [71, 336, 66, 361], [77, 336, 74, 364], [82, 336, 81, 362], [87, 336, 88, 357]];
+      out.push(`<g data-bone="metacarpals">` + mc.map(([a, b, c, d]) => P('metacarpals', lb(X(a), b, X(c), d, 1.4, 2, 2), o)).join('') + `</g>`);
+      const ph = [];
+      [[57, 350, 52, 360], [51, 362, 48, 370]].forEach(s => ph.push(s));
+      [[66, 362], [74, 365], [81, 363], [88, 358]].forEach(([x, y], i) => {
+        const dx = [-2, -0.5, 0.5, 1.5][i];
+        ph.push([x, y + 1, x + dx * 4, y + 10], [x + dx * 4, y + 12, x + dx * 6.5, y + 19], [x + dx * 6.5, y + 21, x + dx * 8, y + 26]);
+      });
+      out.push(`<g data-bone="phalanges-hand">` + ph.map(([a, b, c, d]) => P('phalanges-hand', lb(X(a), b, X(c), d, 1.2, 1.7, 1.6), o)).join('') + `</g>`);
+      // leg
+      L('femur', 116, 312, 128, 465, 5, 9, 10);
+      out.push(P('femur', ellD(X(108), 318, 6, 7), o));
+      if (!back) out.push(P('patella', ellD(X(128), 473, 7, 8.5), o));
+      L('fibula', 116, 490, 119, 603, 2, 4, 4.2);
+      L('tibia', 130, 484, 132, 604, 4.6, 10.5, 7.5);
+      // ankle (tarsals group)
+      const tg = back
+        ? [[118, 608, 8, 5], [134, 608, 8, 5], [126, 618, 9, 7]]
+        : [[121, 609, 6, 4.5], [133, 609, 6, 4.5], [118, 618, 4, 4], [126, 618, 4.5, 4], [134, 618, 4, 4], [141, 617, 3.6, 4]];
+      out.push(`<g data-bone="tarsals">` + tg.map(([x, y, rx, ry]) => P('tarsals', ellD(X(x), y, rx, ry), o)).join('') + `</g>`);
+      if (!back) {
+        const mt = [[141, 622, 143, 644], [136, 623, 136, 646], [130, 623, 129, 645], [124, 623, 122, 643], [118, 622, 115, 640]];
+        out.push(`<g data-bone="metatarsals">` + mt.map(([a, b, c, d]) => P('metatarsals', lb(X(a), b, X(c), d, 1.6, 2.4, 2.2), o)).join('') + `</g>`);
+        const pf = [];
+        mt.forEach(([a, b, c, d], i) => {
+          const dx = (c - a) / 6;
+          if (i === 0) pf.push([c, d + 2, c + dx, d + 9], [c + dx, d + 11, c + dx * 2, d + 17]);
+          else pf.push([c, d + 2, c + dx, d + 8], [c + dx, d + 10, c + dx * 1.5, d + 13], [c + dx * 1.5, d + 15, c + dx * 2, d + 18]);
+        });
+        out.push(`<g data-bone="phalanges-foot">` + pf.map(([a, b, c, d]) => P('phalanges-foot', lb(X(a), b, X(c), d, 1.3, 1.8, 1.7), o)).join('') + `</g>`);
+      }
+    });
+    return out;
+  }
+
+  function pelvis(o, back) {
+    const out = [];
+    const hip = [[146, 262], [128, 250], [106, 251], [97, 266], [102, 288], [110, 304], [113, 318], [122, 331], [138, 331], [147, 322, 1], [148, 312, 1], [138, 306], [127, 300], [129, 286], [137, 272]];
+    out.push(`<g data-bone="pelvis">` + P('pelvis', sm(hip), o) + P('pelvis', sm(mx(hip, W)), o) + `</g>`);
+    out.push(hole(ellD(135, 322, 5.5, 5.5)) + hole(ellD(165, 322, 5.5, 5.5)));
+    out.push(P('sacrum', sm([[136, 263, 1], [164, 263, 1], [160, 286], [150, 300, 1], [140, 286]]), o));
+    [276, 284, 292].forEach(y => { out.push(`<circle cx="145" cy="${y - 4}" r="1.6" fill="${EDGE}" pointer-events="none"/><circle cx="155" cy="${y - 4}" r="1.6" fill="${EDGE}" pointer-events="none"/>`); });
+    out.push(P('coccyx', sm([[146, 300, 1], [154, 300, 1], [150, 310, 1]]), o));
+    return out;
+  }
+
+  function front(o) {
+    o = Object.assign({ tintable: true }, o);
+    const out = [];
+    // scapulae peek out behind the ribcage
+    const sc = [[104, 130], [118, 133], [120, 150], [112, 186], [104, 168], [101, 142]];
+    out.push(`<g data-bone="scapula">` + P('scapula', sm(sc), o) + P('scapula', sm(mx(sc, W)), o) + `</g>`);
+    out.push(...pelvis(o, false));
+    // lumbar vertebrae
+    out.push(`<g data-bone="lumbar">` + [0, 1, 2, 3, 4].map(i => P('lumbar', sm([[141, 220 + i * 9, 1], [159, 220 + i * 9, 1], [160, 227 + i * 9, 1], [140, 227 + i * 9, 1]]), o)).join('') + `</g>`);
+    // ribs: true ribs 1-7 reach the sternum, 8-10 join the cartilage above, 11-12 float
+    const Wd = [26, 34, 40, 45, 48, 50, 51, 50, 48, 45, 38, 31];
+    const ribs = [];
+    for (let i = 0; i < 12; i++) {
+      const ya = 140 + i * 8;
+      const w = Wd[i];
+      let d;
+      if (i < 7) d = `M146 ${ya} Q${r(150 - w * 0.72)} ${ya + 7} ${150 - w} ${ya - 3} Q${150 - w + 1} ${ya - 12} ${150 - w + 7} ${ya - 16}`;
+      else if (i < 10) { const xa = 146 - (i - 6) * 7; d = `M${xa} ${ya + 2} Q${r(150 - w * 0.75)} ${ya + 7} ${150 - w} ${ya - 3} Q${150 - w + 1} ${ya - 12} ${150 - w + 7} ${ya - 16}`; }
+      else d = `M${150 - w + 14} ${ya + 6} Q${150 - w} ${ya + 4} ${150 - w + 2} ${ya - 10}`;
+      ribs.push(d);
+      ribs.push(d.replace(/(-?\d+(\.\d+)?) (-?\d+(\.\d+)?)/g, (m0, x, _a, y) => `${r(W - parseFloat(x))} ${y}`));
+    }
+    // costal margin: cartilage of ribs 8-10 climbing to the sternum
+    ribs.push('M125 222 L132 214 L139 206 L146 197'); ribs.push('M175 222 L168 214 L161 206 L154 197');
+    out.push(`<g data-bone="ribs">` + ribs.map(d => band('ribs', d, o, 3.2)).join('') + `</g>`);
+    out.push(P('sternum', sm([[143, 134, 1], [157, 134, 1], [158, 142], [155, 150, 1], [156, 196], [150, 212, 1], [144, 196], [145, 150, 1], [142, 142]]), o));
+    // clavicles
+    out.push(`<g data-bone="clavicle">` + P('clavicle', lb(145, 136, 106, 129, 2.6, 4, 4), o) + P('clavicle', lb(155, 136, 194, 129, 2.6, 4, 4), o) + `</g>`);
+    // cervical vertebrae
+    out.push(`<g data-bone="cervical">` + [0, 1, 2, 3, 4, 5, 6].map(i => P('cervical', sm([[144, 103 + i * 4.2, 1], [156, 103 + i * 4.2, 1], [156, 106.2 + i * 4.2, 1], [144, 106.2 + i * 4.2, 1]]), o)).join('') + `</g>`);
+    out.push(...limbs(o, false));
+    // skull: cranium + mandible
+    out.push(P('mandible', sm([[129, 74], [136, 86, 1], [164, 86, 1], [171, 74], [173, 82], [168, 95], [150, 105], [132, 95], [127, 82]]), o));
+    out.push(P('cranium', sm([[150, 12], [175, 19], [184, 42], [181, 64], [172, 77], [164, 86, 1], [136, 86, 1], [128, 77], [119, 64], [116, 42], [125, 19]]), o));
+    out.push(hole(ellD(139, 55, 7, 6.5)) + hole(ellD(161, 55, 7, 6.5)) + hole(sm([[150, 62, 1], [155, 73], [150, 76, 1], [145, 73]])));
+    let t = ''; for (let x = 139; x < 161; x += 3.7) t += `<rect x="${r(x)}" y="81" width="3.2" height="5" rx="1" fill="#fbf8f2" stroke="#8f816f" stroke-width=".7" pointer-events="none"/><rect x="${r(x)}" y="86.5" width="3.2" height="4.5" rx="1" fill="#fbf8f2" stroke="#8f816f" stroke-width=".7" pointer-events="none"/>`;
+    out.push(t);
+    return { vb: '0 0 300 672', body: out.join('') };
+  }
+
+  function back(o) {
+    o = Object.assign({ tintable: true }, o);
+    const out = [];
+    out.push(...pelvis(o, true));
+    // ribs seen from behind: arcs from the spine out and down
+    const Wd = [26, 34, 40, 45, 48, 50, 51, 50, 48, 45, 38, 31];
+    const ribs = [];
+    for (let i = 0; i < 12; i++) {
+      const yb = 134 + i * 7.6, w = Wd[i];
+      const d = i < 10 ? `M146 ${yb} Q${150 - w * 0.75} ${yb - 4} ${150 - w} ${yb + 12} Q${150 - w + 1} ${yb + 22} ${150 - w + 6} ${yb + 28}`
+        : `M146 ${yb} Q${150 - w * 0.7} ${yb - 2} ${150 - w + 4} ${yb + 14}`;
+      ribs.push(d);
+      ribs.push(d.replace(/(-?\d+(\.\d+)?) (-?\d+(\.\d+)?)/g, (m0, x, _a, y) => `${r(W - parseFloat(x))} ${y}`));
+    }
+    out.push(`<g data-bone="ribs">` + ribs.map(d => band('ribs', d, o, 3.2)).join('') + `</g>`);
+    // vertebral column
+    const blocks = (bone, y0, n, hgt, w) => `<g data-bone="${bone}">` + Array.from({ length: n }, (_, i) => {
+      const y = y0 + i * hgt;
+      return P(bone, sm([[150 - w, y + 0.6, 1], [150 + w, y + 0.6, 1], [150 + w, y + hgt - 0.8, 1], [150 + w * 0.3, y + hgt + 1.2], [150 - w * 0.3, y + hgt + 1.2], [150 - w, y + hgt - 0.8, 1]]), o);
+    }).join('') + `</g>`;
+    out.push(blocks('cervical', 92, 7, 5.6, 6));
+    out.push(blocks('thoracic', 132, 12, 7.5, 6.5));
+    out.push(blocks('lumbar', 223, 5, 8.2, 8.5));
+    // scapulae over the ribs
+    const sc = [[103, 131, 1], [141, 136, 1], [138, 150], [134, 192, 1], [116, 168], [106, 150]];
+    out.push(`<g data-bone="scapula">` + P('scapula', sm(sc), o) + `<path d="M108 136 L138 146" stroke="${EDGE}" stroke-width="1.6" pointer-events="none"/>` +
+      P('scapula', sm(mx(sc, W)), o) + `<path d="M192 136 L162 146" stroke="${EDGE}" stroke-width="1.6" pointer-events="none"/></g>`);
+    out.push(...limbs(o, true));
+    out.push(P('cranium', sm([[150, 12], [175, 19], [184, 42], [182, 66], [172, 82], [150, 89], [128, 82], [118, 66], [116, 42], [125, 19]]), o));
+    return { vb: '0 0 300 640', body: out.join('') };
+  }
+
+  // ---------------- wrist, hand, fingers (palm view, thumb on the right) ----------------
+  function hand(o) {
+    o = Object.assign({}, o);
+    const out = [];
+    out.push(P('ulna', sm([[110, 440, 1], [136, 440, 1], [137, 392], [143, 356], [141, 338], [126, 331], [110, 336], [105, 360], [108, 394]]), o));
+    out.push(P('radius', sm([[160, 440, 1], [198, 440, 1], [201, 384], [216, 344], [222, 326], [214, 318], [190, 316], [164, 321], [152, 334], [157, 376]]), o));
+    // carpals: distal row (trapezium, trapezoid, capitate, hamate) and proximal row (scaphoid, lunate, triquetrum, pisiform)
+    out.push(P('trapezium', sm([[206, 262], [227, 256], [238, 274], [229, 293], [209, 292], [200, 278]]), o));
+    out.push(P('trapezoid', sm([[183, 266], [203, 262], [206, 280], [204, 293], [186, 294], [180, 280]]), o));
+    out.push(P('capitate', sm([[154, 261], [180, 264], [182, 284], [178, 300], [158, 302], [151, 283]]), o));
+    out.push(P('hamate', sm([[121, 268], [150, 262], [152, 285], [150, 299], [129, 297], [117, 284]]), o));
+    out.push(P('scaphoid', sm([[184, 299], [208, 293], [224, 304], [216, 317], [191, 318], [179, 309]]), o));
+    out.push(P('lunate', sm([[156, 302], [178, 300], [186, 311], [178, 322], [159, 322], [152, 312]]), o));
+    out.push(P('triquetrum', sm([[126, 298], [151, 300], [155, 313], [148, 322], [128, 318], [121, 308]]), o));
+    out.push(P('pisiform', ellD(116, 312, 9, 10), o));
+    // fingers: metacarpal + phalanges along each ray (the thumb has no intermediate phalanx)
+    const F = [
+      chain(226, 260, -62, [[52, 6.5, 9, 8.5], [36, 5.6, 7.6, 6.6], [24, 4.6, 6.2, 4.8]], 3.5),
+      chain(193, 262, -85, [[94, 6, 9.5, 8.4], [48, 5.2, 7.6, 6.2], [27, 4.3, 6, 5], [18, 3.7, 5, 4]], 3.5),
+      chain(166, 262, -88, [[100, 6.2, 10, 8.8], [52, 5.4, 7.9, 6.4], [29, 4.5, 6.2, 5.2], [19, 3.9, 5.2, 4.2]], 3.5),
+      chain(140, 266, -93, [[96, 5.7, 9, 8.2], [48, 5, 7.3, 6], [26, 4.2, 5.8, 4.9], [17, 3.6, 4.9, 4]], 3.5),
+      chain(124, 274, -102, [[82, 5.3, 8.5, 7.8], [38, 4.5, 6.7, 5.6], [20, 3.8, 5.2, 4.4], [14, 3.3, 4.4, 3.6]], 3.5),
+    ];
+    const pick = k => F.map(f => k === 'inter' ? (f.length === 4 ? f[2] : null) : k === 'dist' ? f[f.length - 1] : k === 'prox' ? f[1] : f[0]).filter(Boolean);
+    out.push(`<g data-bone="metacarpals">` + pick('mc').map(a => P('metacarpals', lb(...a), o)).join('') + `</g>`);
+    out.push(`<g data-bone="phal-prox">` + pick('prox').map(a => P('phal-prox', lb(...a), o)).join('') + `</g>`);
+    out.push(`<g data-bone="phal-inter">` + pick('inter').map(a => P('phal-inter', lb(...a), o)).join('') + `</g>`);
+    out.push(`<g data-bone="phal-dist">` + pick('dist').map(a => P('phal-dist', lb(...a), o)).join('') + `</g>`);
+    out.push(`<text x="30" y="428" font-size="12" fill="#6b6255" font-family="sans-serif">pinky side</text><text x="214" y="428" font-size="12" fill="#6b6255" font-family="sans-serif">thumb side</text>`);
+    return { vb: '0 0 300 442', body: out.join('') };
+  }
+
+  // ---------------- ankle, foot, toes (top view, toes down, big toe on the left) ----------------
+  function foot(o) {
+    o = Object.assign({}, o);
+    const out = [];
+    out.push(P('fibula', sm([[184, 0, 1], [200, 0, 1], [200, 118], [207, 168], [209, 204], [197, 214], [186, 196], [188, 150]]), o));
+    out.push(P('calcaneus', sm([[184, 214], [214, 210], [230, 234], [224, 262], [198, 264], [184, 242]]), o));
+    out.push(P('talus', sm([[112, 186], [184, 186], [196, 204], [188, 230], [150, 240], [118, 234], [106, 212]]), o));
+    out.push(P('tibia', sm([[78, 0, 1], [168, 0, 1], [170, 110], [180, 148], [178, 178], [150, 186], [120, 184], [104, 202], [90, 197], [86, 168], [84, 118]]), o));
+    out.push(P('cuboid', sm([[166, 246], [196, 252], [207, 270], [199, 293], [171, 291], [161, 268]]), o));
+    out.push(P('navicular', sm([[96, 233], [140, 238], [152, 250], [131, 261], [100, 258], [87, 246]]), o));
+    out.push(P('cun-lat', sm([[133, 262], [154, 259], [163, 271], [159, 293], [133, 293]]), o));
+    out.push(P('cun-int', sm([[109, 263], [130, 262], [131, 289], [111, 292]]), o));
+    out.push(P('cun-med', sm([[78, 257], [105, 260], [108, 297], [84, 304], [72, 283]]), o));
+    const T = [
+      chain(92, 304, 100, [[60, 7.5, 11, 10], [28, 6.5, 9, 8.5], [20, 6, 7.5, 6.5]], 3.5),
+      chain(119, 295, 90, [[76, 4.8, 7.5, 7], [22, 3.9, 6, 5], [11, 3.4, 4.6, 4.2], [10, 3.1, 4.2, 3.6]], 3),
+      chain(146, 296, 88, [[70, 4.6, 7.2, 6.6], [20, 3.7, 5.8, 4.8], [10, 3.2, 4.4, 4], [9, 3, 4, 3.4]], 3),
+      chain(172, 294, 85, [[64, 4.4, 7, 6.4], [18, 3.5, 5.5, 4.6], [9, 3, 4.2, 3.8], [8, 2.8, 3.8, 3.2]], 3),
+      chain(196, 294, 80, [[54, 4.2, 7, 6], [16, 3.3, 5.2, 4.4], [8, 2.8, 4, 3.6], [7, 2.6, 3.6, 3]], 3),
+    ];
+    const pk = k => T.map(f => k === 'inter' ? (f.length === 4 ? f[2] : null) : k === 'dist' ? f[f.length - 1] : k === 'prox' ? f[1] : f[0]).filter(Boolean);
+    out.push(`<g data-bone="metatarsals">` + pk('mt').map(a => P('metatarsals', lb(...a), o)).join('') + `</g>`);
+    out.push(`<g data-bone="phal-prox">` + pk('prox').map(a => P('phal-prox', lb(...a), o)).join('') + `</g>`);
+    out.push(`<g data-bone="phal-inter">` + pk('inter').map(a => P('phal-inter', lb(...a), o)).join('') + `</g>`);
+    out.push(`<g data-bone="phal-dist">` + pk('dist').map(a => P('phal-dist', lb(...a), o)).join('') + `</g>`);
+    out.push(`<text x="12" y="200" font-size="12" fill="#6b6255" font-family="sans-serif">big-toe side</text><text x="214" y="130" font-size="12" fill="#6b6255" font-family="sans-serif">little-toe</text><text x="214" y="145" font-size="12" fill="#6b6255" font-family="sans-serif">side</text>`);
+    return { vb: '0 0 300 456', body: out.join('') };
+  }
+
+  // ---------------- sternum with rib cartilages ----------------
+  function sternum(o) {
+    o = Object.assign({}, o);
+    const out = [];
+    for (let i = 0; i < 7; i++) {
+      const y = 46 + i * 30 - (i > 3 ? (i - 3) * 6 : 0), y2 = y + 14 + i * 2;
+      const xs = i < 1 ? 82 : 84;
+      out.push(`<path d="M${xs} ${y} L40 ${y2}" stroke="#c9d6dc" stroke-width="9" stroke-linecap="round" pointer-events="none"/><path d="M${200 - xs} ${y} L160 ${y2}" stroke="#c9d6dc" stroke-width="9" stroke-linecap="round" pointer-events="none"/>`);
+    }
+    out.push(P('manubrium', sm([[74, 20, 1], [92, 26], [108, 26], [126, 20, 1], [124, 44], [116, 70, 1], [84, 70, 1], [76, 44]]), o));
+    out.push(P('body', sm([[84, 72, 1], [116, 72, 1], [119, 140], [116, 220], [108, 236, 1], [92, 236, 1], [84, 220], [81, 140]]), o));
+    out.push(P('xiphoid', sm([[93, 238, 1], [107, 238, 1], [104, 262], [100, 276, 1], [96, 262]]), o));
+    out.push(`<text x="4" y="296" font-size="11" fill="#6b6255" font-family="sans-serif">gray bands = costal cartilage</text>`);
+    if (o.labels) {
+      const lab = (x1, y1, x2, y2, t) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#111" stroke-width="1.2"/><rect x="${x2 - 2}" y="${y2 - 11}" width="${t.length * 6.4 + 4}" height="15" rx="3" fill="#fff" opacity=".9"/><text x="${x2}" y="${y2}" font-size="11" font-weight="700" fill="#111" font-family="sans-serif">${t}</text>`;
+      out.push(lab(110, 42, 128, 14, 'Manubrium') + lab(112, 150, 124, 128, 'Body') + lab(102, 262, 112, 284, 'Xiphoid process'));
+    }
+    return { vb: '0 0 200 300', body: out.join('') };
+  }
+
+  // ---------------- vertebral column, side view (front of the body on the left) ----------------
+  function spine(o) {
+    o = Object.assign({}, o);
+    const out = [];
+    const C = [[112, 14], [98, 52], [108, 96], [130, 172], [112, 254], [90, 304], [104, 348]];
+    // Catmull-Rom samples of the centerline
+    const pts = [];
+    for (let i = 0; i < C.length - 1; i++) {
+      const p0 = C[Math.max(i - 1, 0)], p1 = C[i], p2 = C[i + 1], p3 = C[Math.min(i + 2, C.length - 1)];
+      for (let t = 0; t < 1; t += 0.02) {
+        const t2 = t * t, t3 = t2 * t;
+        pts.push([0, 1].map(k => 0.5 * ((2 * p1[k]) + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3)));
+      }
+    }
+    pts.push(C[C.length - 1]);
+    const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const at = s => { let i = cum.findIndex(c => c >= s); if (i <= 0) i = 1; const f = (s - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1); const p = [pts[i - 1][0] + f * (pts[i][0] - pts[i - 1][0]), pts[i - 1][1] + f * (pts[i][1] - pts[i - 1][1])]; const a = Math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0]); return [p, a]; };
+    const total = cum[cum.length - 1];
+    const groups = [['cervical', 7, 7, 13], ['thoracic', 12, 9.6, 16], ['lumbar', 5, 13, 21]];
+    const sizes = []; groups.forEach(([k, n, hgt, w]) => { for (let i = 0; i < n; i++) sizes.push([k, hgt, w]); });
+    const gap = 3.2;
+    const need = sizes.reduce((a, s) => a + s[1] + gap, 0);
+    let s = Math.max(2, total - need - 2);
+    let pB = null;
+    const discs = [], bodies = {};
+    sizes.forEach(([k, hgt, w], idx) => {
+      const [p, a] = at(s + hgt / 2);
+      const c = Math.cos(a), si = Math.sin(a);
+      const box = [[-hgt / 2, -w / 2], [hgt / 2, -w / 2], [hgt / 2, w / 2], [-hgt / 2, w / 2]].map(([u, v]) => [r(p[0] + u * c - v * si), r(p[1] + u * si + v * c), 1]);
+      // spinous process toward the back (right side)
+      const sp = [[-hgt * 0.25, -w / 2], [hgt * 0.2, -w / 2], [hgt * 0.45, -w / 2 - w * 0.7], [hgt * 0.05, -w / 2 - w * 0.75]].map(([u, v]) => [r(p[0] + u * c - v * si), r(p[1] + u * si + v * c), 1]);
+      (bodies[k] = bodies[k] || []).push(P(k, sm(box), o) + P(k, sm(sp), o));
+      if (idx < sizes.length - 1) {
+        const [pd, ad] = at(s + hgt + gap / 2);
+        const cd = Math.cos(ad), sd = Math.sin(ad);
+        const wd = w * 0.95;
+        const dbox = [[-gap / 2 - 0.6, -wd / 2], [gap / 2 + 0.6, -wd / 2], [gap / 2 + 0.6, wd / 2], [-gap / 2 - 0.6, wd / 2]].map(([u, v]) => [r(pd[0] + u * cd - v * sd), r(pd[1] + u * sd + v * cd)]);
+        discs.push(dbox);
+      }
+      s += hgt + gap;
+      if (idx === sizes.length - 1) pB = at(s - gap)[0];
+    });
+    // sacrum and coccyx below the last lumbar vertebra
+    const Q = (dx, dy, c) => [r(pB[0] + dx), r(pB[1] + dy), c];
+    out.push(P('sacrum', sm([Q(-11, 3, 1), Q(12, -1, 1), Q(24, 20), Q(26, 46), Q(14, 66, 1), Q(6, 52), Q(-3, 28)]), o));
+    out.push(P('coccyx', sm([Q(8, 63, 1), Q(16, 63, 1), Q(12, 78), Q(3, 85, 1), Q(3, 75)]), o));
+    for (const k in bodies) out.push(`<g data-bone="${k}">${bodies[k].join('')}</g>`);
+    const [df] = colors('discs', o);
+    out.push(`<g data-bone="discs">` + discs.map(d => `<path d="${'M' + d.map(p => p.join(' ')).join(' L') + 'Z'}" fill="${o.hi === 'discs' ? HI : DISC}" stroke="${o.hi === 'discs' ? HI_EDGE : '#7d97a6'}" stroke-width=".8" data-bone="discs"/>`).join('') + `</g>`);
+    out.push(`<text x="4" y="452" font-size="10" fill="#6b6255" font-family="sans-serif">front of body ←</text><text x="140" y="452" font-size="10" fill="#6b6255" font-family="sans-serif">→ back</text>`);
+    return { vb: '0 0 200 460', body: out.join('') };
+  }
+
+  const FIGS = { front, back, hand, foot, sternum, spine };
+  const NAMES = { front: 'Skeleton, front view', back: 'Skeleton, back view', hand: 'Wrist, hand, fingers (palm side)', foot: 'Ankle, foot, toes (top view)', sternum: 'Sternum (breastbone)', spine: 'Vertebral column, side view' };
+  function svg(fig, opts) {
+    const v = FIGS[fig](opts || {});
+    return `<svg viewBox="${v.vb}" role="img" aria-label="${NAMES[fig]}${opts && opts.hi ? ', one part highlighted' : ''}" xmlns="http://www.w3.org/2000/svg">${v.body}</svg>`;
+  }
+  return { svg, NAMES, AXIAL };
+})();
+
+
+// APP
+// ============================================================
+(function () {
+  'use strict';
+
+  const STORE_KEY = 'skeletal-test-study-v1';
+  const SET_SIZE = 10;
+  const TEST_SIZE = 30;
+  const TOPICS = BANK.topics;
+  const ITEMS = BANK.items;
+  const byId = {};
+  ITEMS.forEach(it => { byId[it.id] = it; });
+  const topicName = key => (TOPICS.find(t => t.key === key) || {}).name || key;
+
+  // ---------- persistence (localStorage, best effort) ----------
+  function freshProgress() { return { scores: {}, test: null, handout: null, missed: [] }; }
+  let progress = freshProgress();
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        progress = Object.assign(freshProgress(), p);
+        progress.missed = (progress.missed || []).filter(id => byId[id]);
+      }
+    } catch (e) { progress = freshProgress(); }
+  }
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch (e) { /* storage unavailable: keep in memory */ }
+  }
+  function addMissed(id) { if (!progress.missed.includes(id)) { progress.missed.push(id); save(); } }
+  function removeMissed(id) { const i = progress.missed.indexOf(id); if (i >= 0) { progress.missed.splice(i, 1); save(); } }
+
+  // ---------- helpers ----------
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function h(tag, attrs, ...children) {
+    const el = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === 'class') el.className = attrs[k];
+      else if (k === 'onclick') el.addEventListener('click', attrs[k]);
+      else if (k === 'html') el.innerHTML = attrs[k];
+      else if (k === 'disabled') { if (attrs[k]) el.setAttribute('disabled', ''); }
+      else el.setAttribute(k, attrs[k]);
+    }
+    for (const c of children) {
+      if (c == null || c === false) continue;
+      if (Array.isArray(c)) c.forEach(x => x != null && el.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+      else el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+  function sameSet(a, b) { if (a.length !== b.length) return false; const s = new Set(a); return b.every(x => s.has(x)); }
+
+  // Draw n items from a topic in mixed formats: round-robin across formats so every set mixes them.
+  // "Name this bone" items (skill: identify) are capped so a set mostly tests the topic itself.
+  function drawFromTopic(topicKey, n, idCap) {
+    const cap = (idCap == null || (TOPICS.find(t => t.key === topicKey) || {}).noCap) ? Infinity : idCap;
+    const groups = {};
+    ITEMS.filter(it => it.topic === topicKey).forEach(it => { (groups[it.format] = groups[it.format] || []).push(it); });
+    const order = shuffle(Object.keys(groups));
+    const queues = {}; order.forEach(f => { queues[f] = shuffle(groups[f]); });
+    const out = [];
+    let ids = 0, guard = 0;
+    const take = f => {
+      while (queues[f].length) {
+        const it = queues[f].shift();
+        if (it.skill === 'identify') { if (ids >= cap) continue; ids++; }
+        out.push(it); return true;
+      }
+      return false;
+    };
+    while (out.length < n && guard++ < 1000) {
+      let any = false;
+      for (const f of order) { if (out.length < n && take(f)) any = true; }
+      if (!any) break;
+    }
+    return shuffle(out);
+  }
+
+  // ---------- diagrams ----------
+  const CROPS = {
+    front: { upper: '25 0 250 405', lower: '70 250 160 422' },
+    back: { upper: '40 0 220 330', mid: '70 180 160 170' }
+  };
+  const FIG_NAMES = Object.assign({ 'skull-front': 'Skull, front view', 'skull-side': 'Skull, side view' }, BODY.NAMES);
+  function figSVG(fig, opts) {
+    const o = opts || {};
+    let svg = fig.startsWith('skull-') ? SKULL.svg(fig.slice(6), { hi: o.hi, tint: o.tint }) : BODY.svg(fig, o);
+    const crop = o.crop && CROPS[fig] && CROPS[fig][o.crop];
+    if (crop) svg = svg.replace(/viewBox="[^"]*"/, `viewBox="${crop}"`);
+    return svg;
+  }
+  function diagramEl(item) {
+    const fig = h('figure', { class: 'diagram' });
+    fig.innerHTML = figSVG(item.img.fig, item.img);
+    fig.appendChild(h('figcaption', null, FIG_NAMES[item.img.fig] + (item.img.crop ? ' (zoomed in)' : '')));
+    return fig;
+  }
+
+  // ---------- typed answers ----------
+  const norm = t => (t || '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^the /, '');
+  function lev(a, b) {
+    const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+    let prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+      const cur = [i];
+      for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[n];
+  }
+  // Every bone/part name in the bank: a typed answer that exactly matches a different real term is wrong, not a typo.
+  const ALL_TERMS = new Set();
+  ITEMS.forEach(it => {
+    if (it.format === 'mc') it.options.forEach(o => { if (o.split(' ').length <= 3) ALL_TERMS.add(norm(o)); });
+    if (it.format === 'fill') it.answers.forEach(a => ALL_TERMS.add(norm(a)));
+  });
+  function checkFill(item, typed) {
+    const a = norm(typed), a2 = a.replace(/ bones?$/, '');
+    if (!a) return { ok: false };
+    const acc = item.answers.map(norm);
+    if (acc.includes(a) || acc.includes(a2)) return { ok: true, exact: true };
+    if ((item.common || []).map(norm).some(t => t === a || t === a2)) return { ok: false, common: true };
+    if (ALL_TERMS.has(a) || ALL_TERMS.has(a2)) return { ok: false };
+    // A near-miss counts only if it is closer to the right answer than to any other bone name
+    // (so "trapeziod" or "tarpals" is not given the benefit of the doubt).
+    const accAll = new Set(acc.concat(acc.map(t => t.replace(/ bones?$/, ''))));
+    let best = Infinity, tolBest = 0;
+    for (const t of acc) {
+      const d = Math.min(lev(a, t), lev(a2, t)), tol = t.length >= 8 ? 2 : t.length >= 5 ? 1 : 0;
+      if (d <= tol && d < best) { best = d; tolBest = tol; }
+    }
+    if (!tolBest) return { ok: false };
+    for (const t of ALL_TERMS) { if (!accAll.has(t) && Math.min(lev(a, t), lev(a2, t)) <= best) return { ok: false }; }
+    return { ok: true, exact: false };
+  }
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const fillDisplay = item => item.display || cap(item.answers[0]);
+
+  // ---------- grading ----------
+  function grade(item, answer) {
+    if (item.format === 'mc') return answer === item.options[0];
+    if (item.format === 'sata') return sameSet(answer, item.answer);
+    if (item.format === 'match') return item.pairs.every(([t, d]) => answer[t] === d);
+    if (item.format === 'sort') return item.tiles.every(([tile, box]) => answer[tile] === box);
+    if (item.format === 'fill') return checkFill(item, answer).ok;
+    if (item.format === 'short') return !!(answer && answer.self);
+    return false;
+  }
+  function correctText(item) {
+    if (item.format === 'mc') return item.options[0];
+    if (item.format === 'sata') return item.answer.join('; ');
+    if (item.format === 'match') return item.pairs.map(([t, d]) => `${t} → ${d}`).join('; ');
+    if (item.format === 'sort') return item.boxes.map(b => `${b}: ${item.tiles.filter(t => t[1] === b).map(t => t[0]).join(', ')}`).join(' | ');
+    if (item.format === 'fill') return fillDisplay(item);
+    if (item.format === 'short') return item.model;
+    return '';
+  }
+  function answerText(item, answer) {
+    if (answer == null) return '(no answer)';
+    if (item.format === 'mc') return answer;
+    if (item.format === 'sata') return answer.length ? answer.join('; ') : '(nothing selected)';
+    if (item.format === 'match') return item.pairs.map(([t]) => `${t} → ${answer[t] || '?'}`).join('; ');
+    if (item.format === 'sort') return item.tiles.map(([tile]) => `${tile} → ${answer[tile] || '?'}`).join('; ');
+    if (item.format === 'fill') return answer || '(blank)';
+    if (item.format === 'short') return answer && answer.self ? 'Got it' : 'Missed something';
+    return '';
+  }
+
+  // ---------- DOM refs ----------
+  const $ = id => document.getElementById(id);
+  const screens = { home: $('home'), quiz: $('quiz'), results: $('results'), explore: $('explore') };
+  function show(name) {
+    for (const k in screens) screens[k].hidden = (k !== name);
+    $('modeTag').textContent = name === 'home' ? '' : name === 'explore' ? 'Explore the Bones' : (session ? modeLabel() : '');
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- session ----------
+  let session = null;
+  function modeLabel() {
+    if (!session) return '';
+    if (session.mode === 'topic') return topicName(session.topic);
+    if (session.mode === 'missed') return 'Missed Questions';
+    if (session.mode === 'handout') return 'Handout 1–82 in order';
+    return 'Practice Test';
+  }
+
+  function startTopic(key) {
+    const queue = drawFromTopic(key, SET_SIZE);
+    session = { mode: 'topic', topic: key, queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+  function startMissed() {
+    const ids = shuffle(progress.missed);
+    const queue = ids.map(id => byId[id]);
+    if (!queue.length) return;
+    session = { mode: 'missed', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+  function startTest() {
+    let queue = [];
+    for (const key in BANK.testAllocation) queue = queue.concat(drawFromTopic(key, BANK.testAllocation[key]).filter(it => it.format !== 'short'));
+    queue = shuffle(queue).slice(0, TEST_SIZE);
+    session = { mode: 'test', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+
+  function startHandout() {
+    const queue = ITEMS.filter(it => it.num && it.num <= 82).sort((a, b) => a.num - b.num);
+    session = { mode: 'handout', queue, index: 0, results: [], retry: [], firstCount: queue.length };
+    show('quiz'); renderQuestion();
+  }
+
+  // ---------- question rendering ----------
+  const INSTR = {
+    mc: 'Tap one answer.',
+    sata: 'Select all that apply. Then tap Check.',
+    match: 'Tap a term, then tap its match. When all are paired, tap Check.',
+    sort: 'Tap a tile, then tap a box. When all tiles are placed, tap Check.',
+    fill: 'Type the answer. Then tap Check.',
+    short: 'Answer it in your head or type it below. Then tap Show answer and grade yourself honestly.'
+  };
+  const FMT = { mc: 'Multiple choice', sata: 'Select all', match: 'Matching', sort: 'Sort', fill: 'Type the answer', short: 'Short answer' };
+
+  function renderQuestion() {
+    const item = session.queue[session.index];
+    const isRetry = session.index >= session.firstCount;
+    const root = screens.quiz; clear(root);
+    const total = session.queue.length;
+    root.appendChild(h('div', { class: 'qhead' },
+      h('span', null, h('span', { class: 'n' }, `Question ${session.index + 1} of ${total}`), ` · ${topicName(item.topic)}`),
+      h('span', null, item.num ? h('span', { class: 'hnum' }, `Handout #${item.num}`) : null, ' ', FMT[item.format])
+    ));
+    root.appendChild(h('div', { class: 'progress' }, h('div', { style: `width:${(session.index / total) * 100}%` })));
+    if (isRetry) root.appendChild(h('span', { class: 'retry-note' }, 'Try again — you missed this one earlier in this set'));
+    const instr = h('p', { class: 'instruction' }, (session.mode === 'test' && item.format === 'fill' ? 'Type the answer. Then tap Next.' : INSTR[item.format]) + (session.mode === 'test' && item.format === 'mc' ? ' Then tap Next.' : ''));
+    root.appendChild(instr);
+    root.appendChild(h('p', { class: 'prompt' }, item.prompt));
+    if (item.img && item.format !== 'short') root.appendChild(diagramEl(item));
+
+    const area = h('div');
+    root.appendChild(area);
+    const actions = h('div', { class: 'actions' });
+    root.appendChild(actions);
+    const fbHolder = h('div');
+    root.appendChild(fbHolder);
+
+    const ctl = { getAnswer: () => null, complete: () => false, markFeedback: () => {} };
+    const checkBtn = h('button', { class: 'primary', disabled: true, onclick: () => submit() }, session.mode === 'test' ? 'Next' : 'Check');
+    const refresh = () => { checkBtn.disabled = !ctl.complete(); };
+
+    if (item.format === 'mc') renderMC(item, area, ctl, refresh, () => submit());
+    else if (item.format === 'sata') renderSATA(item, area, ctl, refresh);
+    else if (item.format === 'match') renderMatch(item, area, ctl, refresh);
+    else if (item.format === 'fill') renderFill(item, area, ctl, refresh, () => { if (ctl.complete()) submit(); });
+    else if (item.format === 'short') { renderShort(item, area, actions, fbHolder, isRetry); return; }
+    else renderSort(item, area, ctl, refresh);
+
+    // MC in practice mode submits on tap; everything else uses the Check/Next button.
+    if (!(item.format === 'mc' && session.mode !== 'test')) actions.appendChild(checkBtn);
+
+    let submitted = false;
+    function submit() {
+      if (submitted) return; submitted = true;
+      const answer = ctl.getAnswer();
+      const correct = grade(item, answer);
+      checkBtn.remove();
+      ctl.lock();
+      if (session.mode === 'test') { record(item, correct, answer, isRetry); next(); return; }
+      record(item, correct, answer, isRetry);
+      ctl.markFeedback(answer);
+      const legendMine = () => {
+        clear(instr);
+        if (item.format === 'mc') instr.append(h('span', { class: 'ok' }, 'Green = correct answer'), ' · ', h('span', { class: 'no' }, 'Red = your pick'));
+        else if (item.format === 'fill') instr.append(correct ? h('span', { class: 'ok' }, 'Correct') : h('span', { class: 'no' }, 'Red = your answer; the correct one is below'));
+        else if (correct) instr.append(h('span', { class: 'ok' }, 'All correct'));
+        else instr.append('Your answers: ', h('span', { class: 'ok' }, 'green = right'), ' · ', h('span', { class: 'no' }, 'red = wrong'));
+      };
+      const legendKey = () => { clear(instr); instr.append(h('span', { class: 'ok' }, 'Showing the correct answers')); };
+      legendMine();
+      // Wrong answer on a multi-part question: offer a toggle between the answer key and the student's own answers.
+      if (!correct && ctl.showCorrect) {
+        let showingKey = false;
+        const keyBtn = h('button', { class: 'ghost key-btn', 'aria-pressed': 'false', onclick: () => {
+          showingKey = !showingKey;
+          if (showingKey) ctl.showCorrect(); else ctl.showMine();
+          keyBtn.textContent = showingKey ? 'Show my answers' : 'Show correct answers';
+          keyBtn.setAttribute('aria-pressed', String(showingKey));
+          if (showingKey) legendKey(); else legendMine();
+        } }, 'Show correct answers');
+        actions.appendChild(keyBtn);
+      }
+      const fillRes = item.format === 'fill' ? checkFill(item, answer) : null;
+      const fb = h('div', { class: 'feedback ' + (correct ? 'good' : 'bad') },
+        h('p', { class: 'verdict' }, correct ? (fillRes && !fillRes.exact ? 'Correct, but check the spelling.' : 'Correct!') : 'Not quite.'),
+        fillRes && fillRes.ok && !fillRes.exact ? h('p', null, 'Spelled: ', h('span', { class: 'ans' }, fillDisplay(item))) : null,
+        fillRes && fillRes.common ? h('p', null, "Right bone, but that's the everyday name. On the test, use the anatomy term.") : null,
+        correct ? null : h('p', null, 'Correct answer: ', h('span', { class: 'ans' }, correctText(item))),
+        h('p', null, item.explain));
+      const detail = ctl.feedbackDetail ? ctl.feedbackDetail(answer) : null;
+      if (detail) fb.appendChild(detail);
+      fbHolder.appendChild(fb);
+      const nextBtn = h('button', { class: 'primary', onclick: next }, 'Next');
+      actions.appendChild(nextBtn);
+      nextBtn.focus({ preventScroll: true });
+      nextBtn.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function record(item, correct, answer, isRetry) {
+    if (!isRetry) {
+      session.results.push({ item, correct, answer });
+      if (!correct) {
+        addMissed(item.id);
+        if (session.mode !== 'test') session.retry.push(item);
+      } else if (session.mode === 'missed') {
+        removeMissed(item.id);
+      }
+    }
+  }
+
+  function next() {
+    session.index++;
+    if (session.index >= session.queue.length) {
+      if (session.retry.length && session.mode !== 'test') {
+        session.queue = session.queue.concat(shuffle(session.retry));
+        session.retry = [];
+        renderQuestion();
+        return;
+      }
+      finish();
+      return;
+    }
+    renderQuestion();
+  }
+
+  // ----- Multiple choice -----
+  function renderMC(item, area, ctl, refresh, onTap) {
+    const opts = shuffle(item.options);
+    const list = h('div', { class: 'options' });
+    let chosen = null, locked = false;
+    const btns = opts.map(o => {
+      const b = h('button', { class: 'opt radio', onclick: () => {
+        if (locked) return;
+        chosen = o;
+        btns.forEach(x => x.classList.toggle('selected', x.dataset.v === o));
+        refresh();
+        if (session.mode !== 'test') onTap();
+      } }, h('span', { class: 'box' }), h('span', { class: 'lbl' }, o));
+      b.dataset.v = o; return b;
+    });
+    btns.forEach(b => list.appendChild(b));
+    area.appendChild(list);
+    ctl.getAnswer = () => chosen;
+    ctl.complete = () => chosen != null;
+    ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    ctl.markFeedback = () => {
+      btns.forEach(b => {
+        b.classList.remove('selected');
+        if (b.dataset.v === item.options[0]) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ correct')); }
+        else if (b.dataset.v === chosen) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ your pick')); }
+      });
+    };
+  }
+
+  // ----- Typed answer -----
+  function renderFill(item, area, ctl, refresh, onEnter) {
+    const input = h('input', { type: 'text', class: 'fill-input', autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false', 'aria-label': 'Your answer', placeholder: 'Type your answer' });
+    input.addEventListener('input', refresh);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); onEnter(); } });
+    area.appendChild(input);
+    setTimeout(() => { try { input.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }, 0);
+    ctl.getAnswer = () => input.value;
+    ctl.complete = () => norm(input.value).length > 0;
+    ctl.lock = () => { input.setAttribute('readonly', ''); };
+    ctl.markFeedback = (ans) => { input.classList.add(checkFill(item, ans).ok ? 'right' : 'wrong'); };
+  }
+
+  // ----- Short answer (self-checked) -----
+  function renderShort(item, area, actions, fbHolder, isRetry) {
+    const ta = h('textarea', { class: 'short-input', rows: '4', 'aria-label': 'Your answer (optional)', placeholder: 'Your answer (optional)' });
+    area.appendChild(ta);
+    const showBtn = h('button', { class: 'primary', onclick: reveal }, 'Show answer');
+    actions.appendChild(showBtn);
+    function reveal() {
+      showBtn.remove(); ta.setAttribute('readonly', '');
+      const box = h('div', { class: 'feedback model' },
+        h('p', { class: 'verdict' }, 'Model answer'),
+        h('p', null, item.model),
+        h('p', null, h('b', null, 'Points to hit:')),
+        h('ul', null, item.points.map(p => h('li', null, p))),
+        h('p', { class: 'hint' }, item.explain));
+      if (item.img) { const f = h('figure', { class: 'diagram' }); f.innerHTML = figSVG(item.img.fig, item.img); box.appendChild(f); }
+      fbHolder.appendChild(box);
+      const grader = h('div', { class: 'actions' });
+      const done = ok => {
+        record(item, ok, { self: ok }, isRetry);
+        clear(grader);
+        grader.appendChild(h('p', { class: ok ? 'ok' : 'no', style: 'margin:0 8px 0 0' }, ok ? 'Marked: got it' : 'Marked: missed (it will come back)'));
+        const nb = h('button', { class: 'primary', onclick: next }, 'Next');
+        grader.appendChild(nb); nb.focus({ preventScroll: true });
+      };
+      grader.appendChild(h('p', { style: 'margin:0 8px 0 0;font-weight:600' }, 'Did your answer cover the points?'));
+      grader.appendChild(h('button', { class: 'primary', onclick: () => done(true) }, 'I got it'));
+      grader.appendChild(h('button', { class: 'ghost', onclick: () => done(false) }, 'I missed something'));
+      fbHolder.appendChild(grader);
+      box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  }
+
+  // ----- Select all that apply -----
+  function renderSATA(item, area, ctl, refresh) {
+    const opts = shuffle(item.options);
+    const list = h('div', { class: 'options' });
+    const picked = new Set(); let locked = false;
+    const btns = opts.map(o => {
+      const b = h('button', { class: 'opt', 'aria-pressed': 'false', onclick: () => {
+        if (locked) return;
+        if (picked.has(o)) picked.delete(o); else picked.add(o);
+        b.classList.toggle('selected', picked.has(o)); b.setAttribute('aria-pressed', String(picked.has(o)));
+        b.querySelector('.box').textContent = picked.has(o) ? '✓' : '';
+        refresh();
+      } }, h('span', { class: 'box' }), h('span', { class: 'lbl' }, o));
+      b.dataset.v = o; return b;
+    });
+    btns.forEach(b => list.appendChild(b));
+    area.appendChild(list);
+    ctl.getAnswer = () => Array.from(picked);
+    ctl.complete = () => picked.size > 0;
+    ctl.lock = () => { locked = true; btns.forEach(b => b.setAttribute('disabled', '')); };
+    const resetOpts = () => btns.forEach(b => {
+      b.classList.remove('selected', 'right', 'wrong', 'missed-opt');
+      b.querySelectorAll('.note').forEach(n => n.remove());
+      b.querySelector('.box').textContent = '';
+    });
+    ctl.markFeedback = () => {
+      resetOpts();
+      btns.forEach(b => {
+        const v = b.dataset.v, shouldBe = item.answer.includes(v), was = picked.has(v);
+        if (was) b.querySelector('.box').textContent = '✓';
+        if (shouldBe && was) { b.classList.add('right'); b.appendChild(h('span', { class: 'note' }, '✓ right')); }
+        else if (!shouldBe && was) { b.classList.add('wrong'); b.appendChild(h('span', { class: 'note' }, '✗ should not be selected')); }
+        else if (shouldBe && !was) { b.classList.add('missed-opt'); b.querySelector('.box').textContent = '✓'; b.appendChild(h('span', { class: 'note' }, '✓ you missed this one')); }
+        else { b.appendChild(h('span', { class: 'note' }, '✓ right (left blank)')); b.querySelector('.note').classList.add('ok'); }
+      });
+    };
+    // Answer key: only the correct options are checked, all in green.
+    ctl.showCorrect = () => {
+      resetOpts();
+      btns.forEach(b => {
+        if (item.answer.includes(b.dataset.v)) {
+          b.classList.add('right'); b.querySelector('.box').textContent = '✓';
+          b.appendChild(h('span', { class: 'note' }, '✓ select'));
+        } else {
+          b.appendChild(h('span', { class: 'note muted' }, 'leave blank'));
+        }
+      });
+    };
+    ctl.showMine = () => ctl.markFeedback();
+  }
+
+  // ----- Matching -----
+  function renderMatch(item, area, ctl, refresh) {
+    const terms = shuffle(item.pairs.map(p => p[0]));
+    const defs = shuffle(item.pairs.map(p => p[1]));
+    const pairs = {};       // term -> def
+    let selTerm = null, selDef = null, locked = false;
+    const termBtns = {}, defBtns = {};
+    const wrap = h('div', { class: 'match' });
+    const colT = h('div', { class: 'col' }, h('div', { class: 'col-title' }, 'Terms'));
+    const colD = h('div', { class: 'col' }, h('div', { class: 'col-title' }, 'Matches'));
+    terms.forEach(t => {
+      const b = h('button', { class: 'chip', onclick: () => { if (locked) return; selTerm = (selTerm === t) ? null : t; tryPair(); paint(); } },
+        h('span', { class: 'badge' }, ''), h('span', { class: 'lbl' }, t));
+      termBtns[t] = b; colT.appendChild(b);
+    });
+    defs.forEach(d => {
+      const b = h('button', { class: 'chip', onclick: () => { if (locked) return; selDef = (selDef === d) ? null : d; tryPair(); paint(); } },
+        h('span', { class: 'badge' }, ''), h('span', { class: 'lbl' }, d));
+      defBtns[d] = b; colD.appendChild(b);
+    });
+    wrap.appendChild(colT); wrap.appendChild(colD);
+    area.appendChild(wrap);
+    const tools = h('div', { class: 'tools' },
+      h('button', { class: 'small-btn', onclick: () => { if (locked) return; for (const k in pairs) delete pairs[k]; selTerm = selDef = null; paint(); } }, 'Clear pairs'),
+      h('span', { class: 'hint' }, 'Paired items share the same number.'));
+    area.appendChild(tools);
+
+    function tryPair() {
+      if (selTerm != null && selDef != null) {
+        for (const k in pairs) if (pairs[k] === selDef) delete pairs[k];   // a match can belong to one term only
+        pairs[selTerm] = selDef;
+        selTerm = selDef = null;
+      }
+      refresh();
+    }
+    function paint() {
+      const order = Object.keys(pairs); // numbering in pairing order
+      for (const t in termBtns) {
+        const b = termBtns[t]; const idx = order.indexOf(t);
+        b.classList.toggle('selected', selTerm === t);
+        b.classList.toggle('paired', idx >= 0);
+        b.querySelector('.badge').textContent = idx >= 0 ? String(idx + 1) : '';
+      }
+      for (const d in defBtns) {
+        const b = defBtns[d]; const t = order.find(k => pairs[k] === d); const idx = t ? order.indexOf(t) : -1;
+        b.classList.toggle('selected', selDef === d);
+        b.classList.toggle('paired', idx >= 0);
+        b.querySelector('.badge').textContent = idx >= 0 ? String(idx + 1) : '';
+      }
+    }
+    ctl.getAnswer = () => Object.assign({}, pairs);
+    ctl.complete = () => item.pairs.every(([t]) => pairs[t] != null);
+    ctl.lock = () => { locked = true; Object.values(termBtns).concat(Object.values(defBtns)).forEach(b => b.setAttribute('disabled', '')); tools.remove(); };
+    const allChips = () => Object.values(termBtns).concat(Object.values(defBtns));
+    ctl.markFeedback = () => {
+      allChips().forEach(b => { b.classList.remove('right', 'wrong'); b.style.minHeight = ''; });
+      defs.forEach(d => colD.appendChild(defBtns[d]));   // back to the original order
+      paint();
+      item.pairs.forEach(([t, d]) => {
+        const ok = pairs[t] === d;
+        termBtns[t].classList.add(ok ? 'right' : 'wrong');
+        if (pairs[t] != null) defBtns[pairs[t]].classList.add(ok ? 'right' : 'wrong');
+      });
+    };
+    // Answer key: each correct match moves directly across from its term, numbered and green.
+    ctl.showCorrect = () => {
+      const key = Object.fromEntries(item.pairs);
+      terms.forEach((t, i) => {
+        const d = defBtns[key[t]];
+        colD.appendChild(d);
+        [termBtns[t], d].forEach(b => {
+          b.classList.remove('wrong', 'selected'); b.classList.add('right', 'paired');
+          b.querySelector('.badge').textContent = String(i + 1);
+        });
+      });
+      // Line each term up with its match so the pairs read across as rows.
+      terms.forEach(t => {
+        const a = termBtns[t], d = defBtns[key[t]];
+        a.style.minHeight = d.style.minHeight = '';
+        const hgt = Math.max(a.offsetHeight, d.offsetHeight) + 'px';
+        a.style.minHeight = d.style.minHeight = hgt;
+      });
+    };
+    ctl.showMine = () => ctl.markFeedback();
+    ctl.feedbackDetail = () => h('ul', null, item.pairs.map(([t, d]) => {
+      const ok = pairs[t] === d;
+      return h('li', null, h('span', { class: ok ? 'ok' : 'no' }, ok ? '✓ ' : '✗ '), `${t} → ${pairs[t] || '?'}`, ok ? '' : h('span', null, ' — should be: ', h('b', null, d)));
+    }));
+  }
+
+  // ----- Sort into boxes -----
+  function renderSort(item, area, ctl, refresh) {
+    const tiles = shuffle(item.tiles.map(t => t[0]));
+    const placed = {};  // tile -> box
+    let sel = null, locked = false;
+    const pool = h('div', { class: 'pool', role: 'group', 'aria-label': 'Tiles to sort', onclick: e => {
+      if (locked) return;
+      if (e.target === pool && sel && placed[sel]) { delete placed[sel]; sel = null; paint(); }
+    } });
+    const boxesEl = h('div', { class: 'boxes' + (item.boxes.length === 2 ? ' two' : '') });
+    const boxEls = {};
+    item.boxes.forEach(b => {
+      const el = h('div', { class: 'dropbox', role: 'button', tabindex: '0', onclick: () => place(b) },
+        h('div', { class: 'box-title' }, b), h('div', { class: 'box-tiles' }));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); place(b); } });
+      boxEls[b] = el; boxesEl.appendChild(el);
+    });
+    const tileEls = {};
+    tiles.forEach(t => {
+      const el = h('button', { class: 'tile', onclick: e => {
+        e.stopPropagation(); if (locked) return;
+        // A selected tile tapped onto a tile already sitting in a box goes into that box.
+        if (sel && sel !== t && placed[t]) { place(placed[t]); return; }
+        sel = (sel === t) ? null : t; paint();
+      } }, t);
+      tileEls[t] = el;
+    });
+    const poolLabel = h('p', { class: 'hint', style: 'margin:0 0 6px' }, 'Tiles');
+    area.appendChild(poolLabel);
+    area.appendChild(pool);
+    area.appendChild(boxesEl);
+
+    function place(box) {
+      if (locked || !sel) return;
+      placed[sel] = box; sel = null; paint(); refresh();
+    }
+    function paint() {
+      clear(pool);
+      for (const b in boxEls) clear(boxEls[b].querySelector('.box-tiles'));
+      tiles.forEach(t => {
+        const el = tileEls[t];
+        el.classList.toggle('selected', sel === t);
+        if (placed[t]) boxEls[placed[t]].querySelector('.box-tiles').appendChild(el); else pool.appendChild(el);
+      });
+      pool.classList.toggle('empty', tiles.every(t => placed[t]));
+      for (const b in boxEls) boxEls[b].classList.toggle('target', !!sel);
+    }
+    paint();
+    ctl.getAnswer = () => Object.assign({}, placed);
+    ctl.complete = () => tiles.every(t => placed[t]);
+    ctl.lock = () => {
+      locked = true; poolLabel.hidden = true; pool.hidden = true;
+      tiles.forEach(t => tileEls[t].setAttribute('disabled', ''));
+      for (const b in boxEls) { boxEls[b].classList.remove('target'); boxEls[b].removeAttribute('tabindex'); }
+    };
+    const layout = map => {
+      for (const b in boxEls) clear(boxEls[b].querySelector('.box-tiles'));
+      tiles.forEach(t => {
+        const el = tileEls[t];
+        el.classList.remove('right', 'wrong', 'selected');
+        el.querySelectorAll('.fix').forEach(f => f.remove());
+        boxEls[map[t]].querySelector('.box-tiles').appendChild(el);
+      });
+    };
+    ctl.markFeedback = () => {
+      layout(placed);
+      item.tiles.forEach(([t, box]) => {
+        const ok = placed[t] === box;
+        tileEls[t].classList.add(ok ? 'right' : 'wrong');
+        if (!ok) tileEls[t].appendChild(h('span', { class: 'fix' }, `→ ${box}`));
+      });
+    };
+    // Answer key: every tile moves into its correct box, all green.
+    ctl.showCorrect = () => {
+      layout(Object.fromEntries(item.tiles));
+      tiles.forEach(t => tileEls[t].classList.add('right'));
+    };
+    ctl.showMine = () => ctl.markFeedback();
+  }
+
+  // ---------- finishing ----------
+  function finish() {
+    const r = session.results;
+    const correct = r.filter(x => x.correct).length;
+    const total = r.length;
+    if (session.mode === 'topic') { progress.scores[session.topic] = { correct, total }; save(); }
+    if (session.mode === 'test') { progress.test = { correct, total }; save(); }
+    const root = screens.results; clear(root);
+    const pct = total ? Math.round((correct / total) * 100) : 0;
+    root.appendChild(h('h1', null, session.mode === 'test' ? 'Practice Test results' : session.mode === 'missed' ? 'Missed Questions round done' : session.mode === 'handout' ? 'Handout 1–82: done' : `${topicName(session.topic)}: set complete`));
+    if (session.mode === 'handout') { progress.handout = { correct, total }; save(); }
+    root.appendChild(h('div', { class: 'score-card' },
+      h('div', { class: 'big' }, `${correct} / ${total}`),
+      h('div', { class: 'sub' }, `${pct}% on first try` + (session.mode === 'missed' ? ` · ${progress.missed.length} still in Missed Questions` : ''))));
+
+    if (session.mode === 'test') {
+      const perTopic = {};
+      r.forEach(x => { const k = x.item.topic; perTopic[k] = perTopic[k] || { c: 0, t: 0 }; perTopic[k].t++; if (x.correct) perTopic[k].c++; });
+      const table = h('table', { class: 'per-topic' }, h('thead', null, h('tr', null, h('th', null, 'Topic'), h('th', null, 'Score'))),
+        h('tbody', null, TOPICS.filter(t => perTopic[t.key]).map(t => h('tr', null, h('td', null, t.name), h('td', null, `${perTopic[t.key].c} / ${perTopic[t.key].t}`)))));
+      root.appendChild(h('h2', null, 'Score by topic'));
+      root.appendChild(table);
+      const wrong = r.filter(x => !x.correct);
+      root.appendChild(h('h2', null, wrong.length ? `Review your ${wrong.length} wrong answer${wrong.length === 1 ? '' : 's'}` : 'No wrong answers. Nice work.'));
+      if (wrong.length) root.appendChild(h('p', { class: 'lead' }, 'These were added to Missed Questions.'));
+      const list = h('div', { class: 'review' });
+      wrong.forEach(x => {
+        list.appendChild(h('div', { class: 'review-item' },
+          h('div', { class: 'tp' }, topicName(x.item.topic)),
+          h('div', { class: 'q' }, (x.item.num ? `#${x.item.num}. ` : '') + x.item.prompt),
+          x.item.img ? diagramEl(x.item) : null,
+          h('p', null, h('span', { class: 'no' }, 'Your answer: '), answerText(x.item, x.answer)),
+          h('p', null, h('span', { class: 'ok' }, 'Correct answer: '), correctText(x.item)),
+          h('p', null, x.item.explain)));
+      });
+      root.appendChild(list);
+    }
+
+    const actions = h('div', { class: 'actions' });
+    if (session.mode === 'topic') actions.appendChild(h('button', { class: 'primary', onclick: () => startTopic(session.topic) }, 'Practice again'));
+    if (session.mode === 'missed') actions.appendChild(h('button', { class: 'primary', disabled: progress.missed.length === 0, onclick: startMissed }, 'Practice again'));
+    if (session.mode === 'test') actions.appendChild(h('button', { class: 'primary', onclick: startTest }, 'Take another test'));
+    if (session.mode === 'handout') actions.appendChild(h('button', { class: 'primary', onclick: startHandout }, 'Go through it again'));
+    actions.appendChild(h('button', { class: 'ghost', onclick: goHome }, 'Home'));
+    root.appendChild(actions);
+    show('results');
+  }
+
+
+  // ---------- explore ----------
+  const EXPLORE = [
+    { key: 'front', name: 'Skeleton (front)', figs: ['front'], tint: true },
+    { key: 'back', name: 'Skeleton (back)', figs: ['back'], tint: true },
+    { key: 'skull', name: 'Skull', figs: ['skull-front', 'skull-side'] },
+    { key: 'hand', name: 'Wrist & hand', figs: ['hand'] },
+    { key: 'foot', name: 'Ankle & foot', figs: ['foot'] },
+    { key: 'spine', name: 'Spine', figs: ['spine'] },
+    { key: 'sternum', name: 'Sternum', figs: ['sternum'] }
+  ];
+  let exploreFig = 'front', exploreSel = null;
+  function startExplore() { session = null; exploreSel = null; renderExplore(); show('explore'); }
+  function renderExplore() {
+    const root = screens.explore; clear(root);
+    const ex = EXPLORE.find(e => e.key === exploreFig);
+    const info = BANK.info[ex.key];
+    root.appendChild(h('h1', null, 'Explore the Bones'));
+    root.appendChild(h('p', { class: 'lead' }, 'Pick a picture, then tap a name or tap a bone. The one you pick turns orange.' + (ex.tint ? ' Axial bones are blue; appendicular bones are yellow.' : ex.key === 'skull' ? ' Cranial bones are blue; facial bones are yellow.' : '')));
+    const tabs = h('div', { class: 'fig-tabs', role: 'tablist' });
+    EXPLORE.forEach(e => tabs.appendChild(h('button', { class: 'fig-tab' + (e.key === exploreFig ? ' on' : ''), role: 'tab', 'aria-selected': String(e.key === exploreFig),
+      onclick: () => { exploreFig = e.key; exploreSel = null; renderExplore(); } }, e.name)));
+    root.appendChild(tabs);
+    const chips = h('div', { class: 'bone-chips' });
+    const chipEls = {};
+    info.forEach(([key, name]) => { const el = h('button', { class: 'bone-chip', 'aria-pressed': 'false', onclick: () => select(key) }, name); chipEls[key] = el; chips.appendChild(el); });
+    root.appendChild(chips);
+    const card = h('div', { class: 'bone-card', 'aria-live': 'polite' });
+    root.appendChild(card);
+    const views = h('div', { class: 'views' + (ex.figs.length > 1 ? '' : ' one') });
+    const figEls = ex.figs.map(f => {
+      const el = h('figure', { class: 'diagram explore-fig' });
+      el.addEventListener('click', e => { const t = e.target.closest('[data-bone]'); if (t && chipEls[t.getAttribute('data-bone')]) select(t.getAttribute('data-bone')); });
+      views.appendChild(el); return el;
+    });
+    root.appendChild(views);
+    root.appendChild(h('div', { class: 'actions' }, h('button', { class: 'ghost', onclick: goHome }, 'Home')));
+    function paint() {
+      for (const k in chipEls) { chipEls[k].classList.toggle('on', k === exploreSel); chipEls[k].setAttribute('aria-pressed', String(k === exploreSel)); }
+      ex.figs.forEach((f, i) => { figEls[i].innerHTML = figSVG(f, { tint: !!(ex.tint || ex.key === 'skull'), hi: exploreSel }); figEls[i].appendChild(h('figcaption', null, FIG_NAMES[f])); });
+      clear(card);
+      if (!exploreSel) { card.appendChild(h('p', { class: 'hint', style: 'margin:0' }, 'No bone picked yet.')); return; }
+      const row = info.find(x => x[0] === exploreSel);
+      card.appendChild(h('div', { class: 'bone-card-head' }, h('span', { class: 'bone-name' }, row[1]),
+        ex.tint ? h('span', { class: 'pill ' + (BODY.AXIAL[exploreSel] ? 'cranial' : 'facial') }, BODY.AXIAL[exploreSel] ? 'Axial' : 'Appendicular') : null));
+      card.appendChild(h('p', null, row[2]));
+    }
+    function select(key) { exploreSel = key; paint(); }
+    paint();
+  }
+
+  // ---------- home ----------
+  function goHome() { session = null; renderHome(); show('home'); }
+  function renderHome() {
+    const root = screens.home; clear(root);
+    root.appendChild(h('h1', null, 'Skeletal System Test Study'));
+    root.appendChild(h('p', { class: 'lead' }, 'Every question from the test handout is here, plus the labeling pictures. Each set is 10 questions with instant feedback. Anything you miss comes back at the end of the set and goes into Missed Questions.'));
+    root.appendChild(h('button', { class: 'big-btn secondary explore-btn', onclick: startExplore },
+      h('span', null, 'Explore the Bones'), h('span', { class: 'meta' }, 'Tap any bone on the skeleton, skull, hand, foot, or spine')));
+    const topicBtn = t => {
+      const s2 = progress.scores[t.key];
+      const missedN = progress.missed.filter(id => byId[id] && byId[id].topic === t.key).length;
+      return h('button', { class: 'topic-btn', onclick: () => startTopic(t.key) },
+        h('span', { class: 'name' }, t.name),
+        h('span', { class: 'meta' },
+          h('span', { class: 'score' }, s2 ? `Last score: ${s2.correct}/${s2.total}` : 'Not started'),
+          missedN ? h('span', { class: 'pill missed' }, `${missedN} missed waiting`) : (s2 ? h('span', { class: 'pill clear' }, 'No missed questions') : null)));
+    };
+    root.appendChild(h('h2', null, 'Written test (100 points)'));
+    root.appendChild(h('div', { class: 'topics' }, TOPICS.filter(t => !t.label).map(topicBtn)));
+    root.appendChild(h('h2', null, 'Labeling test (62 labels)'));
+    root.appendChild(h('div', { class: 'topics' }, TOPICS.filter(t => t.label).map(topicBtn)));
+    const n = progress.missed.length;
+    const acts = h('div', { class: 'home-actions' },
+      h('button', { class: 'big-btn secondary', disabled: n === 0, onclick: startMissed }, h('span', null, `Missed Questions (${n})`), h('span', { class: 'meta' }, n ? 'Drill only what you got wrong' : 'Nothing missed yet')),
+      h('button', { class: 'big-btn secondary', onclick: startHandout }, h('span', null, 'Handout #1–82 in order'), h('span', { class: 'meta' }, (progress.handout ? `Last: ${progress.handout.correct}/${progress.handout.total} · ` : '') + 'The whole multiple choice and fill-in section, with feedback')),
+      h('button', { class: 'big-btn', onclick: startTest }, h('span', null, 'Practice Test'), h('span', { class: 'meta' }, (progress.test ? `Last: ${progress.test.correct}/${progress.test.total} · ` : '') + '30 mixed questions (20 written, 10 labeling), no feedback until the end')));
+    root.appendChild(acts);
+    const resetRow = h('div', { class: 'reset-row' });
+    const confirmBox = h('div', { class: 'confirm' }, h('span', null, 'Erase all scores and the Missed Questions list?'),
+      h('button', { class: 'small-btn danger', onclick: () => { progress = freshProgress(); save(); renderHome(); } }, 'Yes, reset'),
+      h('button', { class: 'small-btn', onclick: () => { confirmBox.hidden = true; } }, 'Cancel'));
+    confirmBox.hidden = true;
+    resetRow.appendChild(h('button', { class: 'link-btn', onclick: () => { confirmBox.hidden = !confirmBox.hidden; } }, 'Reset progress'));
+    resetRow.appendChild(confirmBox);
+    root.appendChild(resetRow);
+    root.appendChild(h('p', { class: 'version' }, 'Version 2 · checked'));
+  }
+
+  // ---------- boot ----------
+  $('homeLink').addEventListener('click', goHome);
+  load();
+  renderHome();
+  show('home');
+
+  // exposed for automated testing only
+  window.__sk = { BANK, grade, checkFill, drawFromTopic, getProgress: () => progress, getSession: () => session };
+})();
+
+</script>
+</body>
+</html>
